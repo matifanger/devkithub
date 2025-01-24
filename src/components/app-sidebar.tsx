@@ -54,6 +54,14 @@ const data = {
           title: "Color Converter",
           url: "/color-converter",
         },
+        {
+          title: "Base64 String Encoder/Decoder",
+          url: "/base64-string-encoder-decoder",
+        },
+        {
+          title: "Base64 Image Encoder/Decoder",
+          url: "/base64-image-encoder-decoder",
+        },
       ],
     },
   ],

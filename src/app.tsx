@@ -11,6 +11,8 @@ import { JsonFormatPage } from './pages/json-format';
 import { UnixTimePage } from './pages/unix-time';
 import { JwtDebuggerPage } from './pages/jwt-debug';
 import { ColorConverterPage } from './pages/color-converter';
+import { Base64StringEncoderDecoderPage } from './pages/base64-string-encoder-decoder';
+import { Base64ImageEncoderDecoderPage } from './pages/base64-image-encoder-decoder';
 
 const App = () => {
   return (
@@ -26,6 +28,8 @@ const App = () => {
             <Route path="/unix-time" element={<UnixTimePage />} />
             <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
             <Route path="/color-converter" element={<ColorConverterPage />} />
+            <Route path="/base64-string-encoder-decoder" element={<Base64StringEncoderDecoderPage />} />
+            <Route path="/base64-image-encoder-decoder" element={<Base64ImageEncoderDecoderPage />} />
           </Route>
         </Routes>
       </HashRouter>
