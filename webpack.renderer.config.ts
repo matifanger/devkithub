@@ -14,6 +14,14 @@ export const rendererConfig: Configuration = {
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
+    fallback: {
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      vm: require.resolve('vm-browserify'),
+      assert: require.resolve('assert-browserify'),
+      zlib: require.resolve('browserify-zlib'),
+      util: require.resolve('util'),
+    },
     modules: ['node_modules', path.resolve(__dirname, 'src')],
   },
 };
