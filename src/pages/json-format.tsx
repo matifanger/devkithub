@@ -99,7 +99,7 @@ export function JsonFormatPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
         <div className="space-y-2">
           <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">Input JSON</Label>
+            <Label>Input</Label>
             <div className="space-x-2">
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
