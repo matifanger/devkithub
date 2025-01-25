@@ -71,6 +71,10 @@ const data = {
           title: "URL Encoder/Decoder",
           url: "/url-encoder-decoder",
         },
+        {
+          title: "HTML Entity Encoder/Decoder",
+          url: "/html-entity-encoder-decoder",
+        },
       ],
     },
   ],

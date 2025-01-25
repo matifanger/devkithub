@@ -16,6 +16,7 @@ import { Base64StringEncoderDecoderPage } from './pages/base64-string-encoder-de
 import { Base64ImageEncoderDecoderPage } from './pages/base64-image-encoder-decoder';
 import { RegexTesterPage } from './pages/regex-tester';
 import { UrlEncoderDecoderPage } from './pages/url-encoder-decoder';
+import { HtmlEntityEncoderDecoderPage } from './pages/html-entity-encoder-decoder';
 const App = () => {
   return (
     <ThemeProvider>
@@ -35,6 +36,7 @@ const App = () => {
               <Route path="/base64-image-encoder-decoder" element={<Base64ImageEncoderDecoderPage />} />
               <Route path="/regex-tester" element={<RegexTesterPage />} />
               <Route path="/url-encoder-decoder" element={<UrlEncoderDecoderPage />} />
+              <Route path="/html-entity-encoder-decoder" element={<HtmlEntityEncoderDecoderPage />} />
             </Route>
           </Routes>
         </HashRouter>
