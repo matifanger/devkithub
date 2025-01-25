@@ -13,7 +13,7 @@ export function LoginPage() {
 
   // On load
   useEffect(() => {
-    navigate('/base64-image-encoder-decoder');
+    navigate('/url-encoder-decoder');
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

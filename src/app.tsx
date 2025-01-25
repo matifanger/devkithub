@@ -14,7 +14,8 @@ import { JwtDebuggerPage } from './pages/jwt-debug';
 import { ColorConverterPage } from './pages/color-converter';
 import { Base64StringEncoderDecoderPage } from './pages/base64-string-encoder-decoder';
 import { Base64ImageEncoderDecoderPage } from './pages/base64-image-encoder-decoder';
-
+import { RegexTesterPage } from './pages/regex-tester';
+import { UrlEncoderDecoderPage } from './pages/url-encoder-decoder';
 const App = () => {
   return (
     <ThemeProvider>
@@ -32,6 +33,8 @@ const App = () => {
               <Route path="/color-converter" element={<ColorConverterPage />} />
               <Route path="/base64-string-encoder-decoder" element={<Base64StringEncoderDecoderPage />} />
               <Route path="/base64-image-encoder-decoder" element={<Base64ImageEncoderDecoderPage />} />
+              <Route path="/regex-tester" element={<RegexTesterPage />} />
+              <Route path="/url-encoder-decoder" element={<UrlEncoderDecoderPage />} />
             </Route>
           </Routes>
         </HashRouter>

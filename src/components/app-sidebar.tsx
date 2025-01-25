@@ -63,6 +63,14 @@ const data = {
           title: "Base64 Image Encoder/Decoder",
           url: "/base64-image-encoder-decoder",
         },
+        {
+          title: "Regex Tester",
+          url: "/regex-tester",
+        },
+        {
+          title: "URL Encoder/Decoder",
+          url: "/url-encoder-decoder",
+        },
       ],
     },
   ],
