@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 
 import { SearchForm } from "./search-form"
 import { VersionSwitcher } from "./version-switcher"
+import { ThemeToggle } from "./ui/theme-toggle"
 import {
   Collapsible,
   CollapsibleContent,
@@ -71,10 +72,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <VersionSwitcher
-          versions={data.versions}
-          defaultVersion={data.versions[0]}
-        />
+        <div className="flex items-center justify-between px-4">
+          <VersionSwitcher
+            versions={data.versions}
+            defaultVersion={data.versions[0]}
+          />
+          <ThemeToggle />
+        </div>
         <SearchForm />
       </SidebarHeader>
       <SidebarContent className="gap-0">
