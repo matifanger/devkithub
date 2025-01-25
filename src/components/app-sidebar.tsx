@@ -75,6 +75,10 @@ const data = {
           title: "HTML Entity Encoder/Decoder",
           url: "/html-entity-encoder-decoder",
         },
+        {
+          title: "Backslash Escape/Unescape",
+          url: "/backslash-escape-unescape",
+        },
       ],
     },
   ],
