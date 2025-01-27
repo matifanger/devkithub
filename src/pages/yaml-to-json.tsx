@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
 import { Input } from '../components/ui/input';
 import { JSONPath } from 'jsonpath-plus';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-okaidia.css';
-import 'prismjs/components/prism-json';
 import yaml from 'js-yaml';
+import CodeMirror from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
+import { yaml as yamlLang } from '@codemirror/lang-yaml';
+import { oneDark } from '@codemirror/theme-one-dark';
 import {
   Select,
   SelectContent,
@@ -22,19 +22,17 @@ export function YamlToJsonPage() {
   const [error, setError] = useState('');
   const [jsonPath, setJsonPath] = useState('');
   const [spaces, setSpaces] = useState('2');
-  const [highlightedOutput, setHighlightedOutput] = useState('');
 
   const convertToJson = useCallback(() => {
     try {
       if (!input.trim()) {
         setOutput('');
         setError('');
-        setHighlightedOutput('');
         return;
       }
 
-      const parsed = yaml.load(input) as Record<string, any>;
-      let result = parsed;
+      const parsed = yaml.load(input) as unknown;
+      let result: unknown = parsed;
 
       if (jsonPath.trim()) {
         try {
@@ -45,25 +43,16 @@ export function YamlToJsonPage() {
         } catch (pathErr) {
           setError('Invalid JSONPath query');
           setOutput('');
-          setHighlightedOutput('');
           return;
         }
       }
 
       const formatted = JSON.stringify(result, null, Number(spaces));
       setOutput(formatted);
-      
-      const highlighted = Prism.highlight(
-        formatted,
-        Prism.languages.json,
-        'json'
-      );
-      setHighlightedOutput(highlighted);
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid YAML');
       setOutput('');
-      setHighlightedOutput('');
     }
   }, [input, spaces, jsonPath]);
 
@@ -121,13 +110,23 @@ export function YamlToJsonPage() {
               </Button>
             </div>
           </div>
-          <Textarea
-            id="input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Paste your YAML here"
-            className="h-[calc(100vh-24rem)] font-mono"
-          />
+          <div className="h-[calc(100vh-24rem)]">
+            <CodeMirror
+              value={input}
+              className="h-[calc(100vh-24rem)]"
+              height="100%"
+              width="100%"
+              theme={oneDark}
+              onChange={(value) => setInput(value)}
+              extensions={[yamlLang()]}
+              placeholder="Paste your YAML here"
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: true,
+              }}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -156,16 +155,24 @@ export function YamlToJsonPage() {
               {error}
             </div>
           ) : (
-            <pre className="p-4 bg-[#272822] rounded-lg overflow-auto h-[calc(100vh-24rem)] font-mono">
-              <code 
-                className="language-json"
-                dangerouslySetInnerHTML={{ __html: highlightedOutput }}
+              <CodeMirror
+                value={output}
+                className="h-[calc(100vh-24rem)]"
+                height="100%"
+                width="100%"
+                theme={oneDark}
+                extensions={[json()]}
+                editable={false}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: false,
+                }}
               />
-            </pre>
           )}
           
           <div className="space-y-2 mt-4">
-            <Label htmlFor="jsonpath">JSONPath Query</Label>
+            <Label htmlFor="jsonpath" spellCheck={false}>JSONPath Query</Label>
             <Input
               id="jsonpath"
               value={jsonPath}
