@@ -13,7 +13,7 @@ export function LoginPage() {
 
   // On load
   useEffect(() => {
-    navigate('/yaml-to-json');
+    navigate('/markdown-preview');
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

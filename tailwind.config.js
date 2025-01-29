@@ -55,8 +55,41 @@ module.exports = {
   			lg: '`var(--radius)`',
   			md: '`calc(var(--radius) - 2px)`',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		typography: {
+  			DEFAULT: {
+  				css: {
+  					'dl': {
+  						'margin-top': '1.5em',
+  						'margin-bottom': '1.5em',
+  					},
+  					'dt': {
+  						'font-weight': '600',
+  						'margin-top': '1em',
+  					},
+  					'dd': {
+  						'margin-left': '1.5em',
+  						'margin-top': '0.5em',
+  					},
+  					'abbr': {
+  						'text-decoration': 'underline',
+  						'text-decoration-style': 'dotted',
+  						'cursor': 'help',
+  					},
+  					'code': {
+  						'background-color': 'rgb(var(--muted))',
+  						'padding': '0.2em 0.4em',
+  						'border-radius': '0.25em',
+  					},
+  					'pre code': {
+  						'background-color': 'transparent',
+  						'padding': '0',
+  						'border-radius': '0',
+  					},
+  				},
+  			},
+  		},
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require('@tailwindcss/typography')],
 }

@@ -24,6 +24,13 @@ import { JsBeautifyPage } from './pages/js-beautify';
 import { XmlBeautifyPage } from './pages/xml-beautify';
 import { LessBeautifyPage } from './pages/less-beautify';
 import { ScssBeautifyPage } from './pages/scss-beautify';
+import { LineSortDedupePage } from './pages/line-sort-dedupe';
+import { HexToAsciiPage } from './pages/hex-to-ascii';
+import { HtmlPreviewPage } from './pages/html-preview';
+import { MarkdownPreviewPage } from './pages/markdown-preview';
+import { HtmlToJsxPage } from './pages/html-to-jsx';
+import { JsonToCsvPage } from './pages/json-to-csv';
+import { CsvToJsonPage } from './pages/csv-to-json';
 
 const App = () => {
   return (
@@ -52,6 +59,13 @@ const App = () => {
               <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
               <Route path="/less-beautify" element={<LessBeautifyPage />} />
               <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
+              <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
+              <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />
+              <Route path="/html-preview" element={<HtmlPreviewPage />} />
+              <Route path="/markdown-preview" element={<MarkdownPreviewPage />} />
+              <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
+              <Route path="/json-to-csv" element={<JsonToCsvPage />} />
+              <Route path="/csv-to-json" element={<CsvToJsonPage />} />
             </Route>
           </Routes>
         </HashRouter>

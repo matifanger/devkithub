@@ -103,6 +103,34 @@ const data = {
           title: "SCSS Beautify/Minify",
           url: "/scss-beautify",
         },
+        {
+          title: "Line Sort/Dedupe",
+          url: "/line-sort-dedupe",
+        },
+        {
+          title: "Hex to ASCII",
+          url: "/hex-to-ascii",
+        },
+        {
+          title: "HTML Preview",
+          url: "/html-preview",
+        },
+        {
+          title: "Markdown Preview",
+          url: "/markdown-preview",
+        },
+        {
+          title: "HTML to JSX",
+          url: "/html-to-jsx",
+        },
+        {
+          title: "JSON to CSV",
+          url: "/json-to-csv",
+        },
+        {
+          title: "CSV to JSON",
+          url: "/csv-to-json",
+        },
       ],
     },
   ],
