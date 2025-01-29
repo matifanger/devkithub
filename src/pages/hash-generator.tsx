@@ -1,11 +1,13 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { CopyButton } from '../components/ui/copy-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Card } from '../components/ui/card';
-import { Textarea } from '../components/ui/textarea';
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { oneDark } from '@codemirror/theme-one-dark';
 
 interface HashOutputs {
   md5: string;
@@ -44,20 +46,17 @@ export function HashGeneratorPage() {
     setHashes(newHashes as HashOutputs);
   };
 
-  useEffect(() => {
-    if (input) {
-      generateHashes(input);
-    }
-  }, [input, casing]);
-
   const handleSample = () => {
-    setInput('Hello, World!');
+    const sample = 'Hello, World!';
+    setInput(sample);
+    generateHashes(sample);
   };
 
   const handleClipboardPaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
       setInput(text);
+      generateHashes(text);
     } catch (err) {
       console.error('Failed to read from clipboard');
     }
@@ -73,6 +72,7 @@ export function HashGeneratorPage() {
         reader.onload = (e) => {
           const text = e.target?.result as string;
           setInput(text);
+          generateHashes(text);
         };
         reader.readAsText(file);
       }
@@ -108,11 +108,19 @@ export function HashGeneratorPage() {
           </div>
 
           <Card className="p-4">
-            <Textarea
+            <CodeMirror
               value={input}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
+              height="300px"
+              width="100%"
+              theme={oneDark}
+              onChange={(value) => setInput(value)}
+              extensions={[javascript()]}
               placeholder="Enter text to hash"
-              className="min-h-[300px] font-mono bg-[#272822] text-white p-4"
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: true,
+              }}
             />
           </Card>
         </div>

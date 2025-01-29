@@ -1,9 +1,11 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Card } from '../components/ui/card';
-import { Textarea } from '../components/ui/textarea';
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { oneDark } from '@codemirror/theme-one-dark';
 
 export function Base64StringEncoderDecoderPage() {
   const [input, setInput] = useState('');
@@ -20,11 +22,6 @@ export function Base64StringEncoderDecoderPage() {
     } catch (e) {
       setOutput('Invalid input for selected operation');
     }
-  };
-
-  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    handleProcess(e.target.value, mode);
   };
 
   const handleModeChange = (newMode: string) => {
@@ -89,11 +86,19 @@ export function Base64StringEncoderDecoderPage() {
           </div>
 
           <Card className="p-4">
-            <Textarea
+            <CodeMirror
               value={input}
-              onChange={handleInputChange}
+              height="200px"
+              width="100%"
+              theme={oneDark}
+              onChange={(value) => setInput(value)}
+              extensions={[javascript()]}
               placeholder={mode === 'encode' ? 'Enter text to encode' : 'Enter base64 to decode'}
-              className="min-h-[200px] font-mono"
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: true,
+              }}
             />
           </Card>
         </div>
@@ -112,10 +117,18 @@ export function Base64StringEncoderDecoderPage() {
           </div>
 
           <Card className="p-4">
-            <Textarea
+            <CodeMirror
               value={output}
-              readOnly
-              className="min-h-[200px] font-mono bg-muted"
+              height="200px"
+              width="100%"
+              theme={oneDark}
+              extensions={[javascript()]}
+              editable={false}
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: false,
+              }}
             />
           </Card>
         </div>

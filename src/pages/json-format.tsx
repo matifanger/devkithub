@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
 import { Input } from '../components/ui/input';
 import { JSONPath } from 'jsonpath-plus';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-okaidia.css';
-import 'prismjs/components/prism-json';
+import CodeMirror from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
+import { oneDark } from '@codemirror/theme-one-dark';
 import {
   Select,
   SelectContent,
@@ -21,14 +20,12 @@ export function JsonFormatPage() {
   const [error, setError] = useState('');
   const [jsonPath, setJsonPath] = useState('');
   const [spaces, setSpaces] = useState('2');
-  const [highlightedOutput, setHighlightedOutput] = useState('');
 
   const formatJson = useCallback(() => {
     try {
       if (!input.trim()) {
         setOutput('');
         setError('');
-        setHighlightedOutput('');
         return;
       }
 
@@ -44,7 +41,6 @@ export function JsonFormatPage() {
         } catch (pathErr) {
           setError('Invalid JSONPath query');
           setOutput('');
-          setHighlightedOutput('');
           return;
         }
       }
@@ -52,18 +48,10 @@ export function JsonFormatPage() {
       const formatted = JSON.stringify(result, null, Number(spaces));
       setOutput(formatted);
       
-      // Highlight the code
-      const highlighted = Prism.highlight(
-        formatted,
-        Prism.languages.json,
-        'json'
-      );
-      setHighlightedOutput(highlighted);
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid JSON');
       setOutput('');
-      setHighlightedOutput('');
     }
   }, [input, spaces, jsonPath]);
 
@@ -112,13 +100,23 @@ export function JsonFormatPage() {
               </Button>
             </div>
           </div>
-          <Textarea
-            id="input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Paste your JSON here"
-            className="h-[calc(100vh-24rem)] font-mono"
-          />
+          <div className="h-[calc(100vh-17rem)]">
+            <CodeMirror
+              value={input}
+              className="h-[calc(100vh-17rem)]"
+              height="100%"
+              width="100%"
+              theme={oneDark}
+              onChange={(value) => setInput(value)}
+              extensions={[json()]}
+              placeholder="Paste your JSON here"
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: true,
+              }}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -147,12 +145,22 @@ export function JsonFormatPage() {
               {error}
             </div>
           ) : (
-            <pre className="p-4 bg-[#272822] rounded-lg overflow-auto h-[calc(100vh-24rem)] font-mono">
-              <code 
-                className="language-json"
-                dangerouslySetInnerHTML={{ __html: highlightedOutput }}
+            <div className="h-[calc(100vh-17rem)]">
+              <CodeMirror
+                value={output}
+                className="h-[calc(100vh-17rem)]"
+                height="100%"
+                width="100%"
+                theme={oneDark}
+                extensions={[json()]}
+                editable={false}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: false,
+                }}
               />
-            </pre>
+            </div>
           )}
           
           <div className="space-y-2 mt-4">

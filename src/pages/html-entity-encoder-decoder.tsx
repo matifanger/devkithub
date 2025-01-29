@@ -1,35 +1,16 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Card } from '../components/ui/card';
-import { Textarea } from '../components/ui/textarea';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-okaidia.css';
-import 'prismjs/components/prism-markup';
+import CodeMirror from '@uiw/react-codemirror';
+import { html } from '@codemirror/lang-html';
+import { oneDark } from '@codemirror/theme-one-dark';
 
 export function HtmlEntityEncoderDecoderPage() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [mode, setMode] = useState('encode');
-  const [highlightedInput, setHighlightedInput] = useState('');
-  const [highlightedOutput, setHighlightedOutput] = useState('');
-
-  useEffect(() => {
-    const highlighted = Prism.highlight(
-      input,
-      Prism.languages.markup,
-      'markup'
-    );
-    setHighlightedInput(highlighted);
-
-    const highlightedOut = Prism.highlight(
-      output,
-      Prism.languages.markup,
-      'markup'
-    );
-    setHighlightedOutput(highlightedOut);
-  }, [input, output]);
 
   const encodeHTML = (str: string) => {
     const div = document.createElement('div');
@@ -55,12 +36,6 @@ export function HtmlEntityEncoderDecoderPage() {
     }
   };
 
-  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    setInput(text);
-    handleProcess(text, mode);
-  };
-
   const handleModeChange = (newMode: string) => {
     setMode(newMode);
     handleProcess(input, newMode);
@@ -68,20 +43,23 @@ export function HtmlEntityEncoderDecoderPage() {
 
   const handleSample = () => {
     const sample = '<div class="example">Hello & World!</div>';
-    handleInputChange({ target: { value: sample } } as ChangeEvent<HTMLTextAreaElement>);
+    setInput(sample);
+    handleProcess(sample, mode);
   };
 
   const handleClipboardPaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      handleInputChange({ target: { value: text } } as ChangeEvent<HTMLTextAreaElement>);
+      setInput(text);
+      handleProcess(text, mode);
     } catch (err) {
       console.error('Failed to read from clipboard');
     }
   };
 
   const handleUseAsInput = () => {
-    handleInputChange({ target: { value: output } } as ChangeEvent<HTMLTextAreaElement>);
+    setInput(output);
+    handleProcess(output, mode);
   };
 
   return (
@@ -103,7 +81,7 @@ export function HtmlEntityEncoderDecoderPage() {
                 <Button variant="outline" onClick={handleSample}>
                   Sample
                 </Button>
-                <Button variant="outline" onClick={() => handleInputChange({ target: { value: '' } } as ChangeEvent<HTMLTextAreaElement>)}>
+                <Button variant="outline" onClick={() => setInput('')}>
                   Clear
                 </Button>
               </div>
@@ -120,19 +98,23 @@ export function HtmlEntityEncoderDecoderPage() {
           </div>
 
           <Card className="relative p-4">
-            <Textarea
+            <CodeMirror
               value={input}
-              onChange={handleInputChange}
+              height="200px"
+              width="100%"
+              theme={oneDark}
+              onChange={(value) => {
+                setInput(value);
+                handleProcess(value, mode);
+              }}
+              extensions={[html()]}
               placeholder={mode === 'encode' ? 'Enter text to encode' : 'Enter HTML entities to decode'}
-              className="min-h-[200px] font-mono bg-[#272822] text-transparent caret-white text-white relative z-10"
-              spellCheck="false"
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: true,
+              }}
             />
-            <pre className="min-h-[200px] font-mono overflow-auto absolute inset-4 z-0">
-              <code 
-                className="language-markup"
-                dangerouslySetInnerHTML={{ __html: highlightedInput || ' ' }}
-              />
-            </pre>
           </Card>
         </div>
 
@@ -150,18 +132,19 @@ export function HtmlEntityEncoderDecoderPage() {
           </div>
 
           <Card className="relative p-4">
-            <Textarea
+            <CodeMirror
               value={output}
-              readOnly
-              className="min-h-[200px] font-mono bg-[#272822] text-transparent caret-white text-white relative z-10"
-              spellCheck="false"
+              height="200px"
+              width="100%"
+              theme={oneDark}
+              extensions={[html()]}
+              editable={false}
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: false,
+              }}
             />
-            <pre className="min-h-[200px] font-mono overflow-auto absolute inset-4 z-0">
-              <code 
-                className="language-markup"
-                dangerouslySetInnerHTML={{ __html: highlightedOutput || ' ' }}
-              />
-            </pre>
           </Card>
         </div>
       </div>

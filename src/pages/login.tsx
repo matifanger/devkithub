@@ -13,7 +13,7 @@ export function LoginPage() {
 
   // On load
   useEffect(() => {
-    navigate('/url-encoder-decoder');
+    navigate('/yaml-to-json');
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

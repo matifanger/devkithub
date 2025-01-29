@@ -1,18 +1,16 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
+import React, { useState,  useEffect } from 'react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { Textarea } from '../components/ui/textarea';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-okaidia.css';
-import 'prismjs/components/prism-markup';
 import { Label } from '../components/ui/label';
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { oneDark } from '@codemirror/theme-one-dark';
 
 export function Base64ImageEncoderDecoderPage() {
   const [input, setInput] = useState('');
   const [imageData, setImageData] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [detectedFormat, setDetectedFormat] = useState<'raw' | 'dataurl' | 'css' | null>(null);
-  const [highlightedInput, setHighlightedInput] = useState('');
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.target as HTMLImageElement;
@@ -40,14 +38,6 @@ export function Base64ImageEncoderDecoderPage() {
 
   useEffect(() => {
     detectFormat(input);
-    
-    // Highlight the input
-    const highlighted = Prism.highlight(
-      input,
-      Prism.languages.markup,
-      'markup'
-    );
-    setHighlightedInput(highlighted);
     
     // Try to set image data based on input format
     if (input.startsWith('data:')) {
@@ -155,19 +145,23 @@ export function Base64ImageEncoderDecoderPage() {
           </div>
 
           <Card className="relative">
-            <Textarea
-              value={input}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
-              placeholder="Enter base64 image data"
-              className="relative min-h-[calc(100vh-24rem)] font-mono bg-[#272822] text-transparent caret-white text-white"
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}
-            />
-            <pre className="min-h-[calc(100vh-24rem)] font-mono overflow-auto">
-              <code 
-                className="language-markup"
-                dangerouslySetInnerHTML={{ __html: highlightedInput || ' ' }}
+            <div className="h-[calc(100vh-17rem)]">
+              <CodeMirror
+                value={input}
+                height="100%"
+                className="h-full"
+                width="100%"
+                theme={oneDark}
+                onChange={(value) => setInput(value)}
+                extensions={[javascript()]}
+                placeholder="Enter base64 image data"
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: true,
+                }}
               />
-            </pre>
+            </div>
           </Card>
 
           <div className="flex justify-between items-center">
@@ -194,12 +188,12 @@ export function Base64ImageEncoderDecoderPage() {
             </div>
           </div>
 
-          <Card className="p-4 flex items-center justify-center min-h-[calc(100vh-24rem)] bg-muted">
+          <Card className="p-4 flex items-center justify-center min-h-[calc(100vh-17rem)] bg-muted">
             {imageData && (
               <img 
                 src={imageData} 
                 alt="Decoded" 
-                className="max-w-full max-h-[calc(100vh-28rem)] object-contain"
+                className="max-w-full max-h-[calc(100vh-17rem)] object-contain"
                 onLoad={handleImageLoad}
               />
             )}
