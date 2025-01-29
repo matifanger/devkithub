@@ -110,10 +110,10 @@ export function YamlToJsonPage() {
               </Button>
             </div>
           </div>
-          <div className="h-[calc(100vh-24rem)]">
+          <div className="h-[calc(100vh-17rem)]">
             <CodeMirror
               value={input}
-              className="h-[calc(100vh-24rem)]"
+              className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
               theme={oneDark}
@@ -157,7 +157,7 @@ export function YamlToJsonPage() {
           ) : (
               <CodeMirror
                 value={output}
-                className="h-[calc(100vh-24rem)]"
+                className="h-[calc(100vh-17rem)]"
                 height="100%"
                 width="100%"
                 theme={oneDark}
