@@ -13,7 +13,7 @@ export function LoginPage() {
 
   // On load
   useEffect(() => {
-    navigate('/markdown-preview');
+    navigate('/hash-generator');
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
