@@ -79,6 +79,30 @@ const data = {
           title: "Backslash Escape/Unescape",
           url: "/backslash-escape-unescape",
         },
+        {
+          title: "HTML Beautify/Minify",
+          url: "/html-beautify",
+        },
+        {
+          title: "CSS Beautify/Minify",
+          url: "/css-beautify",
+        },
+        {
+          title: "JavaScript Beautify/Minify",
+          url: "/js-beautify",
+        },
+        {
+          title: "XML Beautify/Minify",
+          url: "/xml-beautify",
+        },
+        {
+          title: "LESS Beautify/Minify",
+          url: "/less-beautify",
+        },
+        {
+          title: "SCSS Beautify/Minify",
+          url: "/scss-beautify",
+        },
       ],
     },
   ],

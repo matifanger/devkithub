@@ -18,6 +18,12 @@ import { RegexTesterPage } from './pages/regex-tester';
 import { UrlEncoderDecoderPage } from './pages/url-encoder-decoder';
 import { HtmlEntityEncoderDecoderPage } from './pages/html-entity-encoder-decoder';
 import { BackslashEscapeUnescapePage } from './pages/backslash-escape-unescape';
+import { HtmlBeautifyPage } from './pages/html-beautify';
+import { CssBeautifyPage } from './pages/css-beautify';
+import { JsBeautifyPage } from './pages/js-beautify';
+import { XmlBeautifyPage } from './pages/xml-beautify';
+import { LessBeautifyPage } from './pages/less-beautify';
+import { ScssBeautifyPage } from './pages/scss-beautify';
 
 const App = () => {
   return (
@@ -40,6 +46,12 @@ const App = () => {
               <Route path="/url-encoder-decoder" element={<UrlEncoderDecoderPage />} />
               <Route path="/html-entity-encoder-decoder" element={<HtmlEntityEncoderDecoderPage />} />
               <Route path="/backslash-escape-unescape" element={<BackslashEscapeUnescapePage />} />
+              <Route path="/html-beautify" element={<HtmlBeautifyPage />} />
+              <Route path="/css-beautify" element={<CssBeautifyPage />} />
+              <Route path="/js-beautify" element={<JsBeautifyPage />} />
+              <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
+              <Route path="/less-beautify" element={<LessBeautifyPage />} />
+              <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
             </Route>
           </Routes>
         </HashRouter>

@@ -1,0 +1,183 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
+import CodeMirror from '@uiw/react-codemirror';
+import { xml } from '@codemirror/lang-xml';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { html as beautifyXml } from 'js-beautify';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+
+export function XmlBeautifyPage() {
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
+  const [error, setError] = useState('');
+  const [spaces, setSpaces] = useState('2');
+  const [mode, setMode] = useState('beautify');
+
+  const formatXml = useCallback(() => {
+    try {
+      if (!input.trim()) {
+        setOutput('');
+        setError('');
+        return;
+      }
+
+      if (mode === 'beautify') {
+        const formatted = beautifyXml(input, {
+          indent_size: Number(spaces),
+          indent_char: ' ',
+          max_preserve_newlines: 2,
+          preserve_newlines: true,
+          indent_scripts: 'keep',
+          wrap_line_length: 0,
+          unformatted: [],
+          indent_inner_html: false,
+          indent_empty_lines: false
+        });
+        setOutput(formatted);
+      } else {
+        // Minify: remove all unnecessary whitespace
+        const minified = input
+          .replace(/>\s+</g, '><') // Remove whitespace between tags
+          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+          .replace(/\s+</g, '<') // Remove spaces before opening tags
+          .replace(/>\s+/g, '>') // Remove spaces after closing tags
+          .trim();
+        setOutput(minified);
+      }
+      
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid XML');
+      setOutput('');
+    }
+  }, [input, spaces, mode]);
+
+  useEffect(() => {
+    formatXml();
+  }, [formatXml]);
+
+  const handleSample = () => {
+    const sample = `<?xml version="1.0" encoding="UTF-8"?><bookstore><book category="fiction"><title>The Great Gatsby</title><author><name>F. Scott Fitzgerald</name><nationality>American</nationality></author><year>1925</year><price>10.99</price></book><book category="non-fiction"><title>A Brief History of Time</title><author><name>Stephen Hawking</name><nationality>British</nationality></author><year>1988</year><price>15.99</price></book></bookstore>`;
+    setInput(sample.trim());
+  };
+
+  const handleClipboardPaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setInput(text);
+    } catch (err) {
+      setError('Failed to read from clipboard');
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  return (
+    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">XML Beautify/Minify</h1>
+        <p className="text-muted-foreground">Format or minify your XML code</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <Label>Input</Label>
+            <div className="space-x-2">
+              <Button variant="outline" onClick={handleClipboardPaste}>
+                Clipboard
+              </Button>
+              <Button variant="outline" onClick={handleSample}>
+                Sample
+              </Button>
+              <Button variant="outline" onClick={() => setInput('')}>
+                Clear
+              </Button>
+            </div>
+          </div>
+          <div className="h-[calc(100vh-17rem)]">
+            <CodeMirror
+              value={input}
+              className="h-[calc(100vh-17rem)]"
+              height="100%"
+              width="100%"
+              theme={oneDark}
+              onChange={(value) => setInput(value)}
+              extensions={[xml()]}
+              placeholder="Paste your XML here"
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: true,
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <Label>Output</Label>
+            <div className="flex items-center space-x-2">
+              <Select value={mode} onValueChange={setMode}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beautify">Beautify</SelectItem>
+                  <SelectItem value="minify">Minify</SelectItem>
+                </SelectContent>
+              </Select>
+              {mode === 'beautify' && (
+                <Select value={spaces} onValueChange={setSpaces}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Spaces" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">2 Spaces</SelectItem>
+                    <SelectItem value="4">4 Spaces</SelectItem>
+                    <SelectItem value="8">8 Spaces</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              <Button variant="outline" onClick={() => copyToClipboard(output)}>
+                Copy
+              </Button>
+            </div>
+          </div>
+          
+          {error ? (
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
+              {error}
+            </div>
+          ) : (
+            <div className="h-[calc(100vh-17rem)]">
+              <CodeMirror
+                value={output}
+                className="h-[calc(100vh-17rem)]"
+                height="100%"
+                width="100%"
+                theme={oneDark}
+                extensions={[xml()]}
+                editable={false}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: false,
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+} 
