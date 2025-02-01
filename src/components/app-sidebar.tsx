@@ -144,6 +144,14 @@ const data = {
           url: "/string-case-converter",
         },
         {
+          title: "Random String Generator",
+          url: "/random-string-generator",
+        },
+        {
+          title: "Dummy Data Generator",
+          url: "/dummy-data-generator",
+        },
+        {
           title: "PHP Serializer",
           url: "/php-serializer",
         },
