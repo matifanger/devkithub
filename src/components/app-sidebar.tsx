@@ -135,6 +135,14 @@ const data = {
           title: "CSV to JSON",
           url: "/csv-to-json",
         },
+        {
+          title: "PHP Serializer",
+          url: "/php-serializer",
+        },
+        {
+          title: "PHP Deserializer",
+          url: "/php-deserializer",
+        },
       ],
     },
   ],

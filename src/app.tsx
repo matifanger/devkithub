@@ -32,6 +32,8 @@ import { MarkdownPreviewPage } from './pages/markdown-preview';
 import { HtmlToJsxPage } from './pages/html-to-jsx';
 import { JsonToCsvPage } from './pages/json-to-csv';
 import { CsvToJsonPage } from './pages/csv-to-json';
+import { PhpSerializerPage } from './pages/php-serializer';
+import { PhpDeserializerPage } from './pages/php-deserializer';
 
 const App = () => {
   return (
@@ -68,6 +70,8 @@ const App = () => {
               <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
               <Route path="/json-to-csv" element={<JsonToCsvPage />} />
               <Route path="/csv-to-json" element={<CsvToJsonPage />} />
+              <Route path="/php-serializer" element={<PhpSerializerPage />} />
+              <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
             </Route>
           </Routes>
         </HashRouter>
