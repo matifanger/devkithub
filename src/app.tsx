@@ -34,6 +34,7 @@ import { JsonToCsvPage } from './pages/json-to-csv';
 import { CsvToJsonPage } from './pages/csv-to-json';
 import { PhpSerializerPage } from './pages/php-serializer';
 import { PhpDeserializerPage } from './pages/php-deserializer';
+import { CronJobParserPage } from './pages/cron-job-parser';
 
 const App = () => {
   return (
@@ -49,6 +50,7 @@ const App = () => {
               <Route path="/json-format" element={<JsonFormatPage />} />
               <Route path="/unix-time" element={<UnixTimePage />} />
               <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
+              <Route path="/cron-job-parser" element={<CronJobParserPage />} />
               <Route path="/color-converter" element={<ColorConverterPage />} />
               <Route path="/base64-string-encoder-decoder" element={<Base64StringEncoderDecoderPage />} />
               <Route path="/base64-image-encoder-decoder" element={<Base64ImageEncoderDecoderPage />} />

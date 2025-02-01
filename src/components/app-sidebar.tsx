@@ -143,6 +143,10 @@ const data = {
           title: "PHP Deserializer",
           url: "/php-deserializer",
         },
+        {
+          title: "Cron Job Parser",
+          url: "/cron-job-parser",
+        },
       ],
     },
   ],
