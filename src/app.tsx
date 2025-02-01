@@ -35,6 +35,7 @@ import { CsvToJsonPage } from './pages/csv-to-json';
 import { PhpSerializerPage } from './pages/php-serializer';
 import { PhpDeserializerPage } from './pages/php-deserializer';
 import { CronJobParserPage } from './pages/cron-job-parser';
+import { CertificateDecoderPage } from './pages/certificate-decoder';
 
 const App = () => {
   return (
@@ -74,6 +75,7 @@ const App = () => {
               <Route path="/csv-to-json" element={<CsvToJsonPage />} />
               <Route path="/php-serializer" element={<PhpSerializerPage />} />
               <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
+              <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
             </Route>
           </Routes>
         </HashRouter>

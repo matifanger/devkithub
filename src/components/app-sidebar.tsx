@@ -144,6 +144,10 @@ const data = {
           url: "/php-deserializer",
         },
         {
+          title: "Certificate Decoder (X.509)",
+          url: "/certificate-decoder",
+        },
+        {
           title: "Cron Job Parser",
           url: "/cron-job-parser",
         },

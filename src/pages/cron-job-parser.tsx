@@ -48,7 +48,7 @@ export function CronJobParserPage() {
   const calculateNextExecutions = (expression: string): string[] => {
     const now = new Date();
     const executions: string[] = [];
-    const [minute, hour, dom, month, dow] = expression.split(' ');
+    const [minute] = expression.split(' ');
 
     // Simple implementation for common patterns
     let nextDate = new Date(now);
