@@ -22,6 +22,23 @@ const createWindow = (): void => {
     },
   });
 
+  // Set CSP headers
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self';",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval';", // unsafe-eval needed for CodeMirror
+          "style-src 'self' 'unsafe-inline';",
+          "img-src 'self' data: blob:;",
+          "connect-src 'self';",
+          "worker-src 'self' blob:;"
+        ].join(' ')
+      }
+    });
+  });
+
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 

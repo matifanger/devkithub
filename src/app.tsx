@@ -40,6 +40,7 @@ import { SqlFormatterPage } from './pages/sql-formatter';
 import { StringCaseConverterPage } from './pages/string-case-converter';
 import { RandomStringGeneratorPage } from './pages/random-string-generator';
 import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
+import { QRCodePage } from './pages/qr-code';
 
 const App = () => {
   return (
@@ -81,6 +82,7 @@ const App = () => {
               <Route path="/string-case-converter" element={<StringCaseConverterPage />} />
               <Route path="/random-string-generator" element={<RandomStringGeneratorPage />} />
               <Route path="/dummy-data-generator" element={<DummyDataGeneratorPage />} />
+              <Route path="/qr-code" element={<QRCodePage />} />
               <Route path="/php-serializer" element={<PhpSerializerPage />} />
               <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
               <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />

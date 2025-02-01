@@ -167,6 +167,10 @@ const data = {
           title: "Cron Job Parser",
           url: "/cron-job-parser",
         },
+        {
+          title: "QR Code Reader/Generator",
+          url: "/qr-code",
+        },
       ],
     },
   ],
