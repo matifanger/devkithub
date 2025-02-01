@@ -37,6 +37,7 @@ import { PhpDeserializerPage } from './pages/php-deserializer';
 import { CronJobParserPage } from './pages/cron-job-parser';
 import { CertificateDecoderPage } from './pages/certificate-decoder';
 import { SqlFormatterPage } from './pages/sql-formatter';
+import { StringCaseConverterPage } from './pages/string-case-converter';
 
 const App = () => {
   return (
@@ -75,6 +76,7 @@ const App = () => {
               <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
               <Route path="/json-to-csv" element={<JsonToCsvPage />} />
               <Route path="/csv-to-json" element={<CsvToJsonPage />} />
+              <Route path="/string-case-converter" element={<StringCaseConverterPage />} />
               <Route path="/php-serializer" element={<PhpSerializerPage />} />
               <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
               <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />

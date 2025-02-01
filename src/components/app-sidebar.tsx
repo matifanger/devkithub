@@ -140,6 +140,10 @@ const data = {
           url: "/csv-to-json",
         },
         {
+          title: "String Case Converter",
+          url: "/string-case-converter",
+        },
+        {
           title: "PHP Serializer",
           url: "/php-serializer",
         },
