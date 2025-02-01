@@ -26,6 +26,7 @@ import { LessBeautifyPage } from './pages/less-beautify';
 import { ScssBeautifyPage } from './pages/scss-beautify';
 import { LineSortDedupePage } from './pages/line-sort-dedupe';
 import { HexToAsciiPage } from './pages/hex-to-ascii';
+import { AsciiToHexPage } from './pages/ascii-to-hex';
 import { HtmlPreviewPage } from './pages/html-preview';
 import { MarkdownPreviewPage } from './pages/markdown-preview';
 import { HtmlToJsxPage } from './pages/html-to-jsx';
@@ -61,6 +62,7 @@ const App = () => {
               <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
               <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
               <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />
+              <Route path="/ascii-to-hex" element={<AsciiToHexPage />} />
               <Route path="/html-preview" element={<HtmlPreviewPage />} />
               <Route path="/markdown-preview" element={<MarkdownPreviewPage />} />
               <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />

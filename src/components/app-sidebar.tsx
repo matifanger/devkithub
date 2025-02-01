@@ -112,6 +112,10 @@ const data = {
           url: "/hex-to-ascii",
         },
         {
+          title: "ASCII to Hex",
+          url: "/ascii-to-hex",
+        },
+        {
           title: "HTML Preview",
           url: "/html-preview",
         },
