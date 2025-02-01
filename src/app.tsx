@@ -36,6 +36,7 @@ import { PhpSerializerPage } from './pages/php-serializer';
 import { PhpDeserializerPage } from './pages/php-deserializer';
 import { CronJobParserPage } from './pages/cron-job-parser';
 import { CertificateDecoderPage } from './pages/certificate-decoder';
+import { SqlFormatterPage } from './pages/sql-formatter';
 
 const App = () => {
   return (
@@ -65,6 +66,7 @@ const App = () => {
               <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
               <Route path="/less-beautify" element={<LessBeautifyPage />} />
               <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
+              <Route path="/sql-formatter" element={<SqlFormatterPage />} />
               <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
               <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />
               <Route path="/ascii-to-hex" element={<AsciiToHexPage />} />

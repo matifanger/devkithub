@@ -104,6 +104,10 @@ const data = {
           url: "/scss-beautify",
         },
         {
+          title: "SQL Formatter",
+          url: "/sql-formatter",
+        },
+        {
           title: "Line Sort/Dedupe",
           url: "/line-sort-dedupe",
         },
