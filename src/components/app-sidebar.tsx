@@ -79,6 +79,11 @@ const data = {
           icon: <Hash className="w-4 h-4" />,
         },
         {
+          title: "Number Base Converter",
+          url: "/number-base-converter",
+          icon: <Binary className="w-4 h-4" />,
+        },
+        {
           title: "YAML to JSON",
           url: "/yaml-to-json",
           icon: <FileJson className="w-4 h-4" />,

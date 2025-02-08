@@ -42,6 +42,8 @@ import { StringCaseConverterPage } from './pages/string-case-converter';
 import { RandomStringGeneratorPage } from './pages/random-string-generator';
 import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
 import { QRCodePage } from './pages/qr-code';
+import { NumberBaseConverterPage } from './pages/number-base-converter';
+
 
 const App = () => {
   return (
@@ -53,9 +55,11 @@ const App = () => {
             <Route element={<AppLayout />}>
               <Route path="/" element={<MainPage />} />
               <Route path="/hash-generator" element={<HashGeneratorPage />} />
+              <Route path="/number-base-converter" element={<NumberBaseConverterPage />} />
               <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
               <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
               <Route path="/json-format" element={<JsonFormatPage />} />
+
               <Route path="/unix-time" element={<UnixTimePage />} />
               <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
               <Route path="/cron-job-parser" element={<CronJobParserPage />} />
