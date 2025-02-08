@@ -8,6 +8,7 @@ import { LoginPage } from './pages/login';
 import { HashGeneratorPage } from './pages/hash-generator';
 import { MainPage } from './pages/index';
 import { YamlToJsonPage } from './pages/yaml-to-json';
+import { JsonToYamlPage } from './pages/json-to-yaml';
 import { JsonFormatPage } from './pages/json-format';
 import { UnixTimePage } from './pages/unix-time';
 import { JwtDebuggerPage } from './pages/jwt-debug';
@@ -53,6 +54,7 @@ const App = () => {
               <Route path="/" element={<MainPage />} />
               <Route path="/hash-generator" element={<HashGeneratorPage />} />
               <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
+              <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
               <Route path="/json-format" element={<JsonFormatPage />} />
               <Route path="/unix-time" element={<UnixTimePage />} />
               <Route path="/jwt-debug" element={<JwtDebuggerPage />} />

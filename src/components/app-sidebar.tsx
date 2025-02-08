@@ -84,6 +84,11 @@ const data = {
           icon: <FileJson className="w-4 h-4" />,
         },
         {
+          title: "JSON to YAML",
+          url: "/json-to-yaml",
+          icon: <FileJson className="w-4 h-4" />,
+        },
+        {
           title: "JSON Format/Validate",
           url: "/json-format",
           icon: <FileJson className="w-4 h-4" />,
