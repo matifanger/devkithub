@@ -44,6 +44,7 @@ import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
 import { QRCodePage } from './pages/qr-code';
 import { NumberBaseConverterPage } from './pages/number-base-converter';
 import { UrlParserPage } from './pages/url-parser';
+import { LoremIpsumGeneratorPage } from './pages/lorem-ipsum-generator';
 
 
 const App = () => {
@@ -93,6 +94,7 @@ const App = () => {
               <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
               <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
               <Route path="/url-parser" element={<UrlParserPage />} />
+              <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
             </Route>
           </Routes>
         </HashRouter>

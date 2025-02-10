@@ -33,7 +33,8 @@ import {
   QrCode,
   Bug,
   User,
-  Search
+  Search,
+  Type
 } from "lucide-react"
 
 import { ThemeToggle } from "./ui/theme-toggle"
@@ -252,6 +253,11 @@ const data = {
           title: "QR Code Reader/Generator",
           url: "/qr-code",
           icon: <QrCode className="w-4 h-4" />,
+        },
+        {
+          title: "Lorem Ipsum Generator",
+          url: "/lorem-ipsum",
+          icon: <Type className="w-4 h-4" />,
         },
       ],
     },

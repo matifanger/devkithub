@@ -13,7 +13,7 @@ export function LoginPage() {
 
   // On load
   useEffect(() => {
-    navigate('/url-parser');
+    navigate('/lorem-ipsum');
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
