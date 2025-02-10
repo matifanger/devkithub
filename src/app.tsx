@@ -45,7 +45,7 @@ import { QRCodePage } from './pages/qr-code';
 import { NumberBaseConverterPage } from './pages/number-base-converter';
 import { UrlParserPage } from './pages/url-parser';
 import { LoremIpsumGeneratorPage } from './pages/lorem-ipsum-generator';
-
+import { TextDiffCheckerPage } from './pages/text-diff-checker';
 
 const App = () => {
   return (
@@ -95,9 +95,11 @@ const App = () => {
               <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
               <Route path="/url-parser" element={<UrlParserPage />} />
               <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
+              <Route path="/text-diff" element={<TextDiffCheckerPage />} />
             </Route>
           </Routes>
         </HashRouter>
+
       </AuthProvider>
     </ThemeProvider>
   );

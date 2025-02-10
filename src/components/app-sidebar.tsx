@@ -259,6 +259,11 @@ const data = {
           url: "/lorem-ipsum",
           icon: <Type className="w-4 h-4" />,
         },
+        {
+          title: "Text Diff Checker",
+          url: "/text-diff",
+          icon: <FileText className="w-4 h-4" />,
+        },
       ],
     },
   ],
