@@ -43,6 +43,7 @@ import { RandomStringGeneratorPage } from './pages/random-string-generator';
 import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
 import { QRCodePage } from './pages/qr-code';
 import { NumberBaseConverterPage } from './pages/number-base-converter';
+import { UrlParserPage } from './pages/url-parser';
 
 
 const App = () => {
@@ -59,7 +60,6 @@ const App = () => {
               <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
               <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
               <Route path="/json-format" element={<JsonFormatPage />} />
-
               <Route path="/unix-time" element={<UnixTimePage />} />
               <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
               <Route path="/cron-job-parser" element={<CronJobParserPage />} />
@@ -92,6 +92,7 @@ const App = () => {
               <Route path="/php-serializer" element={<PhpSerializerPage />} />
               <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
               <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
+              <Route path="/url-parser" element={<UrlParserPage />} />
             </Route>
           </Routes>
         </HashRouter>

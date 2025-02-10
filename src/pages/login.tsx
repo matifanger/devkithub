@@ -13,7 +13,7 @@ export function LoginPage() {
 
   // On load
   useEffect(() => {
-    navigate('/hash-generator');
+    navigate('/url-parser');
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -134,6 +134,11 @@ const data = {
           icon: <LinkIcon className="w-4 h-4" />,
         },
         {
+          title: "URL Parser",
+          url: "/url-parser",
+          icon: <LinkIcon className="w-4 h-4" />,
+        },
+        {
           title: "HTML Entity Encoder/Decoder",
           url: "/html-entity-encoder-decoder",
           icon: <Code className="w-4 h-4" />,
