@@ -13,7 +13,7 @@ export function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full">
+      <div className="flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="flex flex-col flex-1">
           <main className="flex w-full overflow-auto">
