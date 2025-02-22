@@ -259,8 +259,6 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [selectedTool, setSelectedTool] = React.useState('');
   const [searchQuery, setSearchQuery] = React.useState('');
 
   const filteredItems = React.useMemo(() => {
@@ -271,44 +269,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     );
   }, [searchQuery]);
 
-  const handleBugReport = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
-
-    const formData = new FormData(event.currentTarget);
-    const description = formData.get('description');
-
-    try {
-      const response = await fetch('https://www.matifanger.dev/form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tool: selectedTool,
-          description,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit bug report');
-      }
-
-      // Reset form and close modal
-      event.currentTarget.reset();
-      setSelectedTool('');
-    } catch (error) {
-      console.error('Error submitting bug report:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <Sidebar {...props}>
       <SidebarHeader className="border-b">
-        <div className="p-4">
-          <Button variant="ghost" className="w-full justify-start gap-2 px-2 h-auto py-3">
+        <div className="p-0">
+          <Button variant="ghost" className="w-full justify-start gap-3 px-2 h-auto py-3">
             <User className="h-5 w-5" />
             <div className="flex flex-col items-start">
               <span className="font-medium">{data.user.email}</span>
@@ -316,12 +281,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
           </Button>
         </div>
-        <div className="px-4 pb-4">
+        <div className="">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search tools..."
-              className="pl-8"
+              className="pl-8 border-gray-300 dark:border-gray-600"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
