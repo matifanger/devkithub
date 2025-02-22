@@ -1,19 +1,22 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-declare global {
-  interface Window {
-    electron: {
-      store: {
-        get: (key: string) => Promise<string | null>;
-        set: (key: string, value: string) => Promise<boolean>;
-        delete: (key: string) => Promise<boolean>;
-      };
-    };
-  }
+interface UserData {
+  name: string;
+  email: string;
+  license: {
+    type: string;
+    expires: string;
+    key: string;
+  };
+}
+
+interface StoredData extends UserData {
+  key: string;
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  userData: UserData | null;
   login: (key: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -26,8 +29,9 @@ const SECURE_KEY = 'electron-app-auth';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
-  const validateApiKey = async (key: string): Promise<boolean> => {
+  const validateApiKey = async (key: string) => {
     try {
       // const response = await fetch(`http://localhost:3000/api/verify-api-key`, {
       //   method: 'POST',
@@ -36,26 +40,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       //   },
       //   body: JSON.stringify({ key }),
       // });
-      return true;
-      // return response.status === 200;
+
+      return {
+        name: 'matifanger',
+        email: 'matifanger@outlook.com',
+        license: {
+          type: 'normal',
+          expires: '2026-02-22',
+          key: '0MAKISH509AHK1HJKHAS05J',
+        },
+      };
     } catch (error) {
       console.error('API validation failed:', error);
-      return false;
+      return error;
     }
   };
 
   useEffect(() => {
-    // Check secure storage on load
     const checkAuth = async () => {
       try {
-        const storedKey = await window.electron.store.get(SECURE_KEY);
-        if (storedKey) {
-          const isValid = await validateApiKey(storedKey);
-          setIsAuthenticated(isValid);
+        const storedData = await window.electron.store.get(SECURE_KEY);
+        if (storedData) {
+          const data = JSON.parse(storedData);
+          const userData = await validateApiKey(data.license.key);
+          if (userData) {
+            setIsAuthenticated(true);
+            setUserData(userData);
+          }
         }
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);
+        setUserData(null);
       } finally {
         setIsLoading(false);
       }
@@ -68,11 +84,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const login = async (key: string) => {
-    const isValid = await validateApiKey(key);
-    if (isValid) {
+    const userData = await validateApiKey(key);
+    if (userData) {
       setIsAuthenticated(true);
-      // Store API key securely
-      await window.electron.store.set(SECURE_KEY, key);
+      setUserData(userData);
+      // Store API key securely with the new structure
+      await window.electron.store.set(SECURE_KEY, JSON.stringify(userData));
       return true;
     }
     return false;
@@ -80,11 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     setIsAuthenticated(false);
+    setUserData(null);
     await window.electron.store.delete(SECURE_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, userData, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -96,4 +114,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}

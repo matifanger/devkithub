@@ -37,6 +37,8 @@ import {
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import { useAuth } from '../contexts/auth-context';
+import { ProfileModal } from './profile-modal';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
@@ -260,6 +262,8 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const { userData } = useAuth();
 
   const filteredItems = React.useMemo(() => {
     if (!searchQuery) return data.navMain[0].items;
@@ -273,13 +277,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar {...props}>
       <SidebarHeader className="border-b">
         <div className="p-0">
-          <Button variant="ghost" className="w-full justify-start gap-3 px-2 h-auto py-3">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 px-2 h-auto py-3"
+            onClick={() => setIsProfileOpen(true)}
+          >
             <User className="h-5 w-5" />
             <div className="flex flex-col items-start">
-              <span className="font-medium">{data.user.email}</span>
+              <span className="font-medium">{userData?.email || 'Not logged in'}</span>
               <span className="text-xs text-muted-foreground">Settings & Profile</span>
             </div>
           </Button>
+          <ProfileModal open={isProfileOpen} onOpenChange={setIsProfileOpen} userData={userData} />
         </div>
         <div className="">
           <div className="relative">

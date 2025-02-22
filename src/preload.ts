@@ -168,7 +168,4 @@ contextBridge.exposeInMainWorld('electron', {
       console.error('shell.openExternal is not available');
     }
   },
-  openDevkithub: (url: string) => {
-    console.warn('testing la concha de tu madre');
-  },
 });
