@@ -1,7 +1,7 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import crypto from 'crypto';
 import { createMD4, createMD5, createSHA1, createSHA224, createSHA256, createSHA384, createSHA512, createSHA3, createRIPEMD160, createWhirlpool, createBLAKE2b, createBLAKE2s, createBLAKE3, createSM3 } from 'hash-wasm';
 import { md2 } from './utils/md2';
@@ -135,3 +135,13 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
       }
     },
   });
+
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+contextBridge.exposeInMainWorld('electron', {
+  store: {
+    get: (key: string) => ipcRenderer.invoke('get-secure-store', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('set-secure-store', key, value),
+    delete: (key: string) => ipcRenderer.invoke('delete-secure-store', key)
+  }
+});

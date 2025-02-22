@@ -31,10 +31,10 @@ import {
   FileKey2, 
   Timer, 
   QrCode,
-  Bug,
   User,
   Search,
-  Type
+  Type,
+  MessageCircle
 } from "lucide-react"
 
 import { ThemeToggle } from "./ui/theme-toggle"
@@ -376,8 +376,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <Bug className="w-4 h-4" />
-              Report Bug
+              <MessageCircle className="w-4 h-4" />
+              Feedback & Bug Reports
             </Button>
           </DialogTrigger>
           <DialogContent>
