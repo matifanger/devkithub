@@ -30,10 +30,10 @@ export const rules: Required<ModuleOptions>['rules'] = [
   },
   {
     test: /\.css$/,
-    use: [
-      { loader: "style-loader" },
-      { loader: "css-loader" },
-      { loader: "postcss-loader" }
-    ],
+    use: [{ loader: 'style-loader' }, { loader: 'css-loader' }, { loader: 'postcss-loader' }],
+  },
+  {
+    test: /\.(png|jpg|gif|svg|glb)$/,
+    type: 'asset/resource',
   },
 ];

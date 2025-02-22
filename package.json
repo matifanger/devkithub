@@ -91,6 +91,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "crypto": "^1.0.1",
+    "date-fns": "^4.1.0",
     "diff": "^7.0.0",
     "dotenv": "^16.4.7",
     "electron-squirrel-startup": "^1.0.0",
