@@ -18,8 +18,9 @@ const createWindow = (): void => {
     height: 900,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      nodeIntegration: true, // Deshabilitado por seguridad
       contextIsolation: true, // Asegura el aislamiento de contexto
-      nodeIntegration: false, // Deshabilitado por seguridad
+      sandbox: false,
     },
   });
 
@@ -34,9 +35,9 @@ const createWindow = (): void => {
           "style-src 'self' 'unsafe-inline';",
           "img-src 'self' data: blob:;",
           "connect-src 'self';",
-          "worker-src 'self' blob:;"
-        ].join(' ')
-      }
+          "worker-src 'self' blob:;",
+        ].join(' '),
+      },
     });
   });
 
@@ -88,24 +89,24 @@ function setupSecureStore() {
 app.whenReady().then(() => {
   setupSecureStore();
   createWindow();
-});
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+  // Quit when all windows are closed, except on macOS. There, it's common
+  // for applications and their menu bar to stay active until the user quits
+  // explicitly with Cmd + Q.
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  });
 
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
+  app.on('activate', () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+  // In this file you can include the rest of your app's specific main process
+  // code. You can also put them in separate files and import them here.
+});

@@ -1,43 +1,45 @@
-import * as React from "react"
-import { Link } from "react-router-dom"
-import { 
-  Hash, 
-  FileJson, 
-  Clock, 
-  Key, 
-  Palette, 
-  FileCode, 
-  Image, 
-  Regex, 
-  Link as LinkIcon, 
-  Code, 
-  Slash, 
-  FileText, 
-  FileCode2, 
-  FileJson2, 
-  FileType2, 
-  Database, 
-  ListOrdered, 
-  Binary, 
-  FileType, 
-  FileEdit, 
-  FilePlus2, 
-  FileJson2 as FileJson3, 
-  FileSpreadsheet, 
-  TextCursor, 
-  Text, 
-  Database as Database2, 
-  FileCode as PhpIcon, 
-  FileKey2, 
-  Timer, 
+import {
+  Binary,
+  Clock,
+  Code,
+  Database,
+  Database as Database2,
+  FileCode,
+  FileCode2,
+  FileEdit,
+  FileJson,
+  FileJson2,
+  FileJson2 as FileJson3,
+  FileKey2,
+  FilePlus2,
+  FileSpreadsheet,
+  FileText,
+  FileType,
+  FileType2,
+  Hash,
+  Image,
+  Key,
+  Link as LinkIcon,
+  ListOrdered,
+  MessageCircle,
+  Palette,
+  FileCode as PhpIcon,
   QrCode,
-  User,
+  Regex,
   Search,
+  Slash,
+  Text,
+  TextCursor,
+  Timer,
   Type,
-  MessageCircle
-} from "lucide-react"
+  User,
+} from 'lucide-react';
+import * as React from 'react';
+import { Link } from 'react-router-dom';
 
-import { ThemeToggle } from "./ui/theme-toggle"
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
 import {
   Sidebar,
   SidebarContent,
@@ -48,272 +50,259 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from './ui/sidebar'
-import { Button } from "./ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog"
-import { Label } from "./ui/label"
-import { Textarea } from "./ui/textarea"
-import { ScrollArea } from "./ui/scroll-area"
-import { Input } from "./ui/input"
+} from './ui/sidebar';
+import { ThemeToggle } from './ui/theme-toggle';
 
 const data = {
   user: {
-    email: "user@example.com"
+    email: 'user@example.com',
   },
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
+  versions: ['1.0.1', '1.1.0-alpha', '2.0.0-beta1'],
   navMain: [
     {
-      title: "Tools",
-      url: "/",
+      title: 'Tools',
+      url: '/',
       items: [
         {
-          title: "Hash Generator",
-          url: "/hash-generator",
+          title: 'Hash Generator',
+          url: '/hash-generator',
           icon: <Hash className="w-4 h-4" />,
         },
         {
-          title: "Number Base Converter",
-          url: "/number-base-converter",
+          title: 'Number Base Converter',
+          url: '/number-base-converter',
           icon: <Binary className="w-4 h-4" />,
         },
         {
-          title: "YAML to JSON",
-          url: "/yaml-to-json",
+          title: 'YAML to JSON',
+          url: '/yaml-to-json',
           icon: <FileJson className="w-4 h-4" />,
         },
         {
-          title: "JSON to YAML",
-          url: "/json-to-yaml",
+          title: 'JSON to YAML',
+          url: '/json-to-yaml',
           icon: <FileJson className="w-4 h-4" />,
         },
         {
-          title: "JSON Format/Validate",
-          url: "/json-format",
+          title: 'JSON Format/Validate',
+          url: '/json-format',
           icon: <FileJson className="w-4 h-4" />,
         },
         {
-          title: "Unix Time Converter and Analysis",
-          url: "/unix-time",
+          title: 'Unix Time Converter and Analysis',
+          url: '/unix-time',
           icon: <Clock className="w-4 h-4" />,
         },
         {
-          title: "JWT Debugger",
-          url: "/jwt-debug",
+          title: 'JWT Debugger',
+          url: '/jwt-debug',
           icon: <Key className="w-4 h-4" />,
         },
         {
-          title: "Color Converter",
-          url: "/color-converter",
+          title: 'Color Converter',
+          url: '/color-converter',
           icon: <Palette className="w-4 h-4" />,
         },
         {
-          title: "Base64 String Encoder/Decoder",
-          url: "/base64-string-encoder-decoder",
+          title: 'Base64 String Encoder/Decoder',
+          url: '/base64-string-encoder-decoder',
           icon: <FileCode className="w-4 h-4" />,
         },
         {
-          title: "Base64 Image Encoder/Decoder",
-          url: "/base64-image-encoder-decoder",
+          title: 'Base64 Image Encoder/Decoder',
+          url: '/base64-image-encoder-decoder',
           icon: <Image className="w-4 h-4" />,
         },
         {
-          title: "Regex Tester",
-          url: "/regex-tester",
+          title: 'Regex Tester',
+          url: '/regex-tester',
           icon: <Regex className="w-4 h-4" />,
         },
         {
-          title: "URL Encoder/Decoder",
-          url: "/url-encoder-decoder",
+          title: 'URL Encoder/Decoder',
+          url: '/url-encoder-decoder',
           icon: <LinkIcon className="w-4 h-4" />,
         },
         {
-          title: "URL Parser",
-          url: "/url-parser",
+          title: 'URL Parser',
+          url: '/url-parser',
           icon: <LinkIcon className="w-4 h-4" />,
         },
         {
-          title: "HTML Entity Encoder/Decoder",
-          url: "/html-entity-encoder-decoder",
+          title: 'HTML Entity Encoder/Decoder',
+          url: '/html-entity-encoder-decoder',
           icon: <Code className="w-4 h-4" />,
         },
         {
-          title: "Backslash Escape/Unescape",
-          url: "/backslash-escape-unescape",
+          title: 'Backslash Escape/Unescape',
+          url: '/backslash-escape-unescape',
           icon: <Slash className="w-4 h-4" />,
         },
         {
-          title: "HTML Beautify/Minify",
-          url: "/html-beautify",
+          title: 'HTML Beautify/Minify',
+          url: '/html-beautify',
           icon: <FileText className="w-4 h-4" />,
         },
         {
-          title: "CSS Beautify/Minify",
-          url: "/css-beautify",
+          title: 'CSS Beautify/Minify',
+          url: '/css-beautify',
           icon: <FileCode2 className="w-4 h-4" />,
         },
         {
-          title: "JavaScript Beautify/Minify",
-          url: "/js-beautify",
+          title: 'JavaScript Beautify/Minify',
+          url: '/js-beautify',
           icon: <FileJson2 className="w-4 h-4" />,
         },
         {
-          title: "XML Beautify/Minify",
-          url: "/xml-beautify",
+          title: 'XML Beautify/Minify',
+          url: '/xml-beautify',
           icon: <FileType2 className="w-4 h-4" />,
         },
         {
-          title: "SQL Formatter",
-          url: "/sql-formatter",
+          title: 'SQL Formatter',
+          url: '/sql-formatter',
           icon: <Database className="w-4 h-4" />,
         },
         {
-          title: "Line Sort/Dedupe",
-          url: "/line-sort-dedupe",
+          title: 'Line Sort/Dedupe',
+          url: '/line-sort-dedupe',
           icon: <ListOrdered className="w-4 h-4" />,
         },
         {
-          title: "Hex to ASCII",
-          url: "/hex-to-ascii",
+          title: 'Hex to ASCII',
+          url: '/hex-to-ascii',
           icon: <Binary className="w-4 h-4" />,
         },
         {
-          title: "ASCII to Hex",
-          url: "/ascii-to-hex",
+          title: 'ASCII to Hex',
+          url: '/ascii-to-hex',
           icon: <Binary className="w-4 h-4" />,
         },
         {
-          title: "HTML Preview",
-          url: "/html-preview",
+          title: 'HTML Preview',
+          url: '/html-preview',
           icon: <FileType className="w-4 h-4" />,
         },
         {
-          title: "Markdown Preview",
-          url: "/markdown-preview",
+          title: 'Markdown Preview',
+          url: '/markdown-preview',
           icon: <FileEdit className="w-4 h-4" />,
         },
         {
-          title: "HTML to JSX",
-          url: "/html-to-jsx",
+          title: 'HTML to JSX',
+          url: '/html-to-jsx',
           icon: <FilePlus2 className="w-4 h-4" />,
         },
         {
-          title: "JSON to CSV",
-          url: "/json-to-csv",
+          title: 'JSON to CSV',
+          url: '/json-to-csv',
           icon: <FileJson3 className="w-4 h-4" />,
         },
         {
-          title: "CSV to JSON",
-          url: "/csv-to-json",
+          title: 'CSV to JSON',
+          url: '/csv-to-json',
           icon: <FileSpreadsheet className="w-4 h-4" />,
         },
         {
-          title: "String Case Converter",
-          url: "/string-case-converter",
+          title: 'String Case Converter',
+          url: '/string-case-converter',
           icon: <TextCursor className="w-4 h-4" />,
         },
         {
-          title: "Random String Generator",
-          url: "/random-string-generator",
+          title: 'Random String Generator',
+          url: '/random-string-generator',
           icon: <Text className="w-4 h-4" />,
         },
         {
-          title: "Dummy Data Generator",
-          url: "/dummy-data-generator",
+          title: 'Dummy Data Generator',
+          url: '/dummy-data-generator',
           icon: <Database2 className="w-4 h-4" />,
         },
         {
-          title: "PHP Serializer",
-          url: "/php-serializer",
+          title: 'PHP Serializer',
+          url: '/php-serializer',
           icon: <PhpIcon className="w-4 h-4" />,
         },
         {
-          title: "PHP Deserializer",
-          url: "/php-deserializer",
+          title: 'PHP Deserializer',
+          url: '/php-deserializer',
           icon: <PhpIcon className="w-4 h-4" />,
         },
         {
-          title: "Certificate Decoder (X.509)",
-          url: "/certificate-decoder",
+          title: 'Certificate Decoder (X.509)',
+          url: '/certificate-decoder',
           icon: <FileKey2 className="w-4 h-4" />,
         },
         {
-          title: "Cron Job Parser",
-          url: "/cron-job-parser",
+          title: 'Cron Job Parser',
+          url: '/cron-job-parser',
           icon: <Timer className="w-4 h-4" />,
         },
         {
-          title: "QR Code Reader/Generator",
-          url: "/qr-code",
+          title: 'QR Code Reader/Generator',
+          url: '/qr-code',
           icon: <QrCode className="w-4 h-4" />,
         },
         {
-          title: "Lorem Ipsum Generator",
-          url: "/lorem-ipsum",
+          title: 'Lorem Ipsum Generator',
+          url: '/lorem-ipsum',
           icon: <Type className="w-4 h-4" />,
         },
         {
-          title: "Text Diff Checker",
-          url: "/text-diff",
+          title: 'Text Diff Checker',
+          url: '/text-diff',
           icon: <FileText className="w-4 h-4" />,
         },
       ],
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [selectedTool, setSelectedTool] = React.useState("")
-  const [searchQuery, setSearchQuery] = React.useState("")
-  
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [selectedTool, setSelectedTool] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
+
   const filteredItems = React.useMemo(() => {
-    if (!searchQuery) return data.navMain[0].items
-    
-    return data.navMain[0].items.filter(item =>
+    if (!searchQuery) return data.navMain[0].items;
+
+    return data.navMain[0].items.filter((item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  }, [searchQuery])
+    );
+  }, [searchQuery]);
 
   const handleBugReport = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsLoading(true)
-    
-    const formData = new FormData(event.currentTarget)
-    const description = formData.get("description")
-    
+    event.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+    const description = formData.get('description');
+
     try {
-      const response = await fetch("https://www.matifanger.dev/form", {
-        method: "POST",
+      const response = await fetch('https://www.matifanger.dev/form', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           tool: selectedTool,
           description,
         }),
-      })
-      
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to submit bug report")
+        throw new Error('Failed to submit bug report');
       }
-      
+
       // Reset form and close modal
-      event.currentTarget.reset()
-      setSelectedTool("")
+      event.currentTarget.reset();
+      setSelectedTool('');
     } catch (error) {
-      console.error("Error submitting bug report:", error)
+      console.error('Error submitting bug report:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Sidebar {...props}>
@@ -354,8 +343,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     {filteredItems.map((item) => (
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild>
-                          <Link 
-                            to={item.url} 
+                          <Link
+                            to={item.url}
                             className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-accent/50 dark:hover:bg-accent/30 transition-colors"
                           >
                             {item.icon}
@@ -373,60 +362,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </ScrollArea>
       <div className="border-t p-4 flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <ThemeToggle />
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Feedback & Bug Reports
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleBugReport}>
-              <DialogHeader>
-                <DialogTitle>Report a Bug</DialogTitle>
-                <DialogDescription>
-                  Let us know about any issues you've encountered. We'll look into it as soon as possible.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="tool">Tool</Label>
-                  <select
-                    id="tool"
-                    name="tool"
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    value={selectedTool}
-                    onChange={(e) => setSelectedTool(e.target.value)}
-                    required
-                  >
-                    <option value="">Select a tool</option>
-                    {data.navMain[0].items.map((item) => (
-                      <option key={item.url} value={item.url}>
-                        {item.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    placeholder="Please describe the issue in detail..."
-                    required
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Submitting..." : "Submit Report"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={() => window.electron.openExternal('https://devkithub.featurebase.app/en')}
+        >
+          <MessageCircle className="w-4 h-4" />
+          Feedback & Bug Reports
+        </Button>
       </div>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
