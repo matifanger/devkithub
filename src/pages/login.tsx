@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/auth-context';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/auth-context';
 
 export function LoginPage() {
   const [key, setKey] = useState('');
@@ -23,19 +23,24 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
-      const success = await login(key);
+      const { success, message } = await login(key);
       if (success) {
         navigate('/');
       } else {
-        setError('Invalid API key');
+        setError(message || 'Invalid API key');
       }
     } catch (err) {
       setError('Failed to validate API key. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError('');
+    setKey(e.target.value);
   };
 
   return (
@@ -50,11 +55,12 @@ export function LoginPage() {
             <Label htmlFor="key">API Key</Label>
             <Input
               id="key"
-              type="password"
+              type="text"
               value={key}
-              onChange={(e) => setKey(e.target.value)}
+              onChange={handleKeyChange}
               placeholder="Enter your API key"
               disabled={isLoading}
+              onClick={() => setError('')}
             />
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
@@ -65,4 +71,4 @@ export function LoginPage() {
       </div>
     </div>
   );
-} 
+}

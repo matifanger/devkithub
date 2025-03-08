@@ -284,7 +284,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           >
             <User className="h-5 w-5" />
             <div className="flex flex-col items-start">
-              <span className="font-medium">{userData?.email || 'Not logged in'}</span>
+              <span className="font-medium">Welcome</span>
               <span className="text-xs text-muted-foreground">Settings & Profile</span>
             </div>
           </Button>

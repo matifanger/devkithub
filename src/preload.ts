@@ -159,6 +159,10 @@ contextBridge.exposeInMainWorld('electron', {
     set: (key: string, value: string) => ipcRenderer.invoke('set-secure-store', key, value),
     delete: (key: string) => ipcRenderer.invoke('delete-secure-store', key),
   },
+  env: {
+    get: (key: string) => ipcRenderer.invoke('get-env', key),
+  },
+  getSimpleHwid: () => ipcRenderer.invoke('getSimpleHwid'),
   openExternal: (url: string) => {
     if (shell && shell.openExternal) {
       shell.openExternal(url).catch((err) => {

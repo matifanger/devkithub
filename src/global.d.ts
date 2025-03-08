@@ -10,6 +10,10 @@ interface Window {
       set: (key: string, value: string) => Promise<boolean>;
       delete: (key: string) => Promise<boolean>;
     };
+    env: {
+      get: (key: string) => Promise<string>;
+    };
+    getSimpleHwid: () => Promise<string>;
     openExternal: (url: string) => Promise<void>;
   };
 }
