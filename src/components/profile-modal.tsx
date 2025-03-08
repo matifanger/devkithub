@@ -16,15 +16,22 @@ import raycast from '../assets/images/raycast.png';
 interface ProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userData: ActivateLicenseResponse | null;
+  userData: ActivateLicenseResponse | string | null;
 }
 
 export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps) {
   const [showLicenseKey, setShowLicenseKey] = useState(false);
 
-  if (!userData) return null;
+  // If userData is a string, parse it as json
+  const userDataJson: ActivateLicenseResponse | null =
+    typeof userData === 'string' ? JSON.parse(userData) : userData;
 
-  const expiryDate = new Date(userData.license?.updated_at || '');
+  if (!userDataJson) return null;
+
+  // Fecha de expiracion es 1 año desde la fecha de activacion
+  const expiryDate = new Date(userDataJson.license?.created_at || '');
+  expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
   const isExpired = expiryDate < new Date();
   const daysRemaining = differenceInDays(expiryDate, new Date());
 
@@ -151,7 +158,9 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
                           <div className="text-sm font-medium">License Key</div>
                           <div className="relative">
                             <code className="text-sm bg-muted p-2 rounded block mt-1">
-                              {showLicenseKey ? userData.license.license_key : '••••••••••••••••'}
+                              {showLicenseKey
+                                ? userDataJson.license.license_key
+                                : '••••••••••••••••'}
                             </code>
                             <button
                               onClick={() => setShowLicenseKey(!showLicenseKey)}
