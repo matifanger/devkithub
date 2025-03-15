@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # Usa la versión que prefieras
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
@@ -26,11 +26,14 @@ jobs:
       - name: Make for macOS
         run: npm run make -- --platform=darwin
 
+      - name: List generated files
+        run: ls -la out/make/ || echo "No files found in out/make/"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: macos-build
-          path: out/make/**/*.dmg
+          path: out/make/**/*.{zip,dmg}
 
   build-windows:
     runs-on: windows-latest
@@ -48,6 +51,9 @@ jobs:
 
       - name: Make for Windows
         run: npm run make -- --platform=win32
+
+      - name: List generated files
+        run: dir out\make || echo "No files found in out/make/"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -72,8 +78,11 @@ jobs:
       - name: Make for Linux
         run: npm run make -- --platform=linux
 
+      - name: List generated files
+        run: ls -la out/make/ || echo "No files found in out/make/"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: linux-build
-          path: out/make/**/*.{deb,rpm,AppImage}
+          path: out/make/**/*.{deb,rpm}
