@@ -3,10 +3,10 @@ name: Build Electron App
 on:
   push:
     branches:
-      - master # Cambiado de 'main' a 'master'
+      - master
   pull_request:
     branches:
-      - master # Cambiado de 'main' a 'master'
+      - master
 
 jobs:
   build-mac:
@@ -29,14 +29,18 @@ jobs:
       - name: Make for macOS
         run: npm run make -- --platform=darwin --verbose
 
-      - name: List generated files
-        run: ls -la out/make/ || echo "No files found in out/make/"
+      - name: List all generated files
+        run: |
+          echo "Listing out/ directory:"
+          ls -la out/ || echo "No files found in out/"
+          echo "Listing out/make/ directory:"
+          ls -la out/make/ || echo "No files found in out/make/"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4 # Cambiado a v4 para probar
+        uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: out/make/**/*.{zip,dmg}
+          path: out/make/ # Subimos toda la carpeta
         continue-on-error: true
 
   build-windows:
@@ -59,14 +63,18 @@ jobs:
       - name: Make for Windows
         run: npm run make -- --platform=win32 --verbose
 
-      - name: List generated files
-        run: dir out\make || echo "No files found in out/make/"
+      - name: List all generated files
+        run: |
+          echo "Listing out\ directory:"
+          dir out || echo "No files found in out\"
+          echo "Listing out\make\ directory:"
+          dir out\make || echo "No files found in out\make\"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4 # Cambiado a v4 para probar
+        uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: out/make/**/*.exe
+          path: out/make/ # Subimos toda la carpeta
         continue-on-error: true
 
   build-linux:
@@ -89,12 +97,16 @@ jobs:
       - name: Make for Linux
         run: npm run make -- --platform=linux --verbose
 
-      - name: List generated files
-        run: ls -la out/make/ || echo "No files found in out/make/"
+      - name: List all generated files
+        run: |
+          echo "Listing out/ directory:"
+          ls -la out/ || echo "No files found in out/"
+          echo "Listing out/make/ directory:"
+          ls -la out/make/ || echo "No files found in out/make/"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4 # Cambiado a v4 para probar
+        uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: out/make/**/*.{deb,rpm}
+          path: out/make/ # Subimos toda la carpeta
         continue-on-error: true
