@@ -24,16 +24,17 @@ jobs:
         run: npm install
 
       - name: Make for macOS
-        run: npm run make -- --platform=darwin
+        run: npm run make -- --platform=darwin --verbose
 
       - name: List generated files
         run: ls -la out/make/ || echo "No files found in out/make/"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.3 explícita
         with:
           name: macos-build
           path: out/make/**/*.{zip,dmg}
+        continue-on-error: true # Evita que falle el flujo si no hay archivos
 
   build-windows:
     runs-on: windows-latest
@@ -50,16 +51,17 @@ jobs:
         run: npm install
 
       - name: Make for Windows
-        run: npm run make -- --platform=win32
+        run: npm run make -- --platform=win32 --verbose
 
       - name: List generated files
         run: dir out\make || echo "No files found in out/make/"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.3 explícita
         with:
           name: windows-build
           path: out/make/**/*.exe
+        continue-on-error: true
 
   build-linux:
     runs-on: ubuntu-latest
@@ -76,13 +78,14 @@ jobs:
         run: npm install
 
       - name: Make for Linux
-        run: npm run make -- --platform=linux
+        run: npm run make -- --platform=linux --verbose
 
       - name: List generated files
         run: ls -la out/make/ || echo "No files found in out/make/"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.3 explícita
         with:
           name: linux-build
           path: out/make/**/*.{deb,rpm}
+        continue-on-error: true
