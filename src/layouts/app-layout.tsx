@@ -1,14 +1,18 @@
 import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/auth-context';
+import { Navigate, Outlet } from 'react-router-dom';
 import { AppSidebar } from '../components/app-sidebar';
 import { SidebarInset, SidebarProvider } from '../components/ui/sidebar';
+import { useAuth } from '../contexts/auth-context';
 
 export function AppLayout() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, needsValidation } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
+  }
+
+  if (needsValidation) {
+    return <Navigate to="/validate-license" />;
   }
 
   return (
@@ -23,4 +27,4 @@ export function AppLayout() {
       </div>
     </SidebarProvider>
   );
-} 
+}

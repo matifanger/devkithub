@@ -6,12 +6,18 @@ interface AuthContextType {
   userData: ActivateLicenseResponse | null;
   login: (key: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
+  validateStoredLicense: () => Promise<{ success: boolean; message?: string }>;
+  needsValidation: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Secure storage key
 const SECURE_KEY = 'electron-app-auth';
+// Key for storing the last validation timestamp
+const LAST_VALIDATED_KEY = 'last-license-validation';
+// Validation interval in milliseconds (30 days)
+const VALIDATION_INTERVAL = 30 * 24 * 60 * 60 * 1000;
 
 const ERROR_MESSAGES = {
   INVALID_LICENSE_KEY: 'The license key you entered is not valid.',
@@ -28,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<ActivateLicenseResponse | null>(null);
+  const [needsValidation, setNeedsValidation] = useState(false);
 
   // Execute logout
   // useEffect(() => {
@@ -88,6 +95,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.valid) {
         console.log('License is valid');
+        // Store the current timestamp as the last validation time
+        await window.electron.store.set(LAST_VALIDATED_KEY, Date.now().toString());
         return { data };
       } else {
         console.log('License is invalid');
@@ -99,28 +108,113 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Check if validation is needed based on the last validation timestamp
+  const isValidationNeeded = async (): Promise<boolean> => {
+    try {
+      const lastValidatedStr = await window.electron.store.get(LAST_VALIDATED_KEY);
+      if (!lastValidatedStr) {
+        return true; // No validation timestamp found, validation needed
+      }
+
+      const lastValidated = parseInt(lastValidatedStr, 10);
+      const now = Date.now();
+      const timeSinceLastValidation = now - lastValidated;
+
+      return timeSinceLastValidation >= VALIDATION_INTERVAL;
+    } catch (error) {
+      console.error('Error checking validation time:', error);
+      return true; // On error, validate to be safe
+    }
+  };
+
+  // Method to validate stored license
+  const validateStoredLicense = async (): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const storedData = await window.electron.store.get(SECURE_KEY);
+      if (!storedData) {
+        return { success: false, message: 'No license data found' };
+      }
+
+      const storedDataJson = JSON.parse(storedData) as ActivateLicenseResponse;
+      if (!storedDataJson || !storedDataJson.license?.license_key) {
+        return { success: false, message: 'Invalid license data' };
+      }
+
+      const { data, message } = await validateApiKey(storedDataJson.license.license_key);
+      if (data) {
+        setIsAuthenticated(true);
+        setUserData(data);
+        setNeedsValidation(false);
+        // Store updated data
+        await window.electron.store.set(SECURE_KEY, JSON.stringify(data));
+        return { success: true };
+      }
+
+      return { success: false, message };
+    } catch (error) {
+      console.error('License validation failed:', error);
+      return { success: false, message: ERROR_MESSAGES.NETWORK_ERROR };
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const storedData = await window.electron.store.get(SECURE_KEY);
 
         console.warn('storedData', storedData);
+        // If no stored data, user is not authenticated
+        if (!storedData) {
+          setIsAuthenticated(false);
+          setUserData(null);
+          setIsLoading(false);
+          return;
+        }
+
         // Load as json
         const storedDataJson = JSON.parse(storedData) as ActivateLicenseResponse;
         if (!storedDataJson) {
           setIsAuthenticated(false);
           setUserData(null);
+          setIsLoading(false);
           return;
         }
 
         console.warn('storedData.license.license_key', storedDataJson.license.license_key);
-        const { data } = await validateApiKey(storedDataJson.license.license_key);
-        if (data) {
-          setIsAuthenticated(true);
-          setUserData(data);
+
+        // Check if validation is needed based on time elapsed
+        const shouldValidate = await isValidationNeeded();
+
+        if (shouldValidate) {
+          try {
+            // First try to validate with the API
+            const { data } = await validateApiKey(storedDataJson.license.license_key);
+            if (data) {
+              setIsAuthenticated(true);
+              setUserData(data);
+              setNeedsValidation(false);
+              // Update stored data with latest from server
+              await window.electron.store.set(SECURE_KEY, JSON.stringify(data));
+            } else {
+              // If validation fails but we have stored data, keep user authenticated
+              // but indicate validation is needed
+              setIsAuthenticated(true);
+              setUserData(storedDataJson);
+              setNeedsValidation(true);
+            }
+          } catch (error) {
+            // Network error or other issue - keep user authenticated but indicate validation needed
+            console.error('API validation failed:', error);
+            setIsAuthenticated(true);
+            setUserData(storedDataJson);
+            setNeedsValidation(true);
+          }
         } else {
-          setIsAuthenticated(false);
-          setUserData(null);
+          // Skip validation and use stored data
+          console.log('Using cached license data - validation not needed yet');
+          setIsAuthenticated(true);
+          setUserData(storedDataJson);
+          setNeedsValidation(false);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -142,6 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (data) {
       setIsAuthenticated(true);
       setUserData(data);
+      setNeedsValidation(false);
       // Store API key securely with the new structure
       await window.electron.store.set(SECURE_KEY, JSON.stringify(data));
       return { success: true };
@@ -152,11 +247,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setIsAuthenticated(false);
     setUserData(null);
+    setNeedsValidation(false);
     await window.electron.store.delete(SECURE_KEY);
+    await window.electron.store.delete(LAST_VALIDATED_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userData, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        userData,
+        login,
+        logout,
+        validateStoredLicense,
+        needsValidation,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
