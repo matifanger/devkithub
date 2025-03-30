@@ -15,6 +15,11 @@ dotenv.config();
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
+// Keys for settings
+const SERVICE_NAME = 'electron-app';
+const ACCOUNT_NAME = 'default';
+const UPDATE_PREFERENCE_KEY = 'update-preference';
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -63,9 +68,6 @@ const createWindow = (): void => {
   mainWindow.webContents.openDevTools();
 };
 
-const SERVICE_NAME = 'electron-app';
-const ACCOUNT_NAME = 'default';
-
 // Set up IPC handlers for secure storage
 function setupSecureStore() {
   ipcMain.handle('get-secure-store', async (_, key: string) => {
@@ -97,6 +99,38 @@ function setupSecureStore() {
     }
   });
 
+  // Add store handlers for general settings
+  ipcMain.handle('get-store', async (_, key: string) => {
+    try {
+      // Use electron-store or another persistence solution
+      // For this example, we'll use a simplified approach
+      return globalStore[key] || null;
+    } catch (error) {
+      console.error(`Failed to get ${key} from store:`, error);
+      return null;
+    }
+  });
+
+  ipcMain.handle('set-store', async (_, key: string, value: string) => {
+    try {
+      globalStore[key] = value;
+      return true;
+    } catch (error) {
+      console.error(`Failed to set ${key} in store:`, error);
+      return false;
+    }
+  });
+
+  ipcMain.handle('delete-store', async (_, key: string) => {
+    try {
+      delete globalStore[key];
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete ${key} from store:`, error);
+      return false;
+    }
+  });
+
   // Add env handler
   ipcMain.handle('get-env', async (_, key: string) => {
     return process.env[key] || '';
@@ -111,8 +145,20 @@ function setupSecureStore() {
   });
 }
 
+// In-memory store for simplicity
+const globalStore: Record<string, string> = {};
+
 async function checkForUpdates() {
   try {
+    // Check user preference for updates
+    const updatesEnabled = globalStore[UPDATE_PREFERENCE_KEY] === 'true';
+
+    // Skip update check if user has disabled updates
+    if (!updatesEnabled && !app.isPackaged) {
+      console.log('Updates are disabled by user preference');
+      return;
+    }
+
     const response = await axios.get(baseApi + '/api/version');
     const latestVersion = response.data.version;
     const currentVersion = app.getVersion();

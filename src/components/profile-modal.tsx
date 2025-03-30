@@ -1,6 +1,6 @@
 import { differenceInDays } from 'date-fns';
 import { Eye, EyeOff, Key, Puzzle, Settings, Terminal } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivateLicenseResponse } from '../types/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
@@ -19,12 +19,37 @@ interface ProfileModalProps {
   userData: ActivateLicenseResponse | string | null;
 }
 
+// Update preference key
+const UPDATE_PREFERENCE_KEY = 'update-preference';
+
 export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps) {
   const [showLicenseKey, setShowLicenseKey] = useState(false);
+  const [updatesEnabled, setUpdatesEnabled] = useState(false);
 
   // If userData is a string, parse it as json
   const userDataJson: ActivateLicenseResponse | null =
     typeof userData === 'string' ? JSON.parse(userData) : userData;
+
+  // Load update preference
+  useEffect(() => {
+    async function loadUpdatePreference() {
+      try {
+        const preference = await window.electron.settingsStore.get(UPDATE_PREFERENCE_KEY);
+        setUpdatesEnabled(preference === 'true');
+      } catch (error) {
+        console.error('Failed to load update preference:', error);
+        setUpdatesEnabled(false);
+      }
+    }
+
+    loadUpdatePreference();
+  }, []);
+
+  // Handle update preference change
+  const handleUpdatePreferenceChange = async (checked: boolean) => {
+    setUpdatesEnabled(checked);
+    await window.electron.settingsStore.set(UPDATE_PREFERENCE_KEY, checked.toString());
+  };
 
   if (!userDataJson) return null;
 
@@ -124,14 +149,17 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
                       <CardDescription>Manage automatic updates</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-4">
                         <div>
-                          <Label>Automatic Updates</Label>
+                          <Label>Updates</Label>
                           <p className="text-sm text-muted-foreground">
-                            Keep the app up to date automatically (Active)
+                            Receive updates notifications when a new version is available
                           </p>
                         </div>
-                        <Switch checked disabled />
+                        <Switch
+                          checked={updatesEnabled}
+                          onCheckedChange={handleUpdatePreferenceChange}
+                        />
                       </div>
                     </CardContent>
                   </Card>

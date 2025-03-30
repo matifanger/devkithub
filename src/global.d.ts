@@ -10,6 +10,11 @@ interface Window {
       set: (key: string, value: string) => Promise<boolean>;
       delete: (key: string) => Promise<boolean>;
     };
+    settingsStore: {
+      get: (key: string) => Promise<string | null>;
+      set: (key: string, value: string) => Promise<boolean>;
+      delete: (key: string) => Promise<boolean>;
+    };
     env: {
       get: (key: string) => Promise<string>;
     };

@@ -159,6 +159,12 @@ contextBridge.exposeInMainWorld('electron', {
     set: (key: string, value: string) => ipcRenderer.invoke('set-secure-store', key, value),
     delete: (key: string) => ipcRenderer.invoke('delete-secure-store', key),
   },
+  // General settings store
+  settingsStore: {
+    get: (key: string) => ipcRenderer.invoke('get-store', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('set-store', key, value),
+    delete: (key: string) => ipcRenderer.invoke('delete-store', key),
+  },
   env: {
     get: (key: string) => ipcRenderer.invoke('get-env', key),
   },
