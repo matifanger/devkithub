@@ -124,7 +124,7 @@ async function checkForUpdates() {
       dialog
         .showMessageBox({
           type: 'info',
-          buttons: ['Descargar', 'Ignorar'],
+          buttons: ['Download', 'Ignore'],
           title: 'New version available',
           message: `New version ${latestVersion} available`,
           detail: response.data.releaseNotes || 'Update for new features!',
@@ -136,7 +136,7 @@ async function checkForUpdates() {
         });
     }
   } catch (err) {
-    console.error('Error al verificar versión');
+    console.error('Error checking version');
   }
 }
 
