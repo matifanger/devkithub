@@ -36,12 +36,20 @@ jobs:
           echo "Listing out/make/ directory:"
           ls -la out/make/ || echo "No files found in out/make/"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: out/make/ # Subimos toda la carpeta
-        continue-on-error: true
+      - name: Install AWS CLI
+        run: brew install awscli
+
+      - name: Configure AWS CLI for MinIO
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
+          aws configure set default.region us-east-1
+          aws configure set default.s3.signature_version s3v4
+
+      - name: Upload to MinIO
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          aws --endpoint-url https://minio-gw8oc84c88w800go448cskw4.37.27.54.112.sslip.io s3 cp out/make/ s3://releases/$VERSION/macos/ --recursive
 
   build-windows:
     runs-on: windows-latest
@@ -70,12 +78,23 @@ jobs:
           echo "Listing out\make\ directory:"
           dir out\make || echo "No files found in out\make\"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: out/make/ # Subimos toda la carpeta
-        continue-on-error: true
+      - name: Install AWS CLI
+        run: |
+          curl -o awscliv2.zip https://awscli.amazonaws.com/AWSCLIV2-2.13.0.zip
+          unzip awscliv2.zip
+          ./aws/install
+
+      - name: Configure AWS CLI for MinIO
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
+          aws configure set default.region us-east-1
+          aws configure set default.s3.signature_version s3v4
+
+      - name: Upload to MinIO
+        run: |
+          for /f %%i in ('node -p "require('./package.json').version"') do set VERSION=%%i
+          aws --endpoint-url https://minio-gw8oc84c88w800go448cskw4.37.27.54.112.sslip.io s3 cp out/make/ s3://releases/%VERSION%/windows/ --recursive
 
   build-linux:
     runs-on: ubuntu-latest
@@ -104,9 +123,17 @@ jobs:
           echo "Listing out/make/ directory:"
           ls -la out/make/ || echo "No files found in out/make/"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: out/make/ # Subimos toda la carpeta
-        continue-on-error: true
+      - name: Install AWS CLI
+        run: sudo apt-get update && sudo apt-get install -y awscli
+
+      - name: Configure AWS CLI for MinIO
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
+          aws configure set default.region us-east-1
+          aws configure set default.s3.signature_version s3v4
+
+      - name: Upload to MinIO
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          aws --endpoint-url https://minio-gw8oc84c88w800go448cskw4.37.27.54.112.sslip.io s3 cp out/make/ s3://releases/$VERSION/linux/ --recursive
