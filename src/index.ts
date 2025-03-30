@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import axios from 'axios';
+import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron';
 import * as keytar from 'keytar';
 import { baseApi } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
@@ -24,13 +25,19 @@ const createWindow = (): void => {
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
+    frame: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       nodeIntegration: true, // Deshabilitado por seguridad
       contextIsolation: true, // Asegura el aislamiento de contexto
       sandbox: false,
+      devTools: app.isPackaged ? false : true,
     },
   });
+
+  if (app.isPackaged) {
+    Menu.setApplicationMenu(null);
+  }
 
   // Set CSP headers
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
@@ -104,12 +111,42 @@ function setupSecureStore() {
   });
 }
 
+async function checkForUpdates() {
+  try {
+    const response = await axios.get(baseApi + '/api/version');
+    const latestVersion = response.data.version;
+    const currentVersion = app.getVersion();
+
+    console.log('latestVersion', latestVersion);
+    console.log('currentVersion', currentVersion);
+
+    if (latestVersion !== currentVersion) {
+      dialog
+        .showMessageBox({
+          type: 'info',
+          buttons: ['Descargar', 'Ignorar'],
+          title: 'New version available',
+          message: `New version ${latestVersion} available`,
+          detail: response.data.releaseNotes || 'Update for new features!',
+        })
+        .then((response) => {
+          if (response.response === 0) {
+            shell.openExternal(baseApi + '/downloads');
+          }
+        });
+    }
+  } catch (err) {
+    console.error('Error al verificar versión');
+  }
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   setupSecureStore();
   createWindow();
+  checkForUpdates();
 
   // Quit when all windows are closed, except on macOS. There, it's common
   // for applications and their menu bar to stay active until the user quits
