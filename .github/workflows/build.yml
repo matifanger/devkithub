@@ -49,7 +49,7 @@ jobs:
       - name: Upload to MinIO
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          aws --endpoint-url https://releases.devkithub.com s3 cp out/make/ s3://releases/$VERSION/macos/ --recursive
+          aws --endpoint-url releases.devkithub.com s3 cp out/make/ s3://releases/$VERSION/macos/ --recursive
 
   build-windows:
     runs-on: windows-latest
@@ -96,7 +96,7 @@ jobs:
         run: |
           $env:VERSION = $(node -p "require('./package.json').version")
           Write-Host "Version captured: $env:VERSION" # Optional: for logging
-          aws --endpoint-url https://releases.devkithub.com s3 cp out/make/ "s3://releases/$($env:VERSION)/windows/" --recursive
+          aws --endpoint-url https://console-minio.devkithub.com s3 cp out/make/ "s3://releases/$($env:VERSION)/windows/" --recursive
         shell: pwsh # Explicitly specify powershell, though it's often the default
 
   build-linux:
@@ -160,4 +160,4 @@ jobs:
       - name: Upload to MinIO
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          aws --endpoint-url https://releases.devkithub.com s3 cp out/make/ s3://releases/$VERSION/linux/ --recursive
+          aws --endpoint-url console-minio.devkithub.com s3 cp out/make/ s3://releases/$VERSION/linux/ --recursive
