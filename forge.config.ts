@@ -13,6 +13,7 @@ import { rendererConfig } from './webpack.renderer.config';
 const config: ForgeConfig = {
   packagerConfig: {
     icon: path.join(__dirname, 'src/assets/icons/icon'), // Ruta base sin extensión
+    executableName: 'DevKitHub',
   },
   rebuildConfig: {},
   makers: [
@@ -22,7 +23,7 @@ const config: ForgeConfig = {
     }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG({
-      icon: path.join(__dirname, 'src/assets/icons/macos/icon.icns'), // Ícono para el DMG en macOS
+      icon: path.join(__dirname, 'src/assets/icons/mac/icon.icns'), // Ícono para el DMG en macOS
       name: 'DevKitHub',
     }),
     new MakerRpm({
