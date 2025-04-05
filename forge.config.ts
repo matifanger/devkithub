@@ -30,12 +30,16 @@ const config: ForgeConfig = {
       options: {
         icon: path.join(__dirname, 'src/assets/icons/linux/icon.png'), // Ícono para RPM en Linux
         name: 'DevKitHub',
+        bin: 'DevKitHub',
+        categories: ['Utility'],
       },
     }),
     new MakerDeb({
       options: {
         icon: path.join(__dirname, 'src/assets/icons/linux/icon.png'), // Ícono para DEB en Linux
         name: 'DevKitHub',
+        bin: 'DevKitHub',
+        categories: ['Utility'],
       },
     }),
   ],
