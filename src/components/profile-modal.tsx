@@ -207,7 +207,7 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
                           <div className="text-sm text-muted-foreground">
                             {isExpired
                               ? 'Your support period has expired'
-                              : `${daysRemaining} days remaining in your support period`}
+                              : `${daysRemaining} days remaining until your support period expires. You can extend your support period by renewing your license.`}
                           </div>
                         </div>
                       </div>

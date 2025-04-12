@@ -47,7 +47,7 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-md space-y-6 rounded-lg border bg-card p-6 shadow-lg">
         <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold">Welcome</h1>
+          <h1 className="text-2xl font-bold">Welcome to DevKitHub</h1>
           <p className="text-muted-foreground">Enter your API key to continue</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,6 +63,15 @@ export function LoginPage() {
               onClick={() => setError('')}
             />
             {error && <p className="text-sm text-destructive">{error}</p>}
+            <p className="text-sm">
+              Don't have an API key?{' '}
+              <button
+                className="text-primary"
+                onClick={() => window.electron.openExternal('https://devkithub.com')}
+              >
+                Buy it here
+              </button>
+            </p>
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Validating...' : 'Continue'}
