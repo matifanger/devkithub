@@ -35,7 +35,13 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
     async function loadUpdatePreference() {
       try {
         const preference = await window.electron.settingsStore.get(UPDATE_PREFERENCE_KEY);
-        setUpdatesEnabled(preference === 'true');
+        if (preference === null || preference === undefined) {
+          // Default to true if not set
+          await window.electron.settingsStore.set(UPDATE_PREFERENCE_KEY, 'true');
+          setUpdatesEnabled(true);
+        } else {
+          setUpdatesEnabled(preference === 'true');
+        }
       } catch (error) {
         console.error('Failed to load update preference:', error);
         setUpdatesEnabled(false);
@@ -49,6 +55,7 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
   const handleUpdatePreferenceChange = async (checked: boolean) => {
     setUpdatesEnabled(checked);
     await window.electron.settingsStore.set(UPDATE_PREFERENCE_KEY, checked.toString());
+    console.log('Update preference changed to:', checked);
   };
 
   if (!userDataJson) return null;

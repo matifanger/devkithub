@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron';
+import * as fs from 'fs';
 import * as keytar from 'keytar';
+import * as path from 'path';
 import { baseApi } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
 import { getSimpleHwid } from './utils/mac';
@@ -19,10 +21,38 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 const SERVICE_NAME = 'electron-app';
 const ACCOUNT_NAME = 'default';
 const UPDATE_PREFERENCE_KEY = 'update-preference';
+const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
+}
+
+// Persistent settings store
+const persistentStore: Record<string, string> = {};
+
+// Load settings from file
+function loadSettings() {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
+      const settings = JSON.parse(data);
+      Object.assign(persistentStore, settings);
+      console.log('Settings loaded from', SETTINGS_FILE);
+    }
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+  }
+}
+
+// Save settings to file
+function saveSettings() {
+  try {
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(persistentStore), 'utf8');
+    console.log('Settings saved to', SETTINGS_FILE);
+  } catch (error) {
+    console.error('Failed to save settings:', error);
+  }
 }
 
 const createWindow = (): void => {
@@ -102,9 +132,7 @@ function setupSecureStore() {
   // Add store handlers for general settings
   ipcMain.handle('get-store', async (_, key: string) => {
     try {
-      // Use electron-store or another persistence solution
-      // For this example, we'll use a simplified approach
-      return globalStore[key] || null;
+      return persistentStore[key] || null;
     } catch (error) {
       console.error(`Failed to get ${key} from store:`, error);
       return null;
@@ -113,7 +141,8 @@ function setupSecureStore() {
 
   ipcMain.handle('set-store', async (_, key: string, value: string) => {
     try {
-      globalStore[key] = value;
+      persistentStore[key] = value;
+      saveSettings();
       return true;
     } catch (error) {
       console.error(`Failed to set ${key} in store:`, error);
@@ -123,7 +152,8 @@ function setupSecureStore() {
 
   ipcMain.handle('delete-store', async (_, key: string) => {
     try {
-      delete globalStore[key];
+      delete persistentStore[key];
+      saveSettings();
       return true;
     } catch (error) {
       console.error(`Failed to delete ${key} from store:`, error);
@@ -145,16 +175,19 @@ function setupSecureStore() {
   });
 }
 
-// In-memory store for simplicity
-const globalStore: Record<string, string> = {};
-
 async function checkForUpdates() {
   try {
     // Check user preference for updates
-    const updatesEnabled = globalStore[UPDATE_PREFERENCE_KEY] === 'true';
+    // Default to true if preference is not set
+    const updatesEnabled =
+      persistentStore[UPDATE_PREFERENCE_KEY] === undefined
+        ? true
+        : persistentStore[UPDATE_PREFERENCE_KEY] === 'true';
+
+    console.log('Updates enabled:', updatesEnabled);
 
     // Skip update check if user has disabled updates
-    if (!updatesEnabled && !app.isPackaged) {
+    if (!updatesEnabled) {
       console.log('Updates are disabled by user preference');
       return;
     }
@@ -190,6 +223,7 @@ async function checkForUpdates() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  loadSettings(); // Cargar configuración antes de usarla
   setupSecureStore();
   createWindow();
   checkForUpdates();
