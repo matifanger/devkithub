@@ -81,22 +81,33 @@ jobs:
       - name: Install AWS CLI
         run: |
           curl -o AWSCLIV2.msi https://awscli.amazonaws.com/AWSCLIV2.msi
-          msiexec.exe /i AWSCLIV2.msi /quiet
-          set "PATH=%PATH%;C:\Program Files\Amazon\AWSCLIV2\"
+          Start-Process msiexec.exe -Wait -ArgumentList '/i AWSCLIV2.msi /quiet /norestart'
+          Write-Host "AWS CLI installed, setting up path"
+          $env:PATH = "$env:PATH;C:\Program Files\Amazon\AWSCLIV2"
+          Write-Host "Current PATH: $env:PATH"
+          # Verify installation location
+          Get-ChildItem "C:\Program Files\Amazon\" -Recurse | Where-Object {$_.Name -eq "aws.exe"} | ForEach-Object { Write-Host "Found aws.exe at: $($_.FullName)" }
+          # Add to PATH for current session
+          $env:PATH += ";C:\Program Files\Amazon\AWSCLIV2"
+          # Also try the path reported by the installer
+          $env:PATH += ";C:\Program Files\Amazon\AWSCLIV2\bin"
           aws --version
+        shell: pwsh
 
       - name: Configure AWS CLI for MinIO
         run: |
-          aws configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
-          aws configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
-          aws configure set default.region us-east-1
-          aws configure set default.s3.signature_version s3v4
+          # Use full path to aws executable
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set default.region us-east-1
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set default.s3.signature_version s3v4
+        shell: pwsh
 
       - name: Upload to MinIO
         run: |
           $env:VERSION = $(node -p "require('./package.json').version")
           Write-Host "Version captured: $env:VERSION" # Optional: for logging
-          aws --endpoint-url https://releases.devkithub.com s3 cp out/make/ "s3://releases/$($env:VERSION)/windows/" --recursive --no-verify-ssl
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' --endpoint-url https://releases.devkithub.com s3 cp out/make/ "s3://releases/$($env:VERSION)/windows/" --recursive --no-verify-ssl
         shell: pwsh # Explicitly specify powershell, though it's often the default
 
   build-linux:
