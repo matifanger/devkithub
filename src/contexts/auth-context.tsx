@@ -28,6 +28,8 @@ const ERROR_MESSAGES = {
     'Server error while activating license. Please try again later.',
   NETWORK_ERROR: 'Unable to connect to the license server. Please check your internet connection.',
   UNKNOWN_ERROR: 'An unexpected error occurred. Please try again later.',
+  TOO_MANY_LICENSE_ACTIVATION_ATTEMPTS:
+    'Too many license activation attempts. Please try again later.',
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
