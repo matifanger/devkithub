@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Input } from '../components/ui/input';
-import { JSONPath } from 'jsonpath-plus';
-import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
+import CodeMirror from '@uiw/react-codemirror';
+import { JSONPath } from 'jsonpath-plus';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
 export function JsonFormatPage() {
   const [input, setInput] = useState('');
@@ -47,7 +47,7 @@ export function JsonFormatPage() {
 
       const formatted = JSON.stringify(result, null, Number(spaces));
       setOutput(formatted);
-      
+
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid JSON');
@@ -60,7 +60,19 @@ export function JsonFormatPage() {
   }, [formatJson]);
 
   const handleSample = () => {
-    const sample = {"store":{"book":[{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95},{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}]}};
+    const sample = {
+      store: {
+        book: [
+          {
+            category: 'reference',
+            author: 'Nigel Rees',
+            title: 'Sayings of the Century',
+            price: 8.95,
+          },
+          { category: 'fiction', author: 'Evelyn Waugh', title: 'Sword of Honour', price: 12.99 },
+        ],
+      },
+    };
     setInput(JSON.stringify(sample));
   };
 
@@ -103,7 +115,7 @@ export function JsonFormatPage() {
           <div className="h-[calc(100vh-17rem)]">
             <CodeMirror
               value={input}
-              className="h-[calc(100vh-17rem)]"
+              className="h-[calc(100vh-17rem)] text-base"
               height="100%"
               width="100%"
               theme={oneDark}
@@ -139,16 +151,14 @@ export function JsonFormatPage() {
               </Button>
             </div>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
               <CodeMirror
                 value={output}
-                className="h-[calc(100vh-17rem)]"
+                className="h-[calc(100vh-17rem)] text-base"
                 height="100%"
                 width="100%"
                 theme={oneDark}
@@ -162,7 +172,7 @@ export function JsonFormatPage() {
               />
             </div>
           )}
-          
+
           <div className="space-y-2 mt-4">
             <Label htmlFor="jsonpath">JSONPath Query</Label>
             <Input
@@ -171,10 +181,11 @@ export function JsonFormatPage() {
               onChange={(e) => setJsonPath(e.target.value)}
               placeholder="JSONPath: (e.g., $.store.book[*].author)"
               className="font-mono"
+              spellCheck={false}
             />
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}
