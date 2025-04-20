@@ -13,48 +13,20 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Usar la última versión de la acción
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4 # Usar la última versión de la acción
+        uses: actions/setup-node@v3
         with:
-          node-version: '20' # Usar una versión LTS más reciente (Node 18 sale de soporte en abril 2025)
-          cache: 'npm' # Habilitar cache para npm dependencies
-
-      - name: Get npm cache directory
-        id: npm-cache-dir
-        shell: bash
-        run: echo "npm_cache_dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
-
-      - name: Setup npm cache
-        uses: actions/cache@v4 # Usar la última versión de la acción
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.npm_cache_dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }} # Usar package-lock para la key
-
-      - name: Get electron-rebuild cache directory
-        id: electron-rebuild-cache-dir
-        shell: bash
-        run: echo "electron_rebuild_cache_dir=$(electron-rebuild --cache-dir)" >> "$GITHUB_OUTPUT"
-        # Nota: --cache-dir puede no estar disponible en todas las versiones o require dependencias instaladas.
-        # Podrías necesitar ajustar esto o simplemente cachear el directorio .electron-gyp global.
-
-      - name: Setup electron-rebuild cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ steps.electron-rebuild-cache-dir.outputs.electron_rebuild_cache_dir }}
-            ~/.electron-gyp # Directorio de cache común para electron-rebuild
-          key: ${{ runner.os }}-electron-rebuild-${{ hashFiles('**/package-lock.json') }}
+          node-version: '18'
 
       - name: Install dependencies
-        run: npm clean-install # Usar clean-install para builds más reproducibles
+        run: npm install
 
       - name: Rebuild native dependencies
         run: npx electron-rebuild
 
       - name: Make for macOS
-        # npm run make ya debería incluir el empaquetado, no necesitas un paso previo de 'package'.
         run: npm run make -- --platform=darwin --verbose
 
       - name: List all generated files
@@ -64,57 +36,34 @@ jobs:
           echo "Listing out/make/ directory:"
           ls -la out/make/ || echo "No files found in out/make/"
 
+      - name: Install AWS CLI
+        run: brew install awscli
+
+      - name: Configure AWS CLI for MinIO
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
+          aws configure set default.region us-east-1
+          aws configure set default.s3.signature_version s3v4
+
       - name: Upload to MinIO
-        # Configurar credenciales y endpoint via variables de entorno, más limpio en CI
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-          AWS_REGION: us-east-1 # MinIO a menudo no usa region, pero AWS CLI la espera. Puedes omitir si da problemas.
-          AWS_ENDPOINT_URL: http://releases.devkithub.com # Mantener HTTPS para que AWS CLI sepa que el cliente quiere HTTPS
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "Starting upload for version $VERSION..."
-          # El flag --no-verify-ssl es necesario por tu setup actual.
-          # El problema 400/520 NO se soluciona cambiando esto, sino corrigiendo el ORIGEN.
-          # PRUEBA CLAVE: Si tu origen en localhost:9000 PUEDE manejar HTTP sin confundirse,
-          # CAMBIA la línea de abajo a:
-          # aws --endpoint-url http://releases.devkithub.com s3 cp out/make/ s3://releases/$VERSION/macos/ --recursive
-          # Y prueba si con HTTP funciona. Si no, el problema es más profundo en el origen.
-          aws --endpoint-url $AWS_ENDPOINT_URL s3 cp out/make/ s3://releases/$VERSION/macos/ --recursive --no-verify-ssl
+          aws --endpoint-url http://releases.devkithub.com s3 cp out/make/ s3://releases/$VERSION/macos/ --recursive --no-verify-ssl
 
   build-windows:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm' # Habilitar cache para npm dependencies
-
-      - name: Get npm cache directory
-        id: npm-cache-dir
-        shell: pwsh
-        run: echo "npm_cache_dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
-
-      - name: Setup npm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.npm_cache_dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-
-      # Cache para electron-rebuild en Windows - ajuste la ruta según donde se guarde el cache
-      - name: Setup electron-rebuild cache (Windows)
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~\.electron-gyp # Directorio de cache común para electron-rebuild
-          key: ${{ runner.os }}-electron-rebuild-${{ hashFiles('**/package-lock.json') }}
+          node-version: '18'
 
       - name: Install dependencies
-        run: npm clean-install
+        run: npm install
 
       - name: Rebuild native dependencies
         run: npx electron-rebuild
@@ -128,65 +77,78 @@ jobs:
           dir out || echo "No files found in out\"
           echo "Listing out\make\ directory:"
           dir out\make || echo "No files found in out\make\"
-        shell: pwsh # Especificar shell
+
+      - name: Install AWS CLI
+        run: |
+          curl -o AWSCLIV2.msi https://awscli.amazonaws.com/AWSCLIV2.msi
+          Start-Process msiexec.exe -Wait -ArgumentList '/i AWSCLIV2.msi /quiet /norestart'
+          Write-Host "AWS CLI installed, setting up path"
+          $env:PATH = "$env:PATH;C:\Program Files\Amazon\AWSCLIV2"
+          Write-Host "Current PATH: $env:PATH"
+          # Verify installation location
+          Get-ChildItem "C:\Program Files\Amazon\" -Recurse | Where-Object {$_.Name -eq "aws.exe"} | ForEach-Object { Write-Host "Found aws.exe at: $($_.FullName)" }
+          # Add to PATH for current session
+          $env:PATH += ";C:\Program Files\Amazon\AWSCLIV2"
+          # Also try the path reported by the installer
+          $env:PATH += ";C:\Program Files\Amazon\AWSCLIV2\bin"
+          aws --version
+        shell: pwsh
+
+      - name: Configure AWS CLI for MinIO
+        run: |
+          # Use full path to aws executable
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set default.region us-east-1
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' configure set default.s3.signature_version s3v4
+        shell: pwsh
 
       - name: Upload to MinIO
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-          AWS_REGION: us-east-1
-          AWS_ENDPOINT_URL: http://releases.devkithub.com
         run: |
           $env:VERSION = $(node -p "require('./package.json').version")
-          Write-Host "Starting upload for version $($env:VERSION)..."
-          # AWS CLI V2 ya suele estar pre-instalado en runners de Windows.
-          # Si no, podrías usar la acción 'aws-actions/setup-aws-cli'.
-          # Aquí asumimos que 'aws' ya está en el PATH.
-          # Prueba CLAVE: Ver nota en job de Mac sobre cambiar a http://
-          aws --endpoint-url $env:AWS_ENDPOINT_URL s3 cp out\make\ "s3://releases/$($env:VERSION)/windows/" --recursive --no-verify-ssl
-        shell: pwsh
+          Write-Host "Version captured: $env:VERSION" # Optional: for logging
+          & 'C:\Program Files\Amazon\AWSCLIV2\aws' --endpoint-url http://releases.devkithub.com s3 cp out/make/ "s3://releases/$($env:VERSION)/windows/" --recursive --no-verify-ssl
+        shell: pwsh # Explicitly specify powershell, though it's often the default
 
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm' # Habilitar cache para npm dependencies
-
-      - name: Get npm cache directory
-        id: npm-cache-dir
-        shell: bash
-        run: echo "npm_cache_dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
-
-      - name: Setup npm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.npm_cache_dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-
-      # Cache para electron-rebuild en Linux
-      - name: Setup electron-rebuild cache (Linux)
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.electron-gyp # Directorio de cache común para electron-rebuild
-          key: ${{ runner.os }}-electron-rebuild-${{ hashFiles('**/package-lock.json') }}
+          node-version: '18'
 
       - name: Install dependencies
-        run: npm clean-install
+        run: npm install
 
       - name: Rebuild native dependencies
         run: npx electron-rebuild
 
+      - name: Package app first
+        run: npm run package -- --platform=linux --verbose
+
+      - name: Check packaged app structure
+        run: |
+          echo "Checking packaged app structure..."
+          ls -la out/
+          if [ -d "out/DevKitHub-linux-x64" ]; then
+            echo "DevKitHub-linux-x64 directory exists"
+            ls -la out/DevKitHub-linux-x64/
+            # Create symbolic link if needed
+            if [ -f "out/DevKitHub-linux-x64/DevKitHub" ] && [ ! -f "out/DevKitHub-linux-x64/devkithub" ]; then
+              echo "Creating symbolic link devkithub -> DevKitHub"
+              cd out/DevKitHub-linux-x64
+              ln -sf DevKitHub devkithub
+              cd ../../
+            fi
+          else
+            echo "DevKitHub-linux-x64 directory does not exist"
+          fi
+
       - name: Make for Linux
-        # Eliminado paso 'package' redundante. 'make' debería ser suficiente.
-        # Eliminado el enlace simbólico 'devkithub' -> 'DevKitHub' ya que no parece relacionado con el build/upload
-        # y 'make' debería generar el binario ejecutable correcto.
         run: npm run make -- --platform=linux --verbose
 
       - name: List all generated files
@@ -196,15 +158,17 @@ jobs:
           echo "Listing out/make/ directory:"
           ls -la out/make/ || echo "No files found in out/make/"
 
+      - name: Check AWS CLI version
+        run: aws --version
+
+      - name: Configure AWS CLI for MinIO
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.MINIO_ACCESS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.MINIO_SECRET_KEY }}
+          aws configure set default.region us-east-1
+          aws configure set default.s3.signature_version s3v4
+
       - name: Upload to MinIO
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-          AWS_REGION: us-east-1
-          AWS_ENDPOINT_URL: http://releases.devkithub.com
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "Starting upload for version $VERSION..."
-          # AWS CLI ya suele estar pre-instalado en runners de Ubuntu.
-          # Prueba CLAVE: Ver nota en job de Mac sobre cambiar a http://
-          aws --endpoint-url $AWS_ENDPOINT_URL s3 cp out/make/ s3://releases/$VERSION/linux/ --recursive --no-verify-ssl
+          aws --endpoint-url http://releases.devkithub.com s3 cp out/make/ s3://releases/$VERSION/linux/ --recursive --no-verify-ssl
