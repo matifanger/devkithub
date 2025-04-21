@@ -10,6 +10,9 @@ interface AuthContextType {
   needsValidation: boolean;
 }
 
+const BASEAPI =
+  process.env.NODE_ENV === 'production' ? 'https://devkithub.com' : 'http://localhost:4000';
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Secure storage key
@@ -74,8 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     key: string
   ): Promise<{ data: ActivateLicenseResponse | null; message?: string }> => {
     try {
-      const baseApi = await window.electron.env.get('BASE_API');
-      const response = await fetch(`${baseApi}/api/activate-license`, {
+      const response = await fetch(`${BASEAPI}/api/activate-license`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
