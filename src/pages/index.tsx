@@ -8,7 +8,7 @@ export function MainPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">DevToolsHub</h1>
+        <h1 className="text-2xl font-bold">DevKitHub</h1>
         <p className="text-muted-foreground">
           Your one-stop solution for developer tools. Start with these popular features or explore
           more in the sidebar.
