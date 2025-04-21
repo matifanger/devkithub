@@ -18,7 +18,7 @@ declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 // Keys for settings
-const SERVICE_NAME = 'electron-app';
+const SERVICE_NAME = 'devkithub';
 const ACCOUNT_NAME = 'default';
 const UPDATE_PREFERENCE_KEY = 'update-preference';
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
