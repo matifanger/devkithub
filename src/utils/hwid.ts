@@ -19,7 +19,7 @@ export async function getWindowsHwid() {
       baseboard: baseboard.split('\n')[1]?.trim(),
     };
   } catch (error) {
-    console.error('Windows HWID error:', error);
+    console.error('Windows HWID error: ', error);
     return null;
   }
 }
