@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import { php } from '@codemirror/lang-php';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView } from '@codemirror/view';
+import CodeMirror from '@uiw/react-codemirror';
+import React, { useCallback, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { php } from '@codemirror/lang-php';
-import { EditorView } from '@codemirror/view';
 
 export function PhpDeserializerPage() {
   const [input, setInput] = useState('');
@@ -23,21 +23,21 @@ export function PhpDeserializerPage() {
       if (phpStr.startsWith('(object) array(')) {
         const content = phpStr.slice(15, -1).trim();
         const result: Record<string, unknown> = {};
-        
+
         let currentKey = '';
         let currentValue = '';
         let inString = false;
         let inArray = false;
         let arrayDepth = 0;
-        
+
         for (let i = 0; i < content.length; i++) {
           const char = content[i];
-          
+
           if (char === "'" && content[i - 1] !== '\\') {
             inString = !inString;
             continue;
           }
-          
+
           if (!inString) {
             if (char === '(') {
               inArray = true;
@@ -47,7 +47,7 @@ export function PhpDeserializerPage() {
               if (arrayDepth === 0) inArray = false;
             }
           }
-          
+
           if (inString || inArray) {
             currentValue += char;
           } else {
@@ -65,18 +65,19 @@ export function PhpDeserializerPage() {
                 if (arrayContent.includes('=>')) {
                   // Associative array
                   const obj: Record<string, unknown> = {};
-                  const pairs = arrayContent.split(',').map(p => p.trim());
-                  pairs.forEach(pair => {
-                    const [k, v] = pair.split('=>').map(s => s.trim());
+                  const pairs = arrayContent.split(',').map((p) => p.trim());
+                  pairs.forEach((pair) => {
+                    const [k, v] = pair.split('=>').map((s) => s.trim());
                     const key = k.slice(1, -1);
                     obj[key] = v.startsWith("'") ? v.slice(1, -1) : Number(v);
                   });
                   result[currentKey] = obj;
                 } else {
                   // Numeric array
-                  result[currentKey] = arrayContent.split(',')
-                    .map(v => v.trim())
-                    .map(v => v.startsWith("'") ? v.slice(1, -1) : Number(v));
+                  result[currentKey] = arrayContent
+                    .split(',')
+                    .map((v) => v.trim())
+                    .map((v) => (v.startsWith("'") ? v.slice(1, -1) : Number(v)));
                 }
               } else if (currentValue === 'null') {
                 result[currentKey] = null;
@@ -91,7 +92,7 @@ export function PhpDeserializerPage() {
             }
           }
         }
-        
+
         // Process last value
         if (currentKey && currentValue) {
           currentValue = currentValue.trim();
@@ -102,18 +103,19 @@ export function PhpDeserializerPage() {
             if (arrayContent.includes('=>')) {
               // Associative array
               const obj: Record<string, unknown> = {};
-              const pairs = arrayContent.split(',').map(p => p.trim());
-              pairs.forEach(pair => {
-                const [k, v] = pair.split('=>').map(s => s.trim());
+              const pairs = arrayContent.split(',').map((p) => p.trim());
+              pairs.forEach((pair) => {
+                const [k, v] = pair.split('=>').map((s) => s.trim());
                 const key = k.slice(1, -1);
                 obj[key] = v.startsWith("'") ? v.slice(1, -1) : Number(v);
               });
               result[currentKey] = obj;
             } else {
               // Numeric array
-              result[currentKey] = arrayContent.split(',')
-                .map(v => v.trim())
-                .map(v => v.startsWith("'") ? v.slice(1, -1) : Number(v));
+              result[currentKey] = arrayContent
+                .split(',')
+                .map((v) => v.trim())
+                .map((v) => (v.startsWith("'") ? v.slice(1, -1) : Number(v)));
             }
           } else if (currentValue === 'null') {
             result[currentKey] = null;
@@ -125,17 +127,24 @@ export function PhpDeserializerPage() {
         }
 
         // Convert to PHP array format
-        const phpFormat = `(object) array(${
-          Object.entries(result as Record<string, unknown>)
-            .map(([key, val]) => `'${key}' => ${
-              typeof val === 'string' ? `'${val}'` : 
-              Array.isArray(val) ? `array(${val.map(v => typeof v === 'string' ? `'${v}'` : v).join(', ')})` :
-              val === null ? 'null' :
-              typeof val === 'object' ? `array(${Object.entries(val as Record<string, unknown>).map(([k, v]) => `'${k}' => ${typeof v === 'string' ? `'${v}'` : v}`).join(', ')})` :
-              val
-            }`)
-            .join(',\n  ')
-        });`;
+        const phpFormat = `(object) array(${Object.entries(result as Record<string, unknown>)
+          .map(
+            ([key, val]) =>
+              `'${key}' => ${
+                typeof val === 'string'
+                  ? `'${val}'`
+                  : Array.isArray(val)
+                    ? `array(${val.map((v) => (typeof v === 'string' ? `'${v}'` : v)).join(', ')})`
+                    : val === null
+                      ? 'null'
+                      : typeof val === 'object'
+                        ? `array(${Object.entries(val as Record<string, unknown>)
+                            .map(([k, v]) => `'${k}' => ${typeof v === 'string' ? `'${v}'` : v}`)
+                            .join(', ')})`
+                        : val
+              }`
+          )
+          .join(',\n  ')});`;
         setOutput(phpFormat);
         setError('');
       }
@@ -156,57 +165,79 @@ export function PhpDeserializerPage() {
       };
 
       const deserialize = (): unknown => {
+        let value: unknown;
         const type = phpStr[pos++];
-        
+
         switch (type) {
-          case 'N': // null
+          case 'N': {
+            // null
             pos++; // Skip semicolon
-            return null;
-          
-          case 'b': // boolean
+            value = null;
+            break;
+          }
+
+          case 'b': {
+            // boolean
             pos++; // Skip colon
             const bool = phpStr[pos++] === '1';
             pos++; // Skip semicolon
-            return bool;
-          
-          case 'i': // integer
+            value = bool;
+            break;
+          }
+
+          case 'i': {
+            // integer
             pos++; // Skip colon
             const int = parseInt(readUntil(';'), 10);
             pos++; // Skip semicolon
-            return int;
-          
-          case 'd': // float/double
+            value = int;
+            break;
+          }
+
+          case 'd': {
+            // float/double
             pos++; // Skip colon
             const float = parseFloat(readUntil(';'));
             pos++; // Skip semicolon
-            return float;
-          
-          case 's': // string
+            value = float;
+            break;
+          }
+
+          case 's': {
+            // string
             pos++; // Skip colon
             const strLen = readLength();
             pos++; // Skip quote
             const str = phpStr.slice(pos, pos + strLen);
             pos += strLen + 2; // Skip string content, quotes and semicolon
-            return str;
-          
-          case 'a': // array/object
+            value = str;
+            break;
+          }
+
+          case 'a': {
+            // array/object
             pos++; // Skip colon
             const count = readLength();
             pos++; // Skip opening brace
-            
+
             // Check if it's a sequential array
             let isArray = true;
             let tempPos = pos;
-            for (let i = 0; i < count; i++) {
-              if (phpStr[tempPos] !== 'i') {
+            for (let i = 0; i < count && isArray; i++) {
+              const type = phpStr[tempPos];
+              if (type === 'i') {
+                tempPos++; // Skip i
+                tempPos++; // Skip :
+                while (tempPos < phpStr.length && phpStr[tempPos] !== ';') tempPos++;
+                tempPos++; // Skip ;
+                // Skip the value
+                while (tempPos < phpStr.length && phpStr[tempPos] !== ';') tempPos++;
+                tempPos++; // Skip ;
+              } else {
                 isArray = false;
-                break;
               }
-              // Skip to next key
-              while (tempPos < phpStr.length && phpStr[tempPos] !== ';') tempPos++;
-              tempPos++;
             }
-            
+
             if (isArray) {
               const arr = [];
               for (let i = 0; i < count; i++) {
@@ -216,19 +247,27 @@ export function PhpDeserializerPage() {
                 arr.push(deserialize());
               }
               pos++; // Skip closing brace
-              return arr;
+              value = arr;
             } else {
               const obj: Record<string, unknown> = {};
               for (let i = 0; i < count; i++) {
-                const key = deserialize();
-                if (typeof key !== 'string') throw new Error('Invalid object key type');
+                const keyType = phpStr[pos++];
+                if (keyType !== 's') throw new Error('Object property keys must be strings');
+                pos++; // Skip colon
+                const keyLength = readLength();
+                pos++; // Skip quote
+                const key = phpStr.slice(pos, pos + keyLength);
+                pos += keyLength + 2; // Skip string content, quotes and semicolon
                 obj[key] = deserialize();
               }
               pos++; // Skip closing brace
-              return obj;
+              value = obj;
             }
+            break;
+          }
 
-          case 'O': // Object (stdClass)
+          case 'O': {
+            // Object (stdClass)
             pos++; // Skip colon
             const classNameLength = readLength();
             pos++; // Skip quote
@@ -238,31 +277,47 @@ export function PhpDeserializerPage() {
             pos++; // Skip opening brace
             const props: Record<string, unknown> = {};
             for (let i = 0; i < propCount; i++) {
-              const key = deserialize();
-              if (typeof key !== 'string') throw new Error('Invalid object key type');
+              const keyType = phpStr[pos++];
+              if (keyType !== 's') throw new Error('Object property keys must be strings');
+              pos++; // Skip colon
+              const keyLength = readLength();
+              pos++; // Skip quote
+              const key = phpStr.slice(pos, pos + keyLength);
+              pos += keyLength + 2; // Skip string content, quotes and semicolon
               props[key] = deserialize();
             }
             pos++; // Skip closing brace
-            return props;
-          
+            value = props;
+            break;
+          }
+
           default:
             throw new Error(`Unsupported type: ${type}`);
         }
+
+        return value;
       };
 
       const result = deserialize();
       // Convert to PHP array format
-      const phpFormat = `(object) array(${
-        Object.entries(result as Record<string, unknown>)
-          .map(([key, val]) => `'${key}' => ${
-            typeof val === 'string' ? `'${val}'` : 
-            Array.isArray(val) ? `array(${val.map(v => typeof v === 'string' ? `'${v}'` : v).join(', ')})` :
-            val === null ? 'null' :
-            typeof val === 'object' ? `array(${Object.entries(val as Record<string, unknown>).map(([k, v]) => `'${k}' => ${typeof v === 'string' ? `'${v}'` : v}`).join(', ')})` :
-            val
-          }`)
-          .join(',\n  ')
-      });`;
+      const phpFormat = `(object) array(${Object.entries(result as Record<string, unknown>)
+        .map(
+          ([key, val]) =>
+            `'${key}' => ${
+              typeof val === 'string'
+                ? `'${val}'`
+                : Array.isArray(val)
+                  ? `array(${val.map((v) => (typeof v === 'string' ? `'${v}'` : v)).join(', ')})`
+                  : val === null
+                    ? 'null'
+                    : typeof val === 'object'
+                      ? `array(${Object.entries(val as Record<string, unknown>)
+                          .map(([k, v]) => `'${k}' => ${typeof v === 'string' ? `'${v}'` : v}`)
+                          .join(', ')})`
+                      : val
+            }`
+        )
+        .join(',\n  ')});`;
       setOutput(phpFormat);
       setError('');
     } catch (err) {
@@ -272,7 +327,8 @@ export function PhpDeserializerPage() {
   }, []);
 
   const handleSample = () => {
-    const sample = 'O:8:"stdClass":5:{s:5:"store";s:8:"My Store";s:2:"id";i:123;s:6:"active";b:1;s:8:"products";a:3:{i:0;s:9:"Product 1";i:1;s:9:"Product 2";i:2;s:9:"Product 3";}s:8:"settings";a:3:{s:8:"currency";s:3:"USD";s:8:"tax_rate";d:0.21;s:13:"notifications";b:1;}}';
+    const sample =
+      'O:8:"stdClass":5:{s:5:"store";s:8:"My Store";s:2:"id";i:123;s:6:"active";b:1;s:8:"products";a:3:{i:0;s:9:"Product 1";i:1;s:9:"Product 2";i:2;s:9:"Product 3";}s:8:"settings";a:3:{s:8:"currency";s:3:"USD";s:8:"tax_rate";d:0.21;s:13:"notifications";b:1;}}';
     setInput(sample);
     deserializePhp(sample);
   };
@@ -309,11 +365,14 @@ export function PhpDeserializerPage() {
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                setOutput('');
-                setError('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  setOutput('');
+                  setError('');
+                }}
+              >
                 Clear
               </Button>
             </div>
@@ -334,9 +393,9 @@ export function PhpDeserializerPage() {
                   '.cm-line': {
                     'word-wrap': 'break-word',
                     'white-space': 'pre-wrap',
-                    'word-break': 'break-all'
-                  }
-                })
+                    'word-break': 'break-all',
+                  },
+                }),
               ]}
               onChange={(value) => {
                 setInput(value);
@@ -346,7 +405,7 @@ export function PhpDeserializerPage() {
               basicSetup={{
                 lineNumbers: true,
                 foldGutter: true,
-                highlightActiveLine: true
+                highlightActiveLine: true,
               }}
             />
           </div>
@@ -359,11 +418,9 @@ export function PhpDeserializerPage() {
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
               <CodeMirror
@@ -381,15 +438,15 @@ export function PhpDeserializerPage() {
                     '.cm-line': {
                       'word-wrap': 'break-word',
                       'white-space': 'pre-wrap',
-                      'word-break': 'break-all'
-                    }
-                  })
+                      'word-break': 'break-all',
+                    },
+                  }),
                 ]}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
                   foldGutter: true,
-                  highlightActiveLine: false
+                  highlightActiveLine: false,
                 }}
               />
             </div>
@@ -398,4 +455,4 @@ export function PhpDeserializerPage() {
       </div>
     </div>
   );
-} 
+}
