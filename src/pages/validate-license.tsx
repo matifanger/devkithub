@@ -78,8 +78,8 @@ export function ValidateLicensePage() {
                 <br />
                 <br />
                 Email:{' '}
-                <a className="font-bold underline" href="mailto:devkithub@gmail.com">
-                  devkithub@gmail.com
+                <a className="font-bold underline" href="mailto:hi@devkithub.com">
+                  hi@devkithub.com
                 </a>
               </AlertDescription>
             </Alert>
