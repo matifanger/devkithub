@@ -11,8 +11,10 @@ import { CertificateDecoderPage } from './pages/certificate-decoder';
 import { ColorConverterPage } from './pages/color-converter';
 import { CronJobParserPage } from './pages/cron-job-parser';
 import { CssBeautifyPage } from './pages/css-beautify';
+import { CssToSvgPage } from './pages/css-to-svg';
 import { CsvToJsonPage } from './pages/csv-to-json';
 import { CurlToCodePage } from './pages/curl-to-code';
+import { DiscordTimestampPage } from './pages/discord-timestamp';
 import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
 import { ErbBeautifyPage } from './pages/erb-beautify';
 import { HashGeneratorPage } from './pages/hash-generator';
@@ -44,6 +46,7 @@ import { RegexTesterPage } from './pages/regex-tester';
 import { ScssBeautifyPage } from './pages/scss-beautify';
 import { SqlFormatterPage } from './pages/sql-formatter';
 import { StringCaseConverterPage } from './pages/string-case-converter';
+import { SvgToCssPage } from './pages/svg-to-css';
 import { TextDiffCheckerPage } from './pages/text-diff-checker';
 import { UnixTimePage } from './pages/unix-time';
 import { UrlEncoderDecoderPage } from './pages/url-encoder-decoder';
@@ -116,7 +119,10 @@ const App = () => {
               <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
               <Route path="/url-parser" element={<UrlParserPage />} />
               <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
+              <Route path="/svg-to-css" element={<SvgToCssPage />} />
+              <Route path="/discord-timestamp" element={<DiscordTimestampPage />} />
               <Route path="/text-diff" element={<TextDiffCheckerPage />} />
+              <Route path="/css-to-svg" element={<CssToSvgPage />} />
             </Route>
           </Routes>
         </HashRouter>

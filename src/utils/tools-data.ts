@@ -1,12 +1,14 @@
 import {
   Binary,
   Clock,
+  Clock3,
   Code,
   Database,
   Database as Database2,
   FileCode,
   FileCode2,
   FileEdit,
+  FileImage,
   FileJson,
   FileJson2,
   FileJson2 as FileJson3,
@@ -340,6 +342,27 @@ export const allTools = [
     url: '/lorem-ipsum',
     icon: Type,
     color: 'bg-yellow-500/10 text-yellow-500',
+  },
+  {
+    title: 'SVG to CSS',
+    description: 'Convert SVG code to CSS background-image with data URI',
+    url: '/svg-to-css',
+    icon: FileImage,
+    color: 'bg-purple-500/10 text-purple-500',
+  },
+  {
+    title: 'CSS to SVG',
+    description: 'Convert CSS background-image with data URI back to SVG code',
+    url: '/css-to-svg',
+    icon: FileImage,
+    color: 'bg-purple-500/10 text-purple-500',
+  },
+  {
+    title: 'Discord Timestamp Generator',
+    description: 'Generate timestamps for Discord messages',
+    url: '/discord-timestamp',
+    icon: Clock3,
+    color: 'bg-indigo-500/10 text-indigo-500',
   },
 ] as const;
 
