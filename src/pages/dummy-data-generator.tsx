@@ -1,30 +1,26 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { faker } from '@faker-js/faker';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Input } from '../components/ui/input';
-import CodeMirror from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
+import { sql } from '@codemirror/lang-sql';
+import { xml } from '@codemirror/lang-xml';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { RefreshCw } from 'lucide-react';
 import { EditorView } from '@codemirror/view';
+import { faker } from '@faker-js/faker';
+import CodeMirror from '@uiw/react-codemirror';
+import { RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Switch } from "../components/ui/switch";
-import { Slider } from "../components/ui/slider";
+} from '../components/ui/select';
+import { Slider } from '../components/ui/slider';
+import { Switch } from '../components/ui/switch';
 
-type DataType = 
-  | 'person'
-  | 'address'
-  | 'company'
-  | 'product'
-  | 'finance'
-  | 'internet'
-  | 'datetime';
+type DataType = 'person' | 'address' | 'company' | 'product' | 'finance' | 'internet' | 'datetime';
 
 interface DataField {
   name: string;
@@ -152,67 +148,115 @@ export function DummyDataGeneratorPage() {
 
     switch (field.type) {
       // Person
-      case 'firstName': return faker.person.firstName();
-      case 'lastName': return faker.person.lastName();
-      case 'email': return faker.internet.email();
-      case 'phone': return faker.phone.number();
-      case 'gender': return faker.person.sex();
-      case 'date': return faker.date.past().toISOString().split('T')[0];
-      case 'ssn': return faker.string.numeric(9);
-      case 'avatar': return faker.image.avatar();
+      case 'firstName':
+        return faker.person.firstName();
+      case 'lastName':
+        return faker.person.lastName();
+      case 'email':
+        return faker.internet.email();
+      case 'phone':
+        return faker.phone.number();
+      case 'gender':
+        return faker.person.sex();
+      case 'date':
+        return faker.date.past().toISOString().split('T')[0];
+      case 'ssn':
+        return faker.string.numeric(9);
+      case 'avatar':
+        return faker.image.avatar();
 
       // Address
-      case 'streetAddress': return faker.location.streetAddress();
-      case 'city': return faker.location.city();
-      case 'state': return faker.location.state();
-      case 'country': return faker.location.country();
-      case 'zipCode': return faker.location.zipCode();
-      case 'latitude': return faker.location.latitude();
-      case 'longitude': return faker.location.longitude();
+      case 'streetAddress':
+        return faker.location.streetAddress();
+      case 'city':
+        return faker.location.city();
+      case 'state':
+        return faker.location.state();
+      case 'country':
+        return faker.location.country();
+      case 'zipCode':
+        return faker.location.zipCode();
+      case 'latitude':
+        return faker.location.latitude();
+      case 'longitude':
+        return faker.location.longitude();
 
       // Company
-      case 'companyName': return faker.company.name();
-      case 'catchPhrase': return faker.company.catchPhrase();
-      case 'industry': return faker.company.buzzPhrase();
-      case 'companyType': return faker.company.buzzNoun();
-      case 'ein': return faker.string.numeric(9);
-      case 'companyLogo': return faker.image.urlLoremFlickr({ category: 'business' });
+      case 'companyName':
+        return faker.company.name();
+      case 'catchPhrase':
+        return faker.company.catchPhrase();
+      case 'industry':
+        return faker.company.buzzPhrase();
+      case 'companyType':
+        return faker.company.buzzNoun();
+      case 'ein':
+        return faker.string.numeric(9);
+      case 'companyLogo':
+        return faker.image.urlLoremFlickr({ category: 'business' });
 
       // Product
-      case 'productName': return faker.commerce.productName();
-      case 'productDescription': return faker.commerce.productDescription();
-      case 'price': return faker.commerce.price();
-      case 'productCategory': return faker.commerce.department();
-      case 'color': return faker.color.human();
-      case 'material': return faker.commerce.productMaterial();
-      case 'sku': return faker.string.alphanumeric(8).toUpperCase();
-      case 'productImage': return faker.image.urlLoremFlickr({ category: 'product' });
+      case 'productName':
+        return faker.commerce.productName();
+      case 'productDescription':
+        return faker.commerce.productDescription();
+      case 'price':
+        return faker.commerce.price();
+      case 'productCategory':
+        return faker.commerce.department();
+      case 'color':
+        return faker.color.human();
+      case 'material':
+        return faker.commerce.productMaterial();
+      case 'sku':
+        return faker.string.alphanumeric(8).toUpperCase();
+      case 'productImage':
+        return faker.image.urlLoremFlickr({ category: 'product' });
 
       // Finance
-      case 'accountNumber': return faker.finance.accountNumber();
-      case 'accountType': return faker.finance.accountName();
-      case 'amount': return faker.finance.amount();
-      case 'currency': return faker.finance.currencyCode();
-      case 'creditCard': return faker.finance.creditCardNumber();
-      case 'iban': return faker.finance.iban();
-      case 'bic': return faker.finance.bic();
+      case 'accountNumber':
+        return faker.finance.accountNumber();
+      case 'accountType':
+        return faker.finance.accountName();
+      case 'amount':
+        return faker.finance.amount();
+      case 'currency':
+        return faker.finance.currencyCode();
+      case 'creditCard':
+        return faker.finance.creditCardNumber();
+      case 'iban':
+        return faker.finance.iban();
+      case 'bic':
+        return faker.finance.bic();
 
       // Internet
-      case 'username': return faker.internet.userName();
-      case 'password': return faker.internet.password();
-      case 'domain': return faker.internet.domainName();
-      case 'url': return faker.internet.url();
-      case 'ipv4': return faker.internet.ipv4();
-      case 'ipv6': return faker.internet.ipv6();
-      case 'userAgent': return faker.internet.userAgent();
+      case 'username':
+        return faker.internet.userName();
+      case 'password':
+        return faker.internet.password();
+      case 'domain':
+        return faker.internet.domainName();
+      case 'url':
+        return faker.internet.url();
+      case 'ipv4':
+        return faker.internet.ipv4();
+      case 'ipv6':
+        return faker.internet.ipv6();
+      case 'userAgent':
+        return faker.internet.userAgent();
 
       // DateTime
-      case 'time': return faker.date.recent().toISOString().split('T')[1].split('.')[0];
-      case 'datetime': return faker.date.recent().toISOString();
-      case 'timestamp': return faker.date.recent().getTime();
-      case 'timezone': return faker.location.timeZone();
+      case 'time':
+        return faker.date.recent().toISOString().split('T')[1].split('.')[0];
+      case 'datetime':
+        return faker.date.recent().toISOString();
+      case 'timestamp':
+        return faker.date.recent().getTime();
+      case 'timezone':
+        return faker.location.timeZone();
 
-      default: return `Sample ${field.type}`;
+      default:
+        return `Sample ${field.type}`;
     }
   };
 
@@ -221,8 +265,12 @@ export function DummyDataGeneratorPage() {
       if (config.seed) {
         // Create a consistent seed number
         const seedStr = String(config.seed);
-        const seedNum = seedStr.split('').reduce((acc, char, i) => 
-          acc + char.charCodeAt(0) * Math.pow(31, seedStr.length - i - 1), 0);
+        const seedNum = seedStr
+          .split('')
+          .reduce(
+            (acc, char, i) => acc + char.charCodeAt(0) * Math.pow(31, seedStr.length - i - 1),
+            0
+          );
         faker.seed(Math.abs(seedNum));
       } else {
         faker.seed(); // Reset seed if none provided
@@ -233,7 +281,7 @@ export function DummyDataGeneratorPage() {
 
       for (let i = 0; i < config.count; i++) {
         const item: Record<string, unknown> = {};
-        
+
         // Generate ID if configured
         if (config.includeId) {
           switch (config.idType) {
@@ -287,11 +335,9 @@ export function DummyDataGeneratorPage() {
           const headers = Object.keys(data[0]);
           formattedOutput = [
             headers.join(','),
-            ...data.map(row => 
-              headers.map(header => 
-                JSON.stringify(row[header] ?? '')
-              ).join(',')
-            )
+            ...data.map((row) =>
+              headers.map((header) => JSON.stringify(row[header] ?? '')).join(',')
+            ),
           ].join('\n');
           break;
         }
@@ -301,15 +347,20 @@ export function DummyDataGeneratorPage() {
             `INSERT INTO ${config.schemaName}.${config.tableName}`,
             `(${columns.join(', ')})`,
             'VALUES',
-            data.map(row => 
-              `(${columns.map(col => {
-                const value = row[col];
-                if (value === null) return 'NULL';
-                if (typeof value === 'number') return value;
-                return `'${String(value).replace(/'/g, "''")}'`;
-              }).join(', ')})`
-            ).join(',\n'),
-            ';'
+            data
+              .map(
+                (row) =>
+                  `(${columns
+                    .map((col) => {
+                      const value = row[col];
+                      if (value === null) return 'NULL';
+                      if (typeof value === 'number') return value;
+                      return `'${String(value).replace(/'/g, "''")}'`;
+                    })
+                    .join(', ')})`
+              )
+              .join(',\n'),
+            ';',
           ].join('\n');
           break;
         }
@@ -317,20 +368,29 @@ export function DummyDataGeneratorPage() {
           formattedOutput = [
             '<?xml version="1.0" encoding="UTF-8"?>',
             '<root>',
-            ...data.map(item => [
-              '  <item>',
-              ...Object.entries(item).map(([key, value]) => 
-                `    <${key}>${
-                  value === null ? '' : String(value).replace(/[<>&]/g, c => ({
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '&': '&amp;'
-                  })[c] || c)
-                }</${key}>`
-              ),
-              '  </item>'
-            ].join('\n')),
-            '</root>'
+            ...data.map((item) =>
+              [
+                '  <item>',
+                ...Object.entries(item).map(
+                  ([key, value]) =>
+                    `    <${key}>${
+                      value === null
+                        ? ''
+                        : String(value).replace(
+                            /[<>&]/g,
+                            (c) =>
+                              ({
+                                '<': '&lt;',
+                                '>': '&gt;',
+                                '&': '&amp;',
+                              })[c] || c
+                          )
+                    }</${key}>`
+                ),
+                '  </item>',
+              ].join('\n')
+            ),
+            '</root>',
           ].join('\n');
           break;
       }
@@ -358,7 +418,7 @@ export function DummyDataGeneratorPage() {
   }, []);
 
   const handleDataTypeChange = (dataType: DataType) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
       dataType,
       fields: FIELD_TEMPLATES[dataType] || [],
@@ -366,14 +426,16 @@ export function DummyDataGeneratorPage() {
   };
 
   const updateConfig = <K extends keyof GeneratorConfig>(key: K, value: GeneratorConfig[K]) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    setConfig((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Dummy Data Generator</h1>
-        <p className="text-muted-foreground">Generate realistic dummy data for testing and development</p>
+        <p className="text-muted-foreground">
+          Generate realistic dummy data for testing and development
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -390,7 +452,10 @@ export function DummyDataGeneratorPage() {
             <div className="grid grid-cols-3 items-center gap-4">
               <Label>Data Type</Label>
               <div className="col-span-2">
-                <Select value={config.dataType} onValueChange={(value: DataType) => handleDataTypeChange(value)}>
+                <Select
+                  value={config.dataType}
+                  onValueChange={(value: DataType) => handleDataTypeChange(value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Data Type" />
                   </SelectTrigger>
@@ -424,7 +489,12 @@ export function DummyDataGeneratorPage() {
             <div className="grid grid-cols-3 items-center gap-4">
               <Label>Format</Label>
               <div className="col-span-2">
-                <Select value={config.format} onValueChange={(value: 'json' | 'csv' | 'sql' | 'xml') => updateConfig('format', value)}>
+                <Select
+                  value={config.format}
+                  onValueChange={(value: 'json' | 'csv' | 'sql' | 'xml') =>
+                    updateConfig('format', value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Format" />
                   </SelectTrigger>
@@ -441,7 +511,10 @@ export function DummyDataGeneratorPage() {
             <div className="grid grid-cols-3 items-center gap-4">
               <Label>Locale</Label>
               <div className="col-span-2">
-                <Select value={config.locale} onValueChange={(value) => updateConfig('locale', value)}>
+                <Select
+                  value={config.locale}
+                  onValueChange={(value) => updateConfig('locale', value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Locale" />
                   </SelectTrigger>
@@ -484,7 +557,12 @@ export function DummyDataGeneratorPage() {
                 <div className="grid grid-cols-3 items-center gap-4">
                   <Label>ID Type</Label>
                   <div className="col-span-2">
-                    <Select value={config.idType} onValueChange={(value: 'number' | 'uuid' | 'custom') => updateConfig('idType', value)}>
+                    <Select
+                      value={config.idType}
+                      onValueChange={(value: 'number' | 'uuid' | 'custom') =>
+                        updateConfig('idType', value)
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select ID Type" />
                       </SelectTrigger>
@@ -578,18 +656,25 @@ export function DummyDataGeneratorPage() {
           </div>
 
           {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           )}
 
           <div className="h-[calc(100vh-17rem)]">
             <CodeMirror
               value={output}
-              className='h-[calc(100vh-17rem)]'
+              className="h-[calc(100vh-17rem)]"
               height="100%"
               theme={oneDark}
-              extensions={[EditorView.lineWrapping]}
+              extensions={[
+                EditorView.lineWrapping,
+                config.format === 'json'
+                  ? json()
+                  : config.format === 'sql'
+                    ? sql()
+                    : config.format === 'xml'
+                      ? xml()
+                      : EditorView.lineWrapping,
+              ]}
               editable={false}
               basicSetup={{
                 lineNumbers: true,
@@ -602,4 +687,4 @@ export function DummyDataGeneratorPage() {
       </div>
     </div>
   );
-} 
+}
