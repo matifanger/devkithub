@@ -167,6 +167,27 @@ export const allTools = [
     color: 'bg-green-500/10 text-green-500',
   },
   {
+    title: 'LESS Beautify/Minify',
+    description: 'Format and minify LESS code',
+    url: '/less-beautify',
+    icon: FileCode2,
+    color: 'bg-yellow-500/10 text-yellow-500',
+  },
+  {
+    title: 'SCSS Beautify/Minify',
+    description: 'Format and minify SCSS code',
+    url: '/scss-beautify',
+    icon: FileCode2,
+    color: 'bg-purple-500/10 text-purple-500',
+  },
+  {
+    title: 'ERB Beautify/Minify',
+    description: 'Format and minify ERB (Ruby) templates',
+    url: '/erb-beautify',
+    icon: FileCode2,
+    color: 'bg-pink-500/10 text-pink-500',
+  },
+  {
     title: 'SQL Formatter',
     description: 'Format SQL queries for better readability',
     url: '/sql-formatter',

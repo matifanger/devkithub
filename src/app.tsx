@@ -13,6 +13,7 @@ import { CronJobParserPage } from './pages/cron-job-parser';
 import { CssBeautifyPage } from './pages/css-beautify';
 import { CsvToJsonPage } from './pages/csv-to-json';
 import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
+import { ErbBeautifyPage } from './pages/erb-beautify';
 import { HashGeneratorPage } from './pages/hash-generator';
 import { HexToAsciiPage } from './pages/hex-to-ascii';
 import { HtmlBeautifyPage } from './pages/html-beautify';
@@ -90,6 +91,7 @@ const App = () => {
               <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
               <Route path="/less-beautify" element={<LessBeautifyPage />} />
               <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
+              <Route path="/erb-beautify" element={<ErbBeautifyPage />} />
               <Route path="/sql-formatter" element={<SqlFormatterPage />} />
               <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
               <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />

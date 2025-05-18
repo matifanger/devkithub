@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
 import { sass } from '@codemirror/lang-sass';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { css as beautifyScss } from 'js-beautify';
+import CodeMirror from '@uiw/react-codemirror';
+import { css as beautifyCss } from 'js-beautify';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
 export function ScssBeautifyPage() {
   const [input, setInput] = useState('');
@@ -29,27 +29,27 @@ export function ScssBeautifyPage() {
       }
 
       if (mode === 'beautify') {
-        const formatted = beautifyScss(input, {
+        const formatted = beautifyCss(input, {
           indent_size: Number(spaces),
           indent_char: ' ',
           max_preserve_newlines: 2,
           preserve_newlines: true,
           end_with_newline: false,
           wrap_line_length: 0,
-          indent_empty_lines: false
+          indent_empty_lines: false,
         });
         setOutput(formatted);
       } else {
-        // Minify: remove all unnecessary whitespace and comments
+        // For minification
         const minified = input
           .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '') // Remove comments
           .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .replace(/\s*([:;,{}])\s*/g, '$1') // Remove spaces around :;,{}
-          .replace(/;\}/g, '}') // Remove unnecessary semicolons
+          .replace(/\s*([:;,{}])\s*/g, '$1') // Remove spaces around operators
+          .replace(/;}/, '}') // Remove unnecessary semicolons
           .trim();
         setOutput(minified);
       }
-      
+
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid SCSS');
@@ -62,7 +62,53 @@ export function ScssBeautifyPage() {
   }, [formatScss]);
 
   const handleSample = () => {
-    const sample = `$primary-color:#007bff;$padding-base:20px;@mixin button-base{border:none;border-radius:4px;cursor:pointer}.container{display:flex;flex-direction:column;padding:$padding-base;.header{background-color:lighten($primary-color,40%);border-radius:4px;padding:$padding-base * 0.75;margin-bottom:$padding-base}}.button{@include button-base;background-color:$primary-color;color:white;padding:$padding-base * 0.5 $padding-base;&:hover{background-color:darken($primary-color,10%)}&--secondary{@extend .button;background-color:darken($primary-color,20%)}}`;
+    const sample = `
+// Variables
+$primary-color: #3498db;
+$secondary-color: #2ecc71;
+$spacing: 20px;
+
+// Mixins
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+// Styles
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: $spacing;
+    
+    .header {
+        @include flex-center;
+        background-color: $primary-color;
+        color: white;
+        
+        h1 {
+            font-size: 2em;
+            margin-bottom: $spacing;
+        }
+    }
+    
+    .content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: $spacing;
+        
+        .card {
+            background-color: $secondary-color;
+            padding: $spacing;
+            border-radius: 8px;
+            
+            &:hover {
+                transform: scale(1.05);
+                transition: transform 0.3s ease;
+            }
+        }
+    }
+}`;
     setInput(sample.trim());
   };
 
@@ -151,11 +197,9 @@ export function ScssBeautifyPage() {
               </Button>
             </div>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
               <CodeMirror
@@ -178,4 +222,4 @@ export function ScssBeautifyPage() {
       </div>
     </div>
   );
-} 
+}
