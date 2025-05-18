@@ -265,6 +265,20 @@ export const allTools = [
     color: 'bg-lime-500/10 text-lime-500',
   },
   {
+    title: 'PHP to JSON',
+    description: 'Convert PHP data to JSON format',
+    url: '/php-to-json',
+    icon: PhpIcon,
+    color: 'bg-lime-500/10 text-lime-500',
+  },
+  {
+    title: 'JSON to PHP',
+    description: 'Convert JSON data to PHP format',
+    url: '/json-to-php',
+    icon: PhpIcon,
+    color: 'bg-lime-500/10 text-lime-500',
+  },
+  {
     title: 'Certificate Decoder (X.509)',
     description: 'Decode and analyze SSL certificates',
     url: '/certificate-decoder',

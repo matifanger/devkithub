@@ -23,6 +23,7 @@ import { MainPage } from './pages/index';
 import { JsBeautifyPage } from './pages/js-beautify';
 import { JsonFormatPage } from './pages/json-format';
 import { JsonToCsvPage } from './pages/json-to-csv';
+import { JsonToPhpPage } from './pages/json-to-php';
 import { JsonToYamlPage } from './pages/json-to-yaml';
 import { JwtDebuggerPage } from './pages/jwt-debug';
 import { LessBeautifyPage } from './pages/less-beautify';
@@ -33,6 +34,7 @@ import { MarkdownPreviewPage } from './pages/markdown-preview';
 import { NumberBaseConverterPage } from './pages/number-base-converter';
 import { PhpDeserializerPage } from './pages/php-deserializer';
 import { PhpSerializerPage } from './pages/php-serializer';
+import { PhpToJsonPage } from './pages/php-to-json';
 import { QRCodePage } from './pages/qr-code';
 import { RandomStringGeneratorPage } from './pages/random-string-generator';
 import { RegexTesterPage } from './pages/regex-tester';
@@ -103,6 +105,8 @@ const App = () => {
               <Route path="/qr-code" element={<QRCodePage />} />
               <Route path="/php-serializer" element={<PhpSerializerPage />} />
               <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
+              <Route path="/php-to-json" element={<PhpToJsonPage />} />
+              <Route path="/json-to-php" element={<JsonToPhpPage />} />
               <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
               <Route path="/url-parser" element={<UrlParserPage />} />
               <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
