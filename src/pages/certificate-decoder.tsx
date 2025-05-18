@@ -1,21 +1,20 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { json } from '@codemirror/lang-json';
+import { yaml } from '@codemirror/lang-yaml';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView } from '@codemirror/view';
+import CodeMirror from '@uiw/react-codemirror';
+import { Settings } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { Settings } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
+} from '../components/ui/select';
 
 interface CertificateInfo {
   subject: { [key: string]: string };
@@ -42,14 +41,15 @@ export function CertificateDecoderPage() {
   const [outputFormat, setOutputFormat] = useState('json');
   const [certInfo, setCertInfo] = useState<CertificateInfo | null>(null);
 
-  const formatCertificateInfo = useCallback((certInfo: CertificateInfo | null, format: string): string => {
-    if (!certInfo) return '';
+  const formatCertificateInfo = useCallback(
+    (certInfo: CertificateInfo | null, format: string): string => {
+      if (!certInfo) return '';
 
-    switch (format) {
-      case 'json':
-        return JSON.stringify(certInfo, null, 2);
-      case 'yaml':
-        return `subject:
+      switch (format) {
+        case 'json':
+          return JSON.stringify(certInfo, null, 2);
+        case 'yaml':
+          return `subject:
   CN: ${certInfo.subject.CN}
   O: ${certInfo.subject.O}
   C: ${certInfo.subject.C}
@@ -70,8 +70,8 @@ extensions:
   basicConstraints: ${certInfo.extensions?.basicConstraints}
   keyUsage: ${certInfo.extensions?.keyUsage}
   extendedKeyUsage: ${certInfo.extensions?.extendedKeyUsage}`;
-      case 'text':
-        return `Certificate Information:
+        case 'text':
+          return `Certificate Information:
 -------------------
 Subject:
   Common Name: ${certInfo.subject.CN}
@@ -99,8 +99,8 @@ Extensions:
   Basic Constraints: ${certInfo.extensions?.basicConstraints}
   Key Usage: ${certInfo.extensions?.keyUsage}
   Extended Key Usage: ${certInfo.extensions?.extendedKeyUsage}`;
-      case 'openssl':
-        return `Certificate:
+        case 'openssl':
+          return `Certificate:
     Data:
         Version: ${certInfo.version} (0x2)
         Serial Number: ${certInfo.serialNumber}
@@ -120,61 +120,66 @@ Extensions:
                 ${certInfo.extensions?.keyUsage}
             X509v3 Extended Key Usage: 
                 ${certInfo.extensions?.extendedKeyUsage}`;
-      default:
-        return JSON.stringify(certInfo, null, 2);
-    }
-  }, []);
-
-  const parseCertificate = useCallback((cert: string) => {
-    try {
-      if (!cert.trim()) {
-        setCertInfo(null);
-        setError('');
-        return;
+        default:
+          return JSON.stringify(certInfo, null, 2);
       }
+    },
+    []
+  );
 
-      // Basic validation for PEM format
-      if (format === 'pem' && !cert.includes('-----BEGIN CERTIFICATE-----')) {
-        throw new Error('Invalid PEM certificate format');
-      }
-
-      // This is a mock implementation - in a real app, you'd use a library like node-forge
-      const mockCertInfo: CertificateInfo = {
-        subject: {
-          CN: "example.com",
-          O: "Example Organization",
-          C: "US"
-        },
-        issuer: {
-          CN: "Example CA",
-          O: "Example Certificate Authority",
-          C: "US"
-        },
-        validity: {
-          notBefore: new Date().toISOString(),
-          notAfter: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        serialNumber: "1234567890",
-        version: "3",
-        signatureAlgorithm: "SHA256withRSA",
-        publicKey: {
-          algorithm: "RSA",
-          bits: 2048
-        },
-        extensions: {
-          "basicConstraints": "CA:FALSE",
-          "keyUsage": "Digital Signature, Key Encipherment",
-          "extendedKeyUsage": "TLS Web Server Authentication, TLS Web Client Authentication"
+  const parseCertificate = useCallback(
+    (cert: string) => {
+      try {
+        if (!cert.trim()) {
+          setCertInfo(null);
+          setError('');
+          return;
         }
-      };
 
-      setCertInfo(mockCertInfo);
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid certificate');
-      setCertInfo(null);
-    }
-  }, [format]);
+        // Basic validation for PEM format
+        if (format === 'pem' && !cert.includes('-----BEGIN CERTIFICATE-----')) {
+          throw new Error('Invalid PEM certificate format');
+        }
+
+        // This is a mock implementation - in a real app, you'd use a library like node-forge
+        const mockCertInfo: CertificateInfo = {
+          subject: {
+            CN: 'example.com',
+            O: 'Example Organization',
+            C: 'US',
+          },
+          issuer: {
+            CN: 'Example CA',
+            O: 'Example Certificate Authority',
+            C: 'US',
+          },
+          validity: {
+            notBefore: new Date().toISOString(),
+            notAfter: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          serialNumber: '1234567890',
+          version: '3',
+          signatureAlgorithm: 'SHA256withRSA',
+          publicKey: {
+            algorithm: 'RSA',
+            bits: 2048,
+          },
+          extensions: {
+            basicConstraints: 'CA:FALSE',
+            keyUsage: 'Digital Signature, Key Encipherment',
+            extendedKeyUsage: 'TLS Web Server Authentication, TLS Web Client Authentication',
+          },
+        };
+
+        setCertInfo(mockCertInfo);
+        setError('');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Invalid certificate');
+        setCertInfo(null);
+      }
+    },
+    [format]
+  );
 
   // Update output whenever certInfo or outputFormat changes
   useEffect(() => {
@@ -212,7 +217,9 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
     <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Certificate Decoder (X.509)</h1>
-        <p className="text-muted-foreground">Decode and analyze X.509 certificates in PEM or DER format</p>
+        <p className="text-muted-foreground">
+          Decode and analyze X.509 certificates in PEM or DER format
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
@@ -239,10 +246,13 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Format</Label>
                         <div className="col-span-2">
-                          <Select value={format} onValueChange={(value) => {
-                            setFormat(value);
-                            if (input) parseCertificate(input);
-                          }}>
+                          <Select
+                            value={format}
+                            onValueChange={(value) => {
+                              setFormat(value);
+                              if (input) parseCertificate(input);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Format" />
                             </SelectTrigger>
@@ -265,11 +275,14 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                setOutput('');
-                setError('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  setOutput('');
+                  setError('');
+                }}
+              >
                 Clear
               </Button>
             </div>
@@ -280,6 +293,7 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
               className="h-[calc(100vh-17rem)]"
               height="100%"
               theme={oneDark}
+              extensions={[EditorView.lineWrapping, format === 'pem' ? [] : []]}
               onChange={(value) => {
                 setInput(value);
                 parseCertificate(value);
@@ -317,10 +331,13 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Format</Label>
                         <div className="col-span-2">
-                          <Select value={outputFormat} onValueChange={(value) => {
-                            setOutputFormat(value);
-                            if (input) parseCertificate(input);
-                          }}>
+                          <Select
+                            value={outputFormat}
+                            onValueChange={(value) => {
+                              setOutputFormat(value);
+                              if (input) parseCertificate(input);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Format" />
                             </SelectTrigger>
@@ -342,11 +359,9 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
               <CodeMirror
@@ -354,6 +369,14 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
                 height="100%"
                 className="h-[calc(100vh-17rem)]"
                 theme={oneDark}
+                extensions={[
+                  EditorView.lineWrapping,
+                  outputFormat === 'json'
+                    ? json()
+                    : outputFormat === 'yaml'
+                      ? yaml()
+                      : EditorView.lineWrapping,
+                ]}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
@@ -367,4 +390,4 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
       </div>
     </div>
   );
-} 
+}
