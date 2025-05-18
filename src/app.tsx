@@ -12,6 +12,7 @@ import { ColorConverterPage } from './pages/color-converter';
 import { CronJobParserPage } from './pages/cron-job-parser';
 import { CssBeautifyPage } from './pages/css-beautify';
 import { CsvToJsonPage } from './pages/csv-to-json';
+import { CurlToCodePage } from './pages/curl-to-code';
 import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
 import { ErbBeautifyPage } from './pages/erb-beautify';
 import { HashGeneratorPage } from './pages/hash-generator';
@@ -23,6 +24,7 @@ import { HtmlToJsxPage } from './pages/html-to-jsx';
 import { MainPage } from './pages/index';
 import { JsBeautifyPage } from './pages/js-beautify';
 import { JsonFormatPage } from './pages/json-format';
+import { JsonToCodePage } from './pages/json-to-code';
 import { JsonToCsvPage } from './pages/json-to-csv';
 import { JsonToPhpPage } from './pages/json-to-php';
 import { JsonToYamlPage } from './pages/json-to-yaml';
@@ -66,6 +68,8 @@ const App = () => {
               <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
               <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
               <Route path="/json-format" element={<JsonFormatPage />} />
+              <Route path="/json-to-code" element={<JsonToCodePage />} />
+              <Route path="/curl-to-code" element={<CurlToCodePage />} />
               <Route path="/unix-time" element={<UnixTimePage />} />
               <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
               <Route path="/cron-job-parser" element={<CronJobParserPage />} />

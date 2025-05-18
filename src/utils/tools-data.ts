@@ -251,6 +251,20 @@ export const allTools = [
     color: 'bg-emerald-500/10 text-emerald-500',
   },
   {
+    title: 'JSON to Code',
+    description: 'Convert JSON data to type definitions and classes',
+    url: '/json-to-code',
+    icon: FileJson3,
+    color: 'bg-cyan-500/10 text-cyan-500',
+  },
+  {
+    title: 'CURL to Code',
+    description: 'Convert CURL commands to various programming languages',
+    url: '/curl-to-code',
+    icon: FileCode,
+    color: 'bg-teal-500/10 text-teal-500',
+  },
+  {
     title: 'String Case Converter',
     description: 'Convert text between different cases',
     url: '/string-case-converter',
