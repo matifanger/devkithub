@@ -1,9 +1,9 @@
-import { MessageCircle, Search, User } from 'lucide-react';
+import { MessageCircle, Search, Star, User } from 'lucide-react';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { useAuth } from '../contexts/auth-context';
-import { allTools } from '../utils/tools-data';
+import { allTools, Tool } from '../utils/tools-data';
 import { ProfileModal } from './profile-modal';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -21,19 +21,108 @@ import {
 } from './ui/sidebar';
 import { ThemeToggle } from './ui/theme-toggle';
 
+const FAVORITE_TOOLS_KEY = 'favorite-tools';
+
+interface ToolItemProps {
+  tool: Tool;
+  isFavorite: boolean;
+  onToggleFavorite: (toolId: string) => void;
+}
+
+function ToolItem({ tool, isFavorite, onToggleFavorite }: ToolItemProps) {
+  return (
+    <SidebarMenuItem className="flex items-center justify-between group">
+      <SidebarMenuButton asChild>
+        <Link
+          to={tool.url}
+          className="flex items-center justify-between gap-2 pl-2 rounded-lg hover:bg-accent/50 dark:hover:bg-accent/30 transition-colors overflow-hidden"
+        >
+          <div className="flex items-center gap-3 min-w-0 w-48">
+            <tool.icon className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium truncate hover:animate-scroll whitespace-nowrap">
+              {tool.title}
+            </span>
+          </div>
+        </Link>
+      </SidebarMenuButton>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 hover:bg-transparent mr-0.5 flex-shrink-0"
+        onClick={() => onToggleFavorite(tool.id)}
+      >
+        <Star
+          className={`w-4 h-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+        />
+      </Button>
+    </SidebarMenuItem>
+  );
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const [favoriteTools, setFavoriteTools] = React.useState<Tool[]>([]);
   const { userData } = useAuth();
 
-  const filteredItems = React.useMemo(() => {
-    if (!searchQuery) return allTools;
+  React.useEffect(() => {
+    const fetchFavorites = async () => {
+      const favorites = await window.electron.settingsStore.get(FAVORITE_TOOLS_KEY);
+      const favoriteToolsData = allTools.filter((tool) => favorites.includes(tool.id));
+      setFavoriteTools(favoriteToolsData);
+    };
+    fetchFavorites();
+  }, []);
 
-    return allTools.filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [searchQuery]);
+  const toggleFavorite = async (toolId: string) => {
+    let updatedFavorites;
+    if (favoriteTools.some((tool) => tool.id === toolId)) {
+      updatedFavorites = favoriteTools.filter((tool) => tool.id !== toolId);
+    } else {
+      const toolToAdd = allTools.find((tool) => tool.id === toolId);
+      if (toolToAdd) {
+        updatedFavorites = [...favoriteTools, toolToAdd];
+      } else {
+        return;
+      }
+    }
+    setFavoriteTools(updatedFavorites);
+    await window.electron.settingsStore.set(
+      FAVORITE_TOOLS_KEY,
+      JSON.stringify(updatedFavorites.map((tool) => tool.id))
+    );
+  };
+
+  const filteredItems = React.useMemo(() => {
+    if (!searchQuery)
+      return allTools.filter((tool) => !favoriteTools.some((fav) => fav.id === tool.id));
+
+    return allTools.filter(
+      (item) =>
+        !favoriteTools.some((fav) => fav.id === item.id) &&
+        item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, favoriteTools]);
 
   return (
     <Sidebar {...props}>
+      <style>
+        {`
+          @keyframes scroll {
+            0% { transform: translateX(0); }
+            40% { transform: translateX(0); }
+            80% { transform: translateX(calc(-100% + 200px)); }
+            100% { transform: translateX(0); }
+          }
+          .animate-scroll {
+            animation: scroll 5s linear infinite;
+            animation-play-state: paused;
+          }
+          .animate-scroll:hover {
+            animation-play-state: running;
+          }
+        `}
+      </style>
       <SidebarHeader className="border-b">
         <div className="p-0">
           <Button
@@ -74,18 +163,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {filteredItems.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild>
-                          <Link
-                            to={item.url}
-                            className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-accent/50 dark:hover:bg-accent/30 transition-colors"
-                          >
-                            <item.icon className="w-4 h-4" />
-                            <span className="font-medium">{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
+                    {favoriteTools.length > 0 && (
+                      <div>
+                        <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                          Favorites
+                        </div>
+                        {favoriteTools.map((tool) => (
+                          <ToolItem
+                            key={tool.id}
+                            tool={tool}
+                            isFavorite={true}
+                            onToggleFavorite={toggleFavorite}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                      All Tools
+                    </div>
+                    {filteredItems.map((tool) => (
+                      <ToolItem
+                        key={tool.id}
+                        tool={tool}
+                        isFavorite={false}
+                        onToggleFavorite={toggleFavorite}
+                      />
                     ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
