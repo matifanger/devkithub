@@ -66,7 +66,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   React.useEffect(() => {
     const fetchFavorites = async () => {
-      const favorites = await window.electron.settingsStore.get(FAVORITE_TOOLS_KEY);
+      const storedFavorites = await window.electron.settingsStore.get(FAVORITE_TOOLS_KEY);
+      const favorites: string[] = storedFavorites ? JSON.parse(storedFavorites) : [];
       const favoriteToolsData = allTools.filter((tool) => favorites.includes(tool.id));
       setFavoriteTools(favoriteToolsData);
     };
