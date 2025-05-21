@@ -85,6 +85,7 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-switch": "^1.1.2",
     "@radix-ui/react-tabs": "^1.1.2",
+    "@radix-ui/react-toast": "^1.2.14",
     "@radix-ui/react-tooltip": "^1.1.7",
     "@types/js-yaml": "^4.0.9",
     "@types/papaparse": "^5.3.15",

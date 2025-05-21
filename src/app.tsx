@@ -1,6 +1,7 @@
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { HashRouter, Route, Routes } from 'react-router-dom';
+import { Toaster } from './components/ui/toaster';
 import { AuthProvider } from './contexts/auth-context';
 import { AppLayout } from './layouts/app-layout';
 import { AsciiToHexPage } from './pages/ascii-to-hex';
@@ -127,6 +128,7 @@ const App = () => {
               <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
             </Route>
           </Routes>
+          <Toaster />
         </HashRouter>
       </AuthProvider>
     </ThemeProvider>

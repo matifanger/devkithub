@@ -1,3 +1,7 @@
+// Usage
+// await window.electron.settingsStore.set(UPDATE_THEME_KEY, newTheme);
+
+// Settings keys
 export const UPDATE_PREFERENCE_KEY = 'update-preference';
 export const UPDATE_THEME_KEY = 'update-theme';
 export const FAVORITE_TOOLS_KEY = 'favorite-tools';

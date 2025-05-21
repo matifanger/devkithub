@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { CopyButton } from '../components/ui/copy-button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
+import CodeMirror from '@uiw/react-codemirror';
 import { FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Button } from '../components/ui/button';
+import { CopyButton } from '../components/ui/copy-button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 
 interface HashOutputs {
   md2: string;
@@ -24,9 +30,9 @@ interface HashOutputs {
   'sha3-512': string;
   ripemd160: string;
   whirlpool: string;
-  'blake2b': string;
-  'blake2s': string;
-  'blake3': string;
+  blake2b: string;
+  blake2s: string;
+  blake3: string;
   sm3: string;
 }
 
@@ -48,10 +54,10 @@ export function HashGeneratorPage() {
     'sha3-512': '',
     ripemd160: '',
     whirlpool: '',
-    'blake2b': '',
-    'blake2s': '',
-    'blake3': '',
-    sm3: ''
+    blake2b: '',
+    blake2s: '',
+    blake3: '',
+    sm3: '',
   });
 
   const generateHashes = async (text: string, newCasing = casing) => {
@@ -72,18 +78,33 @@ export function HashGeneratorPage() {
         'sha3-512': '',
         ripemd160: '',
         whirlpool: '',
-        'blake2b': '',
-        'blake2s': '',
-        'blake3': '',
-        sm3: ''
+        blake2b: '',
+        blake2s: '',
+        blake3: '',
+        sm3: '',
       });
       return;
     }
 
     const algorithms = [
-      'md2', 'md4', 'md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512',
-      'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512',
-      'ripemd160', 'whirlpool', 'blake2b', 'blake2s', 'blake3', 'sm3'
+      'md2',
+      'md4',
+      'md5',
+      'sha1',
+      'sha224',
+      'sha256',
+      'sha384',
+      'sha512',
+      'sha3-224',
+      'sha3-256',
+      'sha3-384',
+      'sha3-512',
+      'ripemd160',
+      'whirlpool',
+      'blake2b',
+      'blake2s',
+      'blake3',
+      'sm3',
     ];
     const newHashes: Partial<HashOutputs> = {};
 
@@ -92,7 +113,8 @@ export function HashGeneratorPage() {
         try {
           const hash = await window.cryptoAPI.hash(algo, text);
           if (hash) {
-            newHashes[algo as keyof HashOutputs] = newCasing === 'lowercase' ? hash.toLowerCase() : hash.toUpperCase();
+            newHashes[algo as keyof HashOutputs] =
+              newCasing === 'lowercase' ? hash.toLowerCase() : hash.toUpperCase();
           } else {
             newHashes[algo as keyof HashOutputs] = '';
           }
@@ -160,10 +182,13 @@ export function HashGeneratorPage() {
               <Button variant="outline" onClick={handleFileLoad}>
                 Load File...
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                generateHashes('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  generateHashes('');
+                }}
+              >
                 Clear
               </Button>
             </div>
@@ -194,15 +219,19 @@ export function HashGeneratorPage() {
             <div className="text-sm text-muted-foreground">
               Total bytes: {new TextEncoder().encode(input).length}
             </div>
-            <Select value={casing} onValueChange={(value) => {
-              setCasing(value);
-              // Instantly update hashes with new casing
-              const newHashes: HashOutputs = {} as HashOutputs;
-              Object.entries(hashes).forEach(([algo, hash]) => {
-                newHashes[algo as keyof HashOutputs] = value === 'lowercase' ? hash.toLowerCase() : hash.toUpperCase();
-              });
-              setHashes(newHashes);
-            }}>
+            <Select
+              value={casing}
+              onValueChange={(value) => {
+                setCasing(value);
+                // Instantly update hashes with new casing
+                const newHashes: HashOutputs = {} as HashOutputs;
+                Object.entries(hashes).forEach(([algo, hash]) => {
+                  newHashes[algo as keyof HashOutputs] =
+                    value === 'lowercase' ? hash.toLowerCase() : hash.toUpperCase();
+                });
+                setHashes(newHashes);
+              }}
+            >
               <SelectTrigger className="w-[120px]">
                 <SelectValue />
               </SelectTrigger>
@@ -235,4 +264,4 @@ export function HashGeneratorPage() {
       </div>
     </div>
   );
-} 
+}
