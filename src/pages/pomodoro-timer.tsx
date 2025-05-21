@@ -1,4 +1,14 @@
-import { ClipboardList, Pause, Play, Plus, RotateCcw, Settings, Square, X } from 'lucide-react';
+import {
+  ClipboardList,
+  Pause,
+  Play,
+  Plus,
+  RotateCcw,
+  Settings,
+  Square,
+  Volume2,
+  X,
+} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -19,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import { Slider } from '../components/ui/slider';
 import { Textarea } from '../components/ui/textarea';
 
 type TimerMode = 'work' | 'short-break' | 'long-break';
@@ -39,14 +50,14 @@ const DEFAULT_TIMES = {
 
 // This will be replaced with actual audio files from the public folder
 const AVAILABLE_SOUNDS = [
-  { id: 'bell', name: 'Bell', url: '/sounds/bell.mp3' },
-  { id: 'assistant', name: 'Assistant', url: '/sounds/assistant.mp3' },
-  { id: 'hong-kong', name: 'Hong Kong', url: '/sounds/hong-kong.mp3' },
-  { id: 'notification', name: 'Notification', url: '/sounds/soft.mp3' },
-  { id: 'level-up', name: 'Level Up', url: '/sounds/level-up.mp3' },
-  { id: 'tokyo', name: 'Tokyo', url: '/sounds/tokyo.mp3' },
-  { id: 'three', name: 'Three', url: '/sounds/three.mp3' },
-  { id: 'among-us', name: 'Among Us', url: '/sounds/among-us.mp3' },
+  { id: 'bell', name: 'Bell', url: 'static://assets/sounds/bell.mp3' },
+  { id: 'assistant', name: 'Assistant', url: 'static://assets/sounds/assistant.mp3' },
+  { id: 'hong-kong', name: 'Hong Kong', url: 'static://assets/sounds/hong-kong.mp3' },
+  { id: 'notification', name: 'Notification', url: 'static://assets/sounds/soft.mp3' },
+  { id: 'level-up', name: 'Level Up', url: 'static://assets/sounds/level-up.mp3' },
+  { id: 'tokyo', name: 'Tokyo', url: 'static://assets/sounds/tokyo.mp3' },
+  { id: 'three', name: 'Three', url: 'static://assets/sounds/three.mp3' },
+  { id: 'among-us', name: 'Among Us', url: 'static://assets/sounds/among-us.mp3' },
 ];
 
 export function PomodoroTimerPage() {
@@ -57,6 +68,7 @@ export function PomodoroTimerPage() {
   const [shortBreakTime, setShortBreakTime] = useState(5);
   const [longBreakTime, setLongBreakTime] = useState(15);
   const [selectedSound, setSelectedSound] = useState(AVAILABLE_SOUNDS[0].id);
+  const [volume, setVolume] = useState(0.5);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState({ title: '', notes: '', pomodorosRequired: 1 });
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -86,6 +98,7 @@ export function PomodoroTimerPage() {
       const sound = AVAILABLE_SOUNDS.find((s) => s.id === selectedSound);
       if (sound) {
         const audio = new Audio(sound.url);
+        audio.volume = volume;
         audio.play().catch((error) => {
           console.error('Error playing sound:', error);
         });
@@ -105,7 +118,7 @@ export function PomodoroTimerPage() {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, timeLeft, selectedSound, mode, currentTaskId, tasks]);
+  }, [isRunning, timeLeft, selectedSound, volume, mode, currentTaskId, tasks]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -167,6 +180,7 @@ export function PomodoroTimerPage() {
     const sound = AVAILABLE_SOUNDS.find((s) => s.id === soundId);
     if (sound) {
       const audio = new Audio(sound.url);
+      audio.volume = volume;
       audio.play().catch((error) => {
         console.error('Error playing sound:', error);
       });
@@ -257,6 +271,30 @@ export function PomodoroTimerPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="volume-slider">Volume</Label>
+                        <span className="text-sm text-muted-foreground">
+                          {Math.round(volume * 100)}%
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="h-4 w-4 text-muted-foreground" />
+                        <Slider
+                          id="volume-slider"
+                          value={[volume * 100]}
+                          min={0}
+                          max={100}
+                          step={1}
+                          onValueChange={([value]) => {
+                            setVolume(value / 100);
+                          }}
+                          onValueCommit={([value]) => {
+                            playSound(selectedSound);
+                          }}
+                        />
+                      </div>
                     </div>
                     <Button onClick={updateTimes}>Save Settings</Button>
                   </div>

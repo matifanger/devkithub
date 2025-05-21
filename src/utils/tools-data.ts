@@ -36,14 +36,14 @@ import {
 } from 'lucide-react';
 
 // Define the Tool type
-export interface Tool {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  icon: LucideIcon;
-  color: string;
-}
+export type Tool = {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly url: string;
+  readonly icon: LucideIcon;
+  readonly color: string;
+};
 
 // Helper function to create a slug from a title
 const slugify = (title: string) =>
@@ -53,15 +53,7 @@ const slugify = (title: string) =>
     .replace(/[\s_-]+/g, '-')
     .replace(/[^\w-]+/g, '');
 
-export const allTools: Tool[] = [
-  {
-    id: slugify('Pomodoro Timer'),
-    title: 'Pomodoro Timer',
-    description: 'Stay focused and productive with the Pomodoro Technique',
-    url: '/pomodoro-timer',
-    icon: Timer,
-    color: 'bg-red-500/10 text-red-500',
-  },
+export const allTools = [
   {
     id: slugify('Hash Generator'),
     title: 'Hash Generator',
@@ -437,6 +429,14 @@ export const allTools: Tool[] = [
     url: '/discord-timestamp',
     icon: Clock3,
     color: 'bg-indigo-500/10 text-indigo-500',
+  },
+  {
+    id: slugify('Pomodoro Timer'),
+    title: 'Pomodoro Timer',
+    description: 'Stay focused and productive with the Pomodoro Technique',
+    url: '/pomodoro-timer',
+    icon: Timer,
+    color: 'bg-red-500/10 text-red-500',
   },
 ] as const;
 

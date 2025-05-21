@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, shell } from 'electron';
 import * as fs from 'fs';
 import * as keytar from 'keytar';
 import * as path from 'path';
@@ -86,6 +86,7 @@ const createWindow = (): void => {
           "img-src 'self' data: blob:;",
           `connect-src 'self' ${baseApi};`,
           "worker-src 'self' blob:;",
+          "media-src 'self' static:;",
         ].join(' '),
       },
     });
@@ -219,11 +220,20 @@ async function checkForUpdates() {
   }
 }
 
+function registerLocalSoundProtocol() {
+  protocol.registerFileProtocol('static', (request, callback) => {
+    const fileUrl = request.url.replace('static://', '');
+    const filePath = path.join(app.getAppPath(), '.webpack/renderer', fileUrl);
+    callback(filePath);
+  });
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  loadSettings(); // Cargar configuración antes de usarla
+app.whenReady().then(async () => {
+  registerLocalSoundProtocol();
+  loadSettings();
   setupSecureStore();
   createWindow();
   checkForUpdates();

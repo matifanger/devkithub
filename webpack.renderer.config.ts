@@ -1,14 +1,24 @@
-import type { Configuration } from 'webpack';
 import path from 'path';
+import type { Configuration } from 'webpack';
 
-import { rules } from './webpack.rules';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { plugins } from './webpack.plugins';
+import { rules } from './webpack.rules';
+
+const assets = ['assets'];
+
+const copyPlugins = new CopyWebpackPlugin({
+  patterns: assets.map((asset) => ({
+    from: path.resolve(__dirname, 'src', asset),
+    to: path.resolve(__dirname, '.webpack/renderer', asset),
+  })),
+});
 
 export const rendererConfig: Configuration = {
   module: {
     rules,
   },
-  plugins,
+  plugins: [...plugins, copyPlugins],
   resolve: {
     extensions: ['.js', '.ts', '.jsx', '.tsx', '.css'],
     alias: {

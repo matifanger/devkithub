@@ -69,7 +69,7 @@ jobs:
         run: npx electron-rebuild
 
       - name: Make for Windows
-        run: npm run make -- --platform=win32 --verbose
+        run: npm run make -- --platform=win32 --arch=x64 --verbose
 
       - name: List all generated files
         run: |
