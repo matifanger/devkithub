@@ -55,6 +55,14 @@ const slugify = (title: string) =>
 
 export const allTools: Tool[] = [
   {
+    id: slugify('Pomodoro Timer'),
+    title: 'Pomodoro Timer',
+    description: 'Stay focused and productive with the Pomodoro Technique',
+    url: '/pomodoro-timer',
+    icon: Timer,
+    color: 'bg-red-500/10 text-red-500',
+  },
+  {
     id: slugify('Hash Generator'),
     title: 'Hash Generator',
     description: 'Generate various types of hashes from text input',

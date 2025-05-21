@@ -40,6 +40,7 @@ import { NumberBaseConverterPage } from './pages/number-base-converter';
 import { PhpDeserializerPage } from './pages/php-deserializer';
 import { PhpSerializerPage } from './pages/php-serializer';
 import { PhpToJsonPage } from './pages/php-to-json';
+import { PomodoroTimerPage } from './pages/pomodoro-timer';
 import { QRCodePage } from './pages/qr-code';
 import { RandomStringGeneratorPage } from './pages/random-string-generator';
 import { RegexTesterPage } from './pages/regex-tester';
@@ -123,6 +124,7 @@ const App = () => {
               <Route path="/discord-timestamp" element={<DiscordTimestampPage />} />
               <Route path="/text-diff" element={<TextDiffCheckerPage />} />
               <Route path="/css-to-svg" element={<CssToSvgPage />} />
+              <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
             </Route>
           </Routes>
         </HashRouter>
