@@ -164,8 +164,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {favoriteTools.length > 0 && (
-                      <div>
-                        <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                      <div className="mb-1">
+                        <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1">
                           Favorites
                         </div>
                         {favoriteTools.map((tool) => (
@@ -178,7 +178,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         ))}
                       </div>
                     )}
-                    <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                    <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-0.5">
                       All Tools
                     </div>
                     {filteredItems.map((tool) => (
