@@ -3,6 +3,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, shell } from 'elec
 import * as fs from 'fs';
 import * as keytar from 'keytar';
 import * as path from 'path';
+import { ACCOUNT_NAME, SERVICE_NAME, UPDATE_PREFERENCE_KEY } from './constants/settings-keys';
 import { baseApi } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
 import { getSimpleHwid } from './utils/mac';
@@ -18,9 +19,6 @@ declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 // Keys for settings
-const SERVICE_NAME = 'devkithub';
-const ACCOUNT_NAME = 'default';
-const UPDATE_PREFERENCE_KEY = 'update-preference';
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.

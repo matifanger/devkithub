@@ -2,6 +2,7 @@ import { MessageCircle, Search, Star, User } from 'lucide-react';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import { FAVORITE_TOOLS_KEY } from '../constants/settings-keys';
 import { useAuth } from '../contexts/auth-context';
 import { allTools, Tool } from '../utils/tools-data';
 import { ProfileModal } from './profile-modal';
@@ -20,8 +21,6 @@ import {
   SidebarRail,
 } from './ui/sidebar';
 import { ThemeToggle } from './ui/theme-toggle';
-
-const FAVORITE_TOOLS_KEY = 'favorite-tools';
 
 interface ToolItemProps {
   tool: Tool;

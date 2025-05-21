@@ -1,6 +1,7 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import * as React from 'react';
+import { UPDATE_THEME_KEY } from '../../constants/settings-keys';
 
 import { Button } from './button';
 import {
@@ -15,7 +16,22 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ label }: ThemeToggleProps = {}) {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+
+  const handleThemeChange = async (newTheme: string) => {
+    setTheme(newTheme);
+    await window.electron.settingsStore.set(UPDATE_THEME_KEY, newTheme);
+  };
+
+  React.useEffect(() => {
+    const loadSavedTheme = async () => {
+      const savedTheme = await window.electron.settingsStore.get(UPDATE_THEME_KEY);
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    };
+    loadSavedTheme();
+  }, [setTheme]);
 
   return (
     <DropdownMenu>
@@ -34,9 +50,9 @@ export function ThemeToggle({ label }: ThemeToggleProps = {}) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleThemeChange('light')}>Light</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleThemeChange('dark')}>Dark</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleThemeChange('system')}>System</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
