@@ -33,7 +33,13 @@ function loadSettings() {
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
       const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
-      const settings = JSON.parse(data);
+      let settings: Record<string, string> = {};
+      try {
+        settings = JSON.parse(data);
+      } catch (error) {
+        console.error('Invalid JSON in settings file:', error);
+        return;
+      }
       Object.assign(persistentStore, settings);
       console.log('Settings loaded from', SETTINGS_FILE);
     }
