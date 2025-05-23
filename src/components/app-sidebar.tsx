@@ -31,7 +31,7 @@ interface ToolItemProps {
 
 function ToolItem({ tool, isFavorite, onToggleFavorite }: ToolItemProps) {
   return (
-    <SidebarMenuItem className="flex items-center justify-between group">
+    <SidebarMenuItem className="flex items-center justify-between group text-muted-foreground">
       <SidebarMenuButton asChild>
         <Link
           to={tool.url}
