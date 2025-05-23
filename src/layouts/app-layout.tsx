@@ -45,6 +45,11 @@ export function AppLayout() {
                       right: 55px;
                     }
                   }
+                    @media (min-width: 1920px) {
+                    .custom-right {
+                      right: 85px;
+                    }
+                  }
                 `}</style>
                 {useLocation().pathname !== '/' && (
                   <TooltipProvider delayDuration={50}>
