@@ -20,6 +20,7 @@ interface Window {
     };
     getSimpleHwid: () => Promise<string>;
     openExternal: (url: string) => Promise<void>;
+    isPackaged: () => Promise<boolean>;
   };
 }
 

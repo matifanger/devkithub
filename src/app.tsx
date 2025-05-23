@@ -1,8 +1,11 @@
-import React from 'react';
+import axios from 'axios';
+import React, { useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Toaster } from './components/ui/toaster';
+import { REJECTED_VERSION_KEY, UPDATE_PREFERENCE_KEY } from './constants/settings-keys';
 import { AuthProvider } from './contexts/auth-context';
+import { useToast } from './hooks/use-toast';
 import { AppLayout } from './layouts/app-layout';
 import { AsciiToHexPage } from './pages/ascii-to-hex';
 import { BackslashEscapeUnescapePage } from './pages/backslash-escape-unescape';
@@ -57,8 +60,64 @@ import { ValidateLicensePage } from './pages/validate-license';
 import { XmlBeautifyPage } from './pages/xml-beautify';
 import { YamlToJsonPage } from './pages/yaml-to-json';
 import { ThemeProvider } from './providers/theme-provider';
+import { getBaseApiUrl } from './utils/environment';
 
 const App = () => {
+  const { toast } = useToast();
+
+  useEffect(() => {
+    checkForUpdates();
+  }, []);
+
+  const checkForUpdates = async () => {
+    try {
+      // Check user preference for updates
+      const updatesEnabled = await window.electron.settingsStore.get(UPDATE_PREFERENCE_KEY);
+
+      // Default to true if preference is not set
+      const shouldCheckUpdates = updatesEnabled === null || updatesEnabled === 'true';
+
+      if (!shouldCheckUpdates) {
+        console.log('Updates are disabled by user preference');
+        return;
+      }
+
+      const response = await axios.get((await getBaseApiUrl()) + '/api/version');
+      const latestVersion = response.data.version;
+      const currentVersion = await window.electron.env.get('npm_package_version');
+
+      console.log('latestVersion', latestVersion);
+      console.log('currentVersion', currentVersion);
+
+      // Check if this version was already rejected
+      const rejectedVersion = await window.electron.settingsStore.get(REJECTED_VERSION_KEY);
+      if (rejectedVersion === latestVersion) {
+        console.log('This version was already rejected by the user');
+        return;
+      }
+
+      if (latestVersion !== currentVersion) {
+        const updateToast = toast({
+          title: 'New version available!',
+          description: `Version ${latestVersion} is now available. ${response.data.releaseNotes || 'Update for new features!'}`,
+          duration: Infinity,
+          action: (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => window.electron.openExternal('https://devkithub.com/downloads')}
+                className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive"
+              >
+                Download
+              </button>
+            </div>
+          ),
+        });
+      }
+    } catch (err) {
+      console.error('Error checking version:', err);
+    }
+  };
+
   return (
     <ThemeProvider>
       <AuthProvider>

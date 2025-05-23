@@ -1,9 +1,8 @@
-import axios from 'axios';
-import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron';
 import * as fs from 'fs';
 import * as keytar from 'keytar';
 import * as path from 'path';
-import { ACCOUNT_NAME, SERVICE_NAME, UPDATE_PREFERENCE_KEY } from './constants/settings-keys';
+import { ACCOUNT_NAME, SERVICE_NAME } from './constants/settings-keys';
 import { baseApi } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
 import { getSimpleHwid } from './utils/mac';
@@ -162,6 +161,9 @@ function setupSecureStore() {
 
   // Add env handler
   ipcMain.handle('get-env', async (_, key: string) => {
+    if (key === 'npm_package_version') {
+      return app.getVersion();
+    }
     return process.env[key] || '';
   });
 
@@ -172,50 +174,10 @@ function setupSecureStore() {
   ipcMain.handle('getSimpleHwid', () => {
     return getSimpleHwid();
   });
-}
 
-async function checkForUpdates() {
-  try {
-    // Check user preference for updates
-    // Default to true if preference is not set
-    const updatesEnabled =
-      persistentStore[UPDATE_PREFERENCE_KEY] === undefined
-        ? true
-        : persistentStore[UPDATE_PREFERENCE_KEY] === 'true';
-
-    console.log('Updates enabled:', updatesEnabled);
-
-    // Skip update check if user has disabled updates
-    if (!updatesEnabled) {
-      console.log('Updates are disabled by user preference');
-      return;
-    }
-
-    const response = await axios.get(baseApi + '/api/version');
-    const latestVersion = response.data.version;
-    const currentVersion = app.getVersion();
-
-    console.log('latestVersion', latestVersion);
-    console.log('currentVersion', currentVersion);
-
-    if (latestVersion !== currentVersion) {
-      dialog
-        .showMessageBox({
-          type: 'info',
-          buttons: ['Download', 'Ignore'],
-          title: 'New version available',
-          message: `New version ${latestVersion} available`,
-          detail: response.data.releaseNotes || 'Update for new features!',
-        })
-        .then((response) => {
-          if (response.response === 0) {
-            shell.openExternal(baseApi + '/downloads');
-          }
-        });
-    }
-  } catch (err) {
-    console.error('Error checking version');
-  }
+  ipcMain.handle('isPackaged', () => {
+    return app.isPackaged;
+  });
 }
 
 function registerLocalSoundProtocol() {
@@ -234,7 +196,6 @@ app.whenReady().then(async () => {
   loadSettings();
   setupSecureStore();
   createWindow();
-  // checkForUpdates();
 
   // Quit when all windows are closed, except on macOS. There, it's common
   // for applications and their menu bar to stay active until the user quits

@@ -178,4 +178,5 @@ contextBridge.exposeInMainWorld('electron', {
       console.error('shell.openExternal is not available');
     }
   },
+  isPackaged: () => ipcRenderer.invoke('isPackaged'),
 });

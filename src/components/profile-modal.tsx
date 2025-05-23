@@ -1,7 +1,11 @@
+import axios from 'axios';
 import { differenceInDays } from 'date-fns';
-import { Eye, EyeOff, Key, Puzzle, Settings, Terminal } from 'lucide-react';
+import { Download, ExternalLink, Eye, EyeOff, Key, Puzzle, Settings, Terminal } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { ActivateLicenseResponse } from '../types/types';
+import { getBaseApiUrl } from '../utils/environment';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
@@ -25,6 +29,20 @@ const UPDATE_PREFERENCE_KEY = 'update-preference';
 export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps) {
   const [showLicenseKey, setShowLicenseKey] = useState(false);
   const [updatesEnabled, setUpdatesEnabled] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<{
+    hasUpdate: boolean;
+    latestVersion: string;
+    currentVersion: string;
+    isLoading: boolean;
+    error: string | null;
+    releaseNotes?: string;
+  }>({
+    hasUpdate: false,
+    latestVersion: '',
+    currentVersion: '',
+    isLoading: true,
+    error: null,
+  });
 
   // If userData is a string, parse it as json
   const userDataJson: ActivateLicenseResponse | null =
@@ -57,6 +75,42 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
     await window.electron.settingsStore.set(UPDATE_PREFERENCE_KEY, checked.toString());
     console.log('Update preference changed to:', checked);
   };
+
+  // Check for updates
+  useEffect(() => {
+    async function checkForUpdates() {
+      try {
+        setUpdateStatus((prev) => ({ ...prev, isLoading: true, error: null }));
+
+        const baseApiUrl = await getBaseApiUrl();
+        const response = await axios.get(baseApiUrl + '/api/version');
+        const latestVersion = response.data.version;
+        const currentVersion = await window.electron.env.get('npm_package_version');
+
+        const hasUpdate = latestVersion !== currentVersion;
+
+        setUpdateStatus({
+          hasUpdate,
+          latestVersion,
+          currentVersion,
+          isLoading: false,
+          error: null,
+          releaseNotes: response.data.releaseNotes,
+        });
+      } catch (error) {
+        console.error('Failed to check for updates:', error);
+        setUpdateStatus((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: 'Failed to check for updates',
+        }));
+      }
+    }
+
+    if (open) {
+      checkForUpdates();
+    }
+  }, [open]);
 
   if (!userDataJson) return null;
 
@@ -155,18 +209,89 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
                       <CardTitle>Updates</CardTitle>
                       <CardDescription>Manage automatic updates</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-6">
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <Label>Updates</Label>
+                          <Label>Automatic Updates</Label>
                           <p className="text-sm text-muted-foreground">
-                            Receive updates notifications when a new version is available
+                            Receive notifications when a new version is available
                           </p>
                         </div>
                         <Switch
                           checked={updatesEnabled}
                           onCheckedChange={handleUpdatePreferenceChange}
                         />
+                      </div>
+
+                      <div className="border-t pt-6">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base">Version Information</Label>
+                            {updateStatus.isLoading && <Badge variant="default">Checking...</Badge>}
+                            {updateStatus.hasUpdate && !updateStatus.isLoading && (
+                              <Badge variant="destructive">Update Available</Badge>
+                            )}
+                            {!updateStatus.hasUpdate &&
+                              !updateStatus.isLoading &&
+                              !updateStatus.error && <Badge variant="default">Up to date</Badge>}
+                            {updateStatus.error && <Badge variant="default">Check failed</Badge>}
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Current version:</span>
+                              <span className="font-mono">
+                                {updateStatus.currentVersion || 'Loading...'}
+                              </span>
+                            </div>
+                            {updateStatus.latestVersion && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Latest version:</span>
+                                <span className="font-mono">{updateStatus.latestVersion}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {updateStatus.hasUpdate && (
+                            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                              <div className="font-medium text-sm">New version available!</div>
+                              {updateStatus.releaseNotes && (
+                                <p className="text-sm text-muted-foreground">
+                                  {updateStatus.releaseNotes}
+                                </p>
+                              )}
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    window.electron.openExternal('https://devkithub.com/downloads')
+                                  }
+                                  className="flex items-center gap-2"
+                                >
+                                  <Download className="h-4 w-4" />
+                                  Download
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    window.electron.openExternal('https://devkithub.com/changelog')
+                                  }
+                                  className="flex items-center gap-2"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  Changelog
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          {updateStatus.error && (
+                            <div className="text-sm text-muted-foreground">
+                              {updateStatus.error}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
