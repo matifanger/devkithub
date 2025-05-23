@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as keytar from 'keytar';
 import * as path from 'path';
 import { ACCOUNT_NAME, SERVICE_NAME } from './constants/settings-keys';
-import { baseApi } from './utils/environment';
+import { getBaseApiUrl } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
 import { getSimpleHwid } from './utils/mac';
 
@@ -78,7 +78,7 @@ const createWindow = (): void => {
   }
 
   // Set CSP headers
-  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+  mainWindow.webContents.session.webRequest.onHeadersReceived(async (details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
@@ -87,7 +87,7 @@ const createWindow = (): void => {
           "script-src 'self' 'unsafe-inline' 'unsafe-eval';", // unsafe-eval needed for CodeMirror
           "style-src 'self' 'unsafe-inline';",
           "img-src 'self' data: blob:;",
-          `connect-src 'self' ${baseApi};`,
+          `connect-src 'self' ${await getBaseApiUrl()};`,
           "worker-src 'self' blob:;",
           "media-src 'self' static:;",
         ].join(' '),
