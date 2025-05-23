@@ -2,6 +2,7 @@ import { MessageCircle, Search, Star, User } from 'lucide-react';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import { useEffect, useState } from 'react';
 import { FAVORITE_TOOLS_KEY } from '../constants/settings-keys';
 import { useAuth } from '../contexts/auth-context';
 import { allTools, Tool } from '../utils/tools-data';
@@ -59,12 +60,21 @@ function ToolItem({ tool, isFavorite, onToggleFavorite }: ToolItemProps) {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const [favoriteTools, setFavoriteTools] = React.useState<Tool[]>([]);
   const { userData } = useAuth();
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const fetchCurrentVersion = async () => {
+      const currentVersion = await window.electron.env.get('npm_package_version');
+      setCurrentVersion(currentVersion);
+    };
+    fetchCurrentVersion();
+  }, []);
+
+  useEffect(() => {
     const fetchFavorites = async () => {
       const storedFavorites = await window.electron.settingsStore.get(FAVORITE_TOOLS_KEY);
       const favorites: string[] = storedFavorites ? JSON.parse(storedFavorites) : [];
@@ -144,7 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Input
               placeholder="Search tools..."
               spellCheck={false}
-              className="pl-8 border-gray-300 dark:border-gray-600"
+              className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -196,17 +206,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
         </SidebarContent>
       </ScrollArea>
-      <div className="border-t p-4 flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <ThemeToggle />
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={() => window.electron.openExternal('https://devkithub.featurebase.app/en')}
-        >
-          <MessageCircle className="w-4 h-4" />
-          Community
-        </Button>
+      <div className="border-t pl-2 pr-2 pt-2 pb-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => window.electron.openExternal('https://devkithub.featurebase.app/en')}
+          >
+            <MessageCircle className="w-4 h-4" />
+            Community
+          </Button>
+          <ThemeToggle />
+        </div>
+        <div className="flex items-center justify-center">
+          <Button
+            variant="link"
+            className="text-xs text-muted-foreground p-1"
+            onClick={() => window.electron.openExternal('https://devkithub.com')}
+          >
+            DevKitHub.com
+          </Button>
+          <Button
+            variant="link"
+            className="text-xs text-muted-foreground p-1"
+            onClick={() => window.electron.openExternal('https://devkithub.com/changelog')}
+          >
+            v{currentVersion}
+          </Button>
+        </div>
       </div>
       <SidebarRail />
     </Sidebar>
