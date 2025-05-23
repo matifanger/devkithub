@@ -205,7 +205,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           onClick={() => window.electron.openExternal('https://devkithub.featurebase.app/en')}
         >
           <MessageCircle className="w-4 h-4" />
-          Feedback & Bug Reports
+          Community
         </Button>
       </div>
       <SidebarRail />
