@@ -5,6 +5,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Toaster } from './components/ui/toaster';
 import { REJECTED_VERSION_KEY, UPDATE_PREFERENCE_KEY } from './constants/settings-keys';
 import { AuthProvider } from './contexts/auth-context';
+import { ClipboardSettingsProvider } from './contexts/clipboard-settings-context';
 import { useToast } from './hooks/use-toast';
 import { AppLayout } from './layouts/app-layout';
 import { AsciiToHexPage } from './pages/ascii-to-hex';
@@ -121,74 +122,79 @@ const App = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <HashRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/validate-license" element={<ValidateLicensePage />} />
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<MainPage />} />
-              <Route path="/hash-generator" element={<HashGeneratorPage />} />
-              <Route path="/number-base-converter" element={<NumberBaseConverterPage />} />
-              <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
-              <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
-              <Route path="/json-format" element={<JsonFormatPage />} />
-              <Route path="/json-to-code" element={<JsonToCodePage />} />
-              <Route path="/curl-to-code" element={<CurlToCodePage />} />
-              <Route path="/unix-time" element={<UnixTimePage />} />
-              <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
-              <Route path="/cron-job-parser" element={<CronJobParserPage />} />
-              <Route path="/color-converter" element={<ColorConverterPage />} />
-              <Route
-                path="/base64-string-encoder-decoder"
-                element={<Base64StringEncoderDecoderPage />}
-              />
-              <Route
-                path="/base64-image-encoder-decoder"
-                element={<Base64ImageEncoderDecoderPage />}
-              />
-              <Route path="/regex-tester" element={<RegexTesterPage />} />
-              <Route path="/url-encoder-decoder" element={<UrlEncoderDecoderPage />} />
-              <Route
-                path="/html-entity-encoder-decoder"
-                element={<HtmlEntityEncoderDecoderPage />}
-              />
-              <Route path="/backslash-escape-unescape" element={<BackslashEscapeUnescapePage />} />
-              <Route path="/html-beautify" element={<HtmlBeautifyPage />} />
-              <Route path="/css-beautify" element={<CssBeautifyPage />} />
-              <Route path="/js-beautify" element={<JsBeautifyPage />} />
-              <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
-              <Route path="/less-beautify" element={<LessBeautifyPage />} />
-              <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
-              <Route path="/erb-beautify" element={<ErbBeautifyPage />} />
-              <Route path="/sql-formatter" element={<SqlFormatterPage />} />
-              <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
-              <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />
-              <Route path="/ascii-to-hex" element={<AsciiToHexPage />} />
-              <Route path="/html-preview" element={<HtmlPreviewPage />} />
-              <Route path="/markdown-preview" element={<MarkdownPreviewPage />} />
-              <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
-              <Route path="/json-to-csv" element={<JsonToCsvPage />} />
-              <Route path="/csv-to-json" element={<CsvToJsonPage />} />
-              <Route path="/string-case-converter" element={<StringCaseConverterPage />} />
-              <Route path="/random-string-generator" element={<RandomStringGeneratorPage />} />
-              <Route path="/dummy-data-generator" element={<DummyDataGeneratorPage />} />
-              <Route path="/qr-code" element={<QRCodePage />} />
-              <Route path="/php-serializer" element={<PhpSerializerPage />} />
-              <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
-              <Route path="/php-to-json" element={<PhpToJsonPage />} />
-              <Route path="/json-to-php" element={<JsonToPhpPage />} />
-              <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
-              <Route path="/url-parser" element={<UrlParserPage />} />
-              <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
-              <Route path="/svg-to-css" element={<SvgToCssPage />} />
-              <Route path="/discord-timestamp" element={<DiscordTimestampPage />} />
-              <Route path="/text-diff" element={<TextDiffCheckerPage />} />
-              <Route path="/css-to-svg" element={<CssToSvgPage />} />
-              <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
-            </Route>
-          </Routes>
-          <Toaster />
-        </HashRouter>
+        <ClipboardSettingsProvider>
+          <HashRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/validate-license" element={<ValidateLicensePage />} />
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/hash-generator" element={<HashGeneratorPage />} />
+                <Route path="/number-base-converter" element={<NumberBaseConverterPage />} />
+                <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
+                <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
+                <Route path="/json-format" element={<JsonFormatPage />} />
+                <Route path="/json-to-code" element={<JsonToCodePage />} />
+                <Route path="/curl-to-code" element={<CurlToCodePage />} />
+                <Route path="/unix-time" element={<UnixTimePage />} />
+                <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
+                <Route path="/cron-job-parser" element={<CronJobParserPage />} />
+                <Route path="/color-converter" element={<ColorConverterPage />} />
+                <Route
+                  path="/base64-string-encoder-decoder"
+                  element={<Base64StringEncoderDecoderPage />}
+                />
+                <Route
+                  path="/base64-image-encoder-decoder"
+                  element={<Base64ImageEncoderDecoderPage />}
+                />
+                <Route path="/regex-tester" element={<RegexTesterPage />} />
+                <Route path="/url-encoder-decoder" element={<UrlEncoderDecoderPage />} />
+                <Route
+                  path="/html-entity-encoder-decoder"
+                  element={<HtmlEntityEncoderDecoderPage />}
+                />
+                <Route
+                  path="/backslash-escape-unescape"
+                  element={<BackslashEscapeUnescapePage />}
+                />
+                <Route path="/html-beautify" element={<HtmlBeautifyPage />} />
+                <Route path="/css-beautify" element={<CssBeautifyPage />} />
+                <Route path="/js-beautify" element={<JsBeautifyPage />} />
+                <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
+                <Route path="/less-beautify" element={<LessBeautifyPage />} />
+                <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
+                <Route path="/erb-beautify" element={<ErbBeautifyPage />} />
+                <Route path="/sql-formatter" element={<SqlFormatterPage />} />
+                <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
+                <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />
+                <Route path="/ascii-to-hex" element={<AsciiToHexPage />} />
+                <Route path="/html-preview" element={<HtmlPreviewPage />} />
+                <Route path="/markdown-preview" element={<MarkdownPreviewPage />} />
+                <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
+                <Route path="/json-to-csv" element={<JsonToCsvPage />} />
+                <Route path="/csv-to-json" element={<CsvToJsonPage />} />
+                <Route path="/string-case-converter" element={<StringCaseConverterPage />} />
+                <Route path="/random-string-generator" element={<RandomStringGeneratorPage />} />
+                <Route path="/dummy-data-generator" element={<DummyDataGeneratorPage />} />
+                <Route path="/qr-code" element={<QRCodePage />} />
+                <Route path="/php-serializer" element={<PhpSerializerPage />} />
+                <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
+                <Route path="/php-to-json" element={<PhpToJsonPage />} />
+                <Route path="/json-to-php" element={<JsonToPhpPage />} />
+                <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
+                <Route path="/url-parser" element={<UrlParserPage />} />
+                <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
+                <Route path="/svg-to-css" element={<SvgToCssPage />} />
+                <Route path="/discord-timestamp" element={<DiscordTimestampPage />} />
+                <Route path="/text-diff" element={<TextDiffCheckerPage />} />
+                <Route path="/css-to-svg" element={<CssToSvgPage />} />
+                <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
+              </Route>
+            </Routes>
+            <Toaster />
+          </HashRouter>
+        </ClipboardSettingsProvider>
       </AuthProvider>
     </ThemeProvider>
   );

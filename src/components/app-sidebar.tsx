@@ -7,6 +7,7 @@ import { FAVORITE_TOOLS_KEY } from '../constants/settings-keys';
 import { useAuth } from '../contexts/auth-context';
 import { allTools, Tool } from '../utils/tools-data';
 import { ProfileModal } from './profile-modal';
+import { RecommendedTools } from './sidebar/recommended-tools';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
@@ -173,6 +174,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
+                    <RecommendedTools />
                     {favoriteTools.length > 0 && (
                       <div className="mb-1">
                         <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1">
