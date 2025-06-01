@@ -1,6 +1,6 @@
 import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
-import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror, { EditorView } from '@uiw/react-codemirror';
 import { JSONPath } from 'jsonpath-plus';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
@@ -69,10 +69,72 @@ export function JsonFormatPage() {
             title: 'Sayings of the Century',
             price: 8.95,
           },
-          { category: 'fiction', author: 'Evelyn Waugh', title: 'Sword of Honour', price: 12.99 },
+          {
+            category: 'fiction',
+            author: 'Evelyn Waugh',
+            title: 'Sword of Honour',
+            price: 12.99,
+          },
+          {
+            category: 'fiction',
+            author: 'Herman Melville',
+            title: 'Moby Dick',
+            price: 8.99,
+            isbn: '0-553-21311-3',
+          },
+          {
+            category: 'fiction',
+            author: 'J. R. R. Tolkien',
+            title: 'The Lord of the Rings',
+            price: 22.99,
+            isbn: '0-395-19395-8',
+          },
+          {
+            category: 'science',
+            author: 'Stephen Hawking',
+            title: 'A Brief History of Time',
+            price: 15.0,
+          },
+          {
+            category: 'history',
+            author: 'Yuval Noah Harari',
+            title: 'Sapiens: A Brief History of Humankind',
+            price: 18.5,
+          },
+          {
+            category: 'biography',
+            author: 'Walter Isaacson',
+            title: 'Steve Jobs',
+            price: 20.0,
+          },
+        ],
+        magazine: [
+          {
+            title: 'National Geographic',
+            issue: 'March 2021',
+            price: 5.99,
+          },
+          {
+            title: 'Scientific American',
+            issue: 'April 2021',
+            price: 6.5,
+          },
+        ],
+        music: [
+          {
+            artist: 'Pink Floyd',
+            album: 'The Dark Side of the Moon',
+            price: 10.99,
+          },
+          {
+            artist: 'The Beatles',
+            album: 'Abbey Road',
+            price: 12.5,
+          },
         ],
       },
     };
+
     setInput(JSON.stringify(sample));
   };
 
@@ -120,7 +182,7 @@ export function JsonFormatPage() {
               width="100%"
               theme={oneDark}
               onChange={(value) => setInput(value)}
-              extensions={[json()]}
+              extensions={[json(), EditorView.lineWrapping]}
               placeholder="Paste your JSON here"
               basicSetup={{
                 lineNumbers: true,
@@ -162,7 +224,7 @@ export function JsonFormatPage() {
                 height="100%"
                 width="100%"
                 theme={oneDark}
-                extensions={[json()]}
+                extensions={[json(), EditorView.lineWrapping]}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
