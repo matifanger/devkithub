@@ -18,6 +18,7 @@ import {
   FileText,
   FileType,
   FileType2,
+  GitCompare,
   Hash,
   Image,
   Key,
@@ -317,6 +318,14 @@ export const allTools = [
     url: '/curl-to-code',
     icon: FileCode,
     color: 'bg-teal-500/10 text-teal-500',
+  },
+  {
+    id: slugify('Text Diff Checker'),
+    title: 'Text Diff Checker',
+    description: 'Compare two texts with rich diff views and settings',
+    url: '/text-diff',
+    icon: GitCompare,
+    color: 'bg-stone-500/10 text-stone-500',
   },
   {
     id: slugify('String Case Converter'),
