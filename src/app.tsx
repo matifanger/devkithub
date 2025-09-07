@@ -28,6 +28,7 @@ import { HtmlBeautifyPage } from './pages/html-beautify';
 import { HtmlEntityEncoderDecoderPage } from './pages/html-entity-encoder-decoder';
 import { HtmlPreviewPage } from './pages/html-preview';
 import { HtmlToJsxPage } from './pages/html-to-jsx';
+import { ImageOptimizerPage } from './pages/image-optimizer';
 import { MainPage } from './pages/index';
 import { JsBeautifyPage } from './pages/js-beautify';
 import { JsonFormatPage } from './pages/json-format';
@@ -188,6 +189,7 @@ const App = () => {
                 <Route path="/svg-to-css" element={<SvgToCssPage />} />
                 <Route path="/discord-timestamp" element={<DiscordTimestampPage />} />
                 <Route path="/text-diff" element={<TextDiffCheckerPage />} />
+                <Route path="/image-optimizer" element={<ImageOptimizerPage />} />
                 <Route path="/css-to-svg" element={<CssToSvgPage />} />
                 <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
               </Route>

@@ -15,6 +15,10 @@ const copyPlugins = new CopyWebpackPlugin({
 });
 
 export const rendererConfig: Configuration = {
+  experiments: {
+    asyncWebAssembly: true,
+    topLevelAwait: true,
+  },
   module: {
     rules,
   },

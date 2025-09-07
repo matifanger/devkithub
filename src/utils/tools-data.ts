@@ -21,6 +21,7 @@ import {
   GitCompare,
   Hash,
   Image,
+  ImageDown,
   Key,
   Link as LinkIcon,
   ListOrdered,
@@ -398,6 +399,14 @@ export const allTools = [
     url: '/qr-code',
     icon: QrCode,
     color: 'bg-green-500/10 text-green-500',
+  },
+  {
+    id: slugify('Image Optimizer/Converter'),
+    title: 'Image Optimizer/Converter',
+    description: 'Convert formats and reduce image size (bulk support)',
+    url: '/image-optimizer',
+    icon: ImageDown,
+    color: 'bg-emerald-500/10 text-emerald-500',
   },
   {
     id: slugify('Lorem Ipsum Generator'),
