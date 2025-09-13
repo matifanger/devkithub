@@ -179,4 +179,9 @@ contextBridge.exposeInMainWorld('electron', {
     }
   },
   isPackaged: () => ipcRenderer.invoke('isPackaged'),
+  onShowCloseDialog: (callback: () => void) => {
+    ipcRenderer.on('show-close-dialog', () => callback());
+  },
+  sendCloseDialogSelection: (action: 'quit' | 'tray', remember: boolean) =>
+    ipcRenderer.invoke('handle-close-dialog-selection', action, remember),
 });

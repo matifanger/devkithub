@@ -1,0 +1,18 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact"],
+    "files.eol": "\n",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "prettier.singleQuote": true,
+    "prettier.trailingComma": "es5",
+    "prettier.arrowParens": "always",
+    "prettier.printWidth": 100
+  }
+  

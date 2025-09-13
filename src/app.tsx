@@ -2,6 +2,17 @@ import axios from 'axios';
 import React, { useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { HashRouter, Route, Routes } from 'react-router-dom';
+import { Button } from './components/ui/button';
+import { Checkbox } from './components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './components/ui/dialog';
+import { Label } from './components/ui/label';
 import { Toaster } from './components/ui/toaster';
 import { REJECTED_VERSION_KEY, UPDATE_PREFERENCE_KEY } from './constants/settings-keys';
 import { AuthProvider } from './contexts/auth-context';
@@ -66,10 +77,24 @@ import { getBaseApiUrl } from './utils/environment';
 
 const App = () => {
   const { toast } = useToast();
+  const [showCloseDialog, setShowCloseDialog] = React.useState(false);
+  const [rememberChoice, setRememberChoice] = React.useState(false);
 
   useEffect(() => {
     checkForUpdates();
   }, []);
+
+  React.useEffect(() => {
+    // Listen for main process request to show close dialog
+    window.electron.onShowCloseDialog(() => {
+      setShowCloseDialog(true);
+    });
+  }, []);
+
+  const handleCloseSelection = async (action: 'quit' | 'tray') => {
+    await window.electron.sendCloseDialogSelection(action, rememberChoice);
+    setShowCloseDialog(false);
+  };
 
   const checkForUpdates = async () => {
     try {
@@ -195,6 +220,37 @@ const App = () => {
               </Route>
             </Routes>
             <Toaster />
+            {/* Close confirmation dialog */}
+            <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Close DevKitHub</DialogTitle>
+                  <DialogDescription>
+                    ¿What do you want to do when closing the window?
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="remember-choice"
+                      checked={rememberChoice}
+                      onCheckedChange={(v) => setRememberChoice(!!v)}
+                    />
+                    <Label htmlFor="remember-choice">Remember my selection</Label>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <div className="flex w-full justify-end gap-2">
+                    <Button variant="secondary" onClick={() => handleCloseSelection('tray')}>
+                      Leave in the tray
+                    </Button>
+                    <Button variant="destructive" onClick={() => handleCloseSelection('quit')}>
+                      Exit
+                    </Button>
+                  </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </HashRouter>
         </ClipboardSettingsProvider>
       </AuthProvider>

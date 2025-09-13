@@ -1,8 +1,13 @@
-import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, protocol, Tray } from 'electron';
 import * as fs from 'fs';
 import * as keytar from 'keytar';
 import * as path from 'path';
 import { ACCOUNT_NAME, SERVICE_NAME } from './constants/settings-keys';
+import {
+  attachCloseBehavior,
+  createTray as createAppTray,
+  registerCloseDialogIpc,
+} from './main/tray';
 import { getBaseApiUrl } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
 import { getSimpleHwid } from './utils/mac';
@@ -27,6 +32,9 @@ if (require('electron-squirrel-startup')) {
 
 // Persistent settings store
 const persistentStore: Record<string, string> = {};
+let tray: Tray | null = null;
+let mainWindowRef: BrowserWindow | null = null;
+let isQuitting = false;
 
 // Load settings from file
 function loadSettings() {
@@ -98,8 +106,22 @@ const createWindow = (): void => {
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // Keep a reference for later actions
+  mainWindowRef = mainWindow;
+
+  attachCloseBehavior(
+    mainWindow,
+    () => persistentStore['close-to-tray'] || null,
+    (v) => {
+      isQuitting = v;
+    },
+    () => isQuitting
+  );
+
+  // Open DevTools only in development
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools();
+  }
 };
 
 // Set up IPC handlers for secure storage
@@ -184,6 +206,17 @@ function setupSecureStore() {
   ipcMain.handle('isPackaged', () => {
     return app.isPackaged;
   });
+
+  registerCloseDialogIpc(
+    (value) => {
+      persistentStore['close-to-tray'] = value;
+      saveSettings();
+    },
+    () => mainWindowRef,
+    (v) => {
+      isQuitting = v;
+    }
+  );
 }
 
 function registerLocalSoundProtocol() {
@@ -194,6 +227,17 @@ function registerLocalSoundProtocol() {
   });
 }
 
+function createTray() {
+  const show = () => {
+    if (mainWindowRef) mainWindowRef.show();
+  };
+  const quit = () => {
+    isQuitting = true;
+    app.quit();
+  };
+  tray = createAppTray(show, quit);
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -201,6 +245,7 @@ app.whenReady().then(async () => {
   registerLocalSoundProtocol();
   loadSettings();
   setupSecureStore();
+  createTray();
   createWindow();
 
   // Quit when all windows are closed, except on macOS. There, it's common

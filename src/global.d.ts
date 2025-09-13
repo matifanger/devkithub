@@ -21,6 +21,9 @@ interface Window {
     getSimpleHwid: () => Promise<string>;
     openExternal: (url: string) => Promise<void>;
     isPackaged: () => Promise<boolean>;
+    // Window close dialog events
+    onShowCloseDialog: (callback: () => void) => void;
+    sendCloseDialogSelection: (action: 'quit' | 'tray', remember: boolean) => Promise<void>;
   };
 }
 
