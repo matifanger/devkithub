@@ -33,6 +33,10 @@ export const rules: Required<ModuleOptions>['rules'] = [
     use: [{ loader: 'style-loader' }, { loader: 'css-loader' }, { loader: 'postcss-loader' }],
   },
   {
+    test: /\.(woff2?|eot|ttf|otf)$/i,
+    type: 'asset/resource',
+  },
+  {
     test: /\.(png|jpg|gif|svg|glb)$/,
     type: 'asset/resource',
   },
