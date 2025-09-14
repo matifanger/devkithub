@@ -274,11 +274,11 @@ export function ThemeManagerModal({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => window.electron.openExternal('https://ui.jln.dev')}
+                    onClick={() => window.electron.openExternal('https://tweakcn.com/editor/theme')}
                     className="flex items-center gap-2"
                   >
                     <ExternalLink className="h-4 w-4" />
-                    Open ui.jln.dev
+                    Open live editor
                   </Button>
                   <Button
                     variant="outline"

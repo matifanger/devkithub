@@ -12,6 +12,10 @@ export const CLOSE_TO_TRAY_KEY = 'close-to-tray';
 // Launch on OS startup: 'true' | 'false'; if missing => ask once
 export const LAUNCH_ON_STARTUP_KEY = 'launch-on-startup';
 
+// Editor settings
+export const EDITOR_FONT_SIZE_KEY = 'editor-font-size';
+export const EDITOR_THEME_KEY = 'editor-theme';
+
 // Keytar constants
 export const SERVICE_NAME = 'devkithub';
 export const ACCOUNT_NAME = 'default';

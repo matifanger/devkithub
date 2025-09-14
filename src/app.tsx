@@ -21,6 +21,7 @@ import {
 } from './constants/settings-keys';
 import { AuthProvider } from './contexts/auth-context';
 import { ClipboardSettingsProvider } from './contexts/clipboard-settings-context';
+import { EditorSettingsProvider } from './contexts/editor-settings-context';
 import { useToast } from './hooks/use-toast';
 import { AppLayout } from './layouts/app-layout';
 import { AsciiToHexPage } from './pages/ascii-to-hex';
@@ -177,131 +178,133 @@ const App = () => {
     <ThemeProvider>
       <AuthProvider>
         <ClipboardSettingsProvider>
-          <HashRouter>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/validate-license" element={<ValidateLicensePage />} />
-              <Route element={<AppLayout />}>
-                <Route path="/" element={<MainPage />} />
-                <Route path="/hash-generator" element={<HashGeneratorPage />} />
-                <Route path="/number-base-converter" element={<NumberBaseConverterPage />} />
-                <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
-                <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
-                <Route path="/json-format" element={<JsonFormatPage />} />
-                <Route path="/json-to-code" element={<JsonToCodePage />} />
-                <Route path="/curl-to-code" element={<CurlToCodePage />} />
-                <Route path="/unix-time" element={<UnixTimePage />} />
-                <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
-                <Route path="/cron-job-parser" element={<CronJobParserPage />} />
-                <Route path="/color-converter" element={<ColorConverterPage />} />
-                <Route
-                  path="/base64-string-encoder-decoder"
-                  element={<Base64StringEncoderDecoderPage />}
-                />
-                <Route
-                  path="/base64-image-encoder-decoder"
-                  element={<Base64ImageEncoderDecoderPage />}
-                />
-                <Route path="/regex-tester" element={<RegexTesterPage />} />
-                <Route path="/url-encoder-decoder" element={<UrlEncoderDecoderPage />} />
-                <Route
-                  path="/html-entity-encoder-decoder"
-                  element={<HtmlEntityEncoderDecoderPage />}
-                />
-                <Route
-                  path="/backslash-escape-unescape"
-                  element={<BackslashEscapeUnescapePage />}
-                />
-                <Route path="/html-beautify" element={<HtmlBeautifyPage />} />
-                <Route path="/css-beautify" element={<CssBeautifyPage />} />
-                <Route path="/js-beautify" element={<JsBeautifyPage />} />
-                <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
-                <Route path="/less-beautify" element={<LessBeautifyPage />} />
-                <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
-                <Route path="/erb-beautify" element={<ErbBeautifyPage />} />
-                <Route path="/sql-formatter" element={<SqlFormatterPage />} />
-                <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
-                <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />
-                <Route path="/ascii-to-hex" element={<AsciiToHexPage />} />
-                <Route path="/html-preview" element={<HtmlPreviewPage />} />
-                <Route path="/markdown-preview" element={<MarkdownPreviewPage />} />
-                <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
-                <Route path="/json-to-csv" element={<JsonToCsvPage />} />
-                <Route path="/csv-to-json" element={<CsvToJsonPage />} />
-                <Route path="/string-case-converter" element={<StringCaseConverterPage />} />
-                <Route path="/random-string-generator" element={<RandomStringGeneratorPage />} />
-                <Route path="/dummy-data-generator" element={<DummyDataGeneratorPage />} />
-                <Route path="/qr-code" element={<QRCodePage />} />
-                <Route path="/php-serializer" element={<PhpSerializerPage />} />
-                <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
-                <Route path="/php-to-json" element={<PhpToJsonPage />} />
-                <Route path="/json-to-php" element={<JsonToPhpPage />} />
-                <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
-                <Route path="/url-parser" element={<UrlParserPage />} />
-                <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
-                <Route path="/svg-to-css" element={<SvgToCssPage />} />
-                <Route path="/discord-timestamp" element={<DiscordTimestampPage />} />
-                <Route path="/text-diff" element={<TextDiffCheckerPage />} />
-                <Route path="/image-optimizer" element={<ImageOptimizerPage />} />
-                <Route path="/css-to-svg" element={<CssToSvgPage />} />
-                <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
-              </Route>
-            </Routes>
-            <Toaster />
-            {/* Close confirmation dialog */}
-            <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Close DevKitHub</DialogTitle>
-                  <DialogDescription>
-                    ¿What do you want to do when closing the window?
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="remember-choice"
-                      checked={rememberChoice}
-                      onCheckedChange={(v) => setRememberChoice(!!v)}
-                    />
-                    <Label htmlFor="remember-choice">Remember my selection</Label>
+          <EditorSettingsProvider>
+            <HashRouter>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/validate-license" element={<ValidateLicensePage />} />
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<MainPage />} />
+                  <Route path="/hash-generator" element={<HashGeneratorPage />} />
+                  <Route path="/number-base-converter" element={<NumberBaseConverterPage />} />
+                  <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
+                  <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
+                  <Route path="/json-format" element={<JsonFormatPage />} />
+                  <Route path="/json-to-code" element={<JsonToCodePage />} />
+                  <Route path="/curl-to-code" element={<CurlToCodePage />} />
+                  <Route path="/unix-time" element={<UnixTimePage />} />
+                  <Route path="/jwt-debug" element={<JwtDebuggerPage />} />
+                  <Route path="/cron-job-parser" element={<CronJobParserPage />} />
+                  <Route path="/color-converter" element={<ColorConverterPage />} />
+                  <Route
+                    path="/base64-string-encoder-decoder"
+                    element={<Base64StringEncoderDecoderPage />}
+                  />
+                  <Route
+                    path="/base64-image-encoder-decoder"
+                    element={<Base64ImageEncoderDecoderPage />}
+                  />
+                  <Route path="/regex-tester" element={<RegexTesterPage />} />
+                  <Route path="/url-encoder-decoder" element={<UrlEncoderDecoderPage />} />
+                  <Route
+                    path="/html-entity-encoder-decoder"
+                    element={<HtmlEntityEncoderDecoderPage />}
+                  />
+                  <Route
+                    path="/backslash-escape-unescape"
+                    element={<BackslashEscapeUnescapePage />}
+                  />
+                  <Route path="/html-beautify" element={<HtmlBeautifyPage />} />
+                  <Route path="/css-beautify" element={<CssBeautifyPage />} />
+                  <Route path="/js-beautify" element={<JsBeautifyPage />} />
+                  <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
+                  <Route path="/less-beautify" element={<LessBeautifyPage />} />
+                  <Route path="/scss-beautify" element={<ScssBeautifyPage />} />
+                  <Route path="/erb-beautify" element={<ErbBeautifyPage />} />
+                  <Route path="/sql-formatter" element={<SqlFormatterPage />} />
+                  <Route path="/line-sort-dedupe" element={<LineSortDedupePage />} />
+                  <Route path="/hex-to-ascii" element={<HexToAsciiPage />} />
+                  <Route path="/ascii-to-hex" element={<AsciiToHexPage />} />
+                  <Route path="/html-preview" element={<HtmlPreviewPage />} />
+                  <Route path="/markdown-preview" element={<MarkdownPreviewPage />} />
+                  <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
+                  <Route path="/json-to-csv" element={<JsonToCsvPage />} />
+                  <Route path="/csv-to-json" element={<CsvToJsonPage />} />
+                  <Route path="/string-case-converter" element={<StringCaseConverterPage />} />
+                  <Route path="/random-string-generator" element={<RandomStringGeneratorPage />} />
+                  <Route path="/dummy-data-generator" element={<DummyDataGeneratorPage />} />
+                  <Route path="/qr-code" element={<QRCodePage />} />
+                  <Route path="/php-serializer" element={<PhpSerializerPage />} />
+                  <Route path="/php-deserializer" element={<PhpDeserializerPage />} />
+                  <Route path="/php-to-json" element={<PhpToJsonPage />} />
+                  <Route path="/json-to-php" element={<JsonToPhpPage />} />
+                  <Route path="/certificate-decoder" element={<CertificateDecoderPage />} />
+                  <Route path="/url-parser" element={<UrlParserPage />} />
+                  <Route path="/lorem-ipsum" element={<LoremIpsumGeneratorPage />} />
+                  <Route path="/svg-to-css" element={<SvgToCssPage />} />
+                  <Route path="/discord-timestamp" element={<DiscordTimestampPage />} />
+                  <Route path="/text-diff" element={<TextDiffCheckerPage />} />
+                  <Route path="/image-optimizer" element={<ImageOptimizerPage />} />
+                  <Route path="/css-to-svg" element={<CssToSvgPage />} />
+                  <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
+                </Route>
+              </Routes>
+              <Toaster />
+              {/* Close confirmation dialog */}
+              <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Close DevKitHub</DialogTitle>
+                    <DialogDescription>
+                      ¿What do you want to do when closing the window?
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember-choice"
+                        checked={rememberChoice}
+                        onCheckedChange={(v) => setRememberChoice(!!v)}
+                      />
+                      <Label htmlFor="remember-choice">Remember my selection</Label>
+                    </div>
                   </div>
-                </div>
-                <DialogFooter>
-                  <div className="flex w-full justify-end gap-2">
-                    <Button variant="secondary" onClick={() => handleCloseSelection('tray')}>
-                      Leave in the tray
-                    </Button>
-                    <Button variant="destructive" onClick={() => handleCloseSelection('quit')}>
-                      Exit
-                    </Button>
-                  </div>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  <DialogFooter>
+                    <div className="flex w-full justify-end gap-2">
+                      <Button variant="secondary" onClick={() => handleCloseSelection('tray')}>
+                        Leave in the tray
+                      </Button>
+                      <Button variant="destructive" onClick={() => handleCloseSelection('quit')}>
+                        Exit
+                      </Button>
+                    </div>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
-            {/* Autostart prompt dialog */}
-            <Dialog open={showAutostartDialog} onOpenChange={setShowAutostartDialog}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Launch at startup</DialogTitle>
-                  <DialogDescription>
-                    Would you like DevKitHub to start automatically when you sign in?
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <div className="flex w-full justify-end gap-2">
-                    <Button variant="secondary" onClick={() => handleAutostartSelection(false)}>
-                      No, thanks
-                    </Button>
-                    <Button variant="default" onClick={() => handleAutostartSelection(true)}>
-                      Enable
-                    </Button>
-                  </div>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </HashRouter>
+              {/* Autostart prompt dialog */}
+              <Dialog open={showAutostartDialog} onOpenChange={setShowAutostartDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Launch at startup</DialogTitle>
+                    <DialogDescription>
+                      Would you like DevKitHub to start automatically when you sign in?
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <div className="flex w-full justify-end gap-2">
+                      <Button variant="secondary" onClick={() => handleAutostartSelection(false)}>
+                        No, thanks
+                      </Button>
+                      <Button variant="default" onClick={() => handleAutostartSelection(true)}>
+                        Enable
+                      </Button>
+                    </div>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </HashRouter>
+          </EditorSettingsProvider>
         </ClipboardSettingsProvider>
       </AuthProvider>
     </ThemeProvider>

@@ -10,4 +10,8 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  .cm-scope .cm-editor.cm-focused {
+    @apply outline-none shadow-none;
+  }
 }
