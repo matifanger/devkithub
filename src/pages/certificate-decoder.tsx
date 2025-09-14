@@ -1,10 +1,9 @@
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
-import CodeMirror from '@uiw/react-codemirror';
 import { Settings } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
@@ -288,12 +287,11 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
-              extensions={[EditorView.lineWrapping, format === 'pem' ? [] : []]}
+              extensions={[EditorView.lineWrapping]}
               onChange={(value) => {
                 setInput(value);
                 parseCertificate(value);
@@ -364,11 +362,10 @@ YW5pemF0aW9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3w3vn6U8
             <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 height="100%"
                 className="h-[calc(100vh-17rem)]"
-                theme={oneDark}
                 extensions={[
                   EditorView.lineWrapping,
                   outputFormat === 'json'

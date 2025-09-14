@@ -1,23 +1,22 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Input } from '../components/ui/input';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { RefreshCw } from 'lucide-react';
 import { EditorView } from '@codemirror/view';
+import { RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
-import { Switch } from "../components/ui/switch";
-import { Slider } from "../components/ui/slider";
+import { Slider } from '../components/ui/slider';
+import { Switch } from '../components/ui/switch';
 
-type Preset = 
+type Preset =
   | 'password'
   | 'uuid'
   | 'api-key'
@@ -153,7 +152,7 @@ const DEFAULT_CONFIG: GeneratorConfig = {
 };
 
 const SIMILAR_CHARS = ['1', 'l', 'I', '0', 'O', 'o'];
-const AMBIGUOUS_CHARS = ['`', '"', '\'', '(', ')', ',', '.', ';', ':'];
+const AMBIGUOUS_CHARS = ['`', '"', "'", '(', ')', ',', '.', ';', ':'];
 
 export function RandomStringGeneratorPage() {
   const [output, setOutput] = useState('');
@@ -164,7 +163,7 @@ export function RandomStringGeneratorPage() {
     try {
       let charset = '';
       const requiredChars: string[] = [];
-      
+
       // Build character set based on configuration
       if (config.customCharacterSet) {
         charset = config.customCharacterSet;
@@ -176,14 +175,14 @@ export function RandomStringGeneratorPage() {
 
         // Remove similar characters if configured
         if (config.excludeSimilarCharacters) {
-          SIMILAR_CHARS.forEach(char => {
+          SIMILAR_CHARS.forEach((char) => {
             charset = charset.replace(new RegExp(char, 'g'), '');
           });
         }
 
         // Remove ambiguous characters if configured
         if (config.excludeAmbiguous) {
-          AMBIGUOUS_CHARS.forEach(char => {
+          AMBIGUOUS_CHARS.forEach((char) => {
             charset = charset.replace(new RegExp('\\' + char, 'g'), '');
           });
         }
@@ -216,13 +215,14 @@ export function RandomStringGeneratorPage() {
       let results = [];
       for (let r = 0; r < config.multipleResults; r++) {
         let result = '';
-        
+
         if (config.useWords) {
           // Generate word-based string
           const words = [];
           for (let i = 0; i < config.wordCount; i++) {
-            const wordLength = Math.floor(Math.random() * 
-              (config.maxWordLength - config.minWordLength + 1)) + config.minWordLength;
+            const wordLength =
+              Math.floor(Math.random() * (config.maxWordLength - config.minWordLength + 1)) +
+              config.minWordLength;
             let word = '';
             for (let j = 0; j < wordLength; j++) {
               word += getRandomChar(charset);
@@ -233,8 +233,8 @@ export function RandomStringGeneratorPage() {
         } else if (config.customPattern) {
           // Use custom pattern (like UUID)
           result = config.customPattern.replace(/[xy]/g, (c) => {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
           });
         } else {
@@ -252,8 +252,10 @@ export function RandomStringGeneratorPage() {
 
           // Ensure starts with letter if configured
           if (config.startWithLetter && chars[0].match(/[^a-zA-Z]/)) {
-            const letterChar = getRandomChar('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-            const nonLetterIndex = chars.findIndex(c => c.match(/[a-zA-Z]/));
+            const letterChar = getRandomChar(
+              'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            );
+            const nonLetterIndex = chars.findIndex((c) => c.match(/[a-zA-Z]/));
             if (nonLetterIndex !== -1) {
               [chars[0], chars[nonLetterIndex]] = [letterChar, chars[0]];
             } else {
@@ -307,7 +309,7 @@ export function RandomStringGeneratorPage() {
     if (preset === 'custom') {
       return;
     }
-    
+
     const presetConfig = PRESETS[preset];
     setConfig({
       ...DEFAULT_CONFIG,
@@ -317,14 +319,16 @@ export function RandomStringGeneratorPage() {
   };
 
   const updateConfig = <K extends keyof GeneratorConfig>(key: K, value: GeneratorConfig[K]) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    setConfig((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Random String Generator</h1>
-        <p className="text-muted-foreground">Generate random strings with customizable options and presets</p>
+        <p className="text-muted-foreground">
+          Generate random strings with customizable options and presets
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
@@ -341,7 +345,10 @@ export function RandomStringGeneratorPage() {
             <div className="grid grid-cols-3 items-center gap-4">
               <Label>Preset</Label>
               <div className="col-span-2">
-                <Select value={config.preset} onValueChange={(value: Preset) => handlePresetChange(value)}>
+                <Select
+                  value={config.preset}
+                  onValueChange={(value: Preset) => handlePresetChange(value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Preset" />
                   </SelectTrigger>
@@ -383,7 +390,9 @@ export function RandomStringGeneratorPage() {
                   step={1}
                   onValueChange={([value]) => updateConfig('uppercaseCount', value)}
                 />
-                <span className="text-sm text-muted-foreground">{config.uppercaseCount} characters</span>
+                <span className="text-sm text-muted-foreground">
+                  {config.uppercaseCount} characters
+                </span>
               </div>
             </div>
 
@@ -397,7 +406,9 @@ export function RandomStringGeneratorPage() {
                   step={1}
                   onValueChange={([value]) => updateConfig('lowercaseCount', value)}
                 />
-                <span className="text-sm text-muted-foreground">{config.lowercaseCount} characters</span>
+                <span className="text-sm text-muted-foreground">
+                  {config.lowercaseCount} characters
+                </span>
               </div>
             </div>
 
@@ -411,7 +422,9 @@ export function RandomStringGeneratorPage() {
                   step={1}
                   onValueChange={([value]) => updateConfig('digitCount', value)}
                 />
-                <span className="text-sm text-muted-foreground">{config.digitCount} characters</span>
+                <span className="text-sm text-muted-foreground">
+                  {config.digitCount} characters
+                </span>
               </div>
             </div>
 
@@ -425,7 +438,9 @@ export function RandomStringGeneratorPage() {
                   step={1}
                   onValueChange={([value]) => updateConfig('symbolCount', value)}
                 />
-                <span className="text-sm text-muted-foreground">{config.symbolCount} characters</span>
+                <span className="text-sm text-muted-foreground">
+                  {config.symbolCount} characters
+                </span>
               </div>
             </div>
 
@@ -450,7 +465,9 @@ export function RandomStringGeneratorPage() {
                   onValueChange={([value]) => updateConfig('groupSize', value)}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {config.groupSize === 0 ? 'No grouping' : `${config.groupSize} characters per group`}
+                  {config.groupSize === 0
+                    ? 'No grouping'
+                    : `${config.groupSize} characters per group`}
                 </span>
               </div>
             </div>
@@ -486,7 +503,9 @@ export function RandomStringGeneratorPage() {
                   step={1}
                   onValueChange={([value]) => updateConfig('multipleResults', value)}
                 />
-                <span className="text-sm text-muted-foreground">{config.multipleResults} results</span>
+                <span className="text-sm text-muted-foreground">
+                  {config.multipleResults} results
+                </span>
               </div>
             </div>
 
@@ -574,7 +593,9 @@ export function RandomStringGeneratorPage() {
                       step={1}
                       onValueChange={([value]) => updateConfig('minWordLength', value)}
                     />
-                    <span className="text-sm text-muted-foreground">{config.minWordLength} characters</span>
+                    <span className="text-sm text-muted-foreground">
+                      {config.minWordLength} characters
+                    </span>
                   </div>
                 </div>
 
@@ -588,7 +609,9 @@ export function RandomStringGeneratorPage() {
                       step={1}
                       onValueChange={([value]) => updateConfig('maxWordLength', value)}
                     />
-                    <span className="text-sm text-muted-foreground">{config.maxWordLength} characters</span>
+                    <span className="text-sm text-muted-foreground">
+                      {config.maxWordLength} characters
+                    </span>
                   </div>
                 </div>
               </>
@@ -605,17 +628,14 @@ export function RandomStringGeneratorPage() {
           </div>
 
           {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           )}
 
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={output}
-              className='h-[calc(100vh-17rem)]'
+              className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[EditorView.lineWrapping]}
               editable={false}
               basicSetup={{
@@ -629,4 +649,4 @@ export function RandomStringGeneratorPage() {
       </div>
     </div>
   );
-} 
+}

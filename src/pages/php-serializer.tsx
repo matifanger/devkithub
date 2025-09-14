@@ -1,10 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { php } from '@codemirror/lang-php';
 import { EditorView } from '@codemirror/view';
+import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
 
 export function PhpSerializerPage() {
   const [input, setInput] = useState('');
@@ -26,17 +25,17 @@ export function PhpSerializerPage() {
 
       const content = input.slice(15, -1).trim();
       const result: Record<string, unknown> = {};
-      
+
       let currentKey = '';
       let currentValue = '';
       let inString = false;
       let inArray = false;
       let arrayDepth = 0;
       let currentStringContent = '';
-      
+
       for (let i = 0; i < content.length; i++) {
         const char = content[i];
-        
+
         if (char === "'" && content[i - 1] !== '\\') {
           inString = !inString;
           if (inString) {
@@ -46,12 +45,12 @@ export function PhpSerializerPage() {
           }
           continue;
         }
-        
+
         if (inString) {
           currentStringContent += char;
           continue;
         }
-        
+
         if (!inString) {
           if (char === '(') {
             inArray = true;
@@ -61,9 +60,10 @@ export function PhpSerializerPage() {
             if (arrayDepth === 0) inArray = false;
           }
           // Skip whitespace when not in string or array
-          if ((char === ' ' || char === '\n' || char === '\r' || char === '\t') && !inArray) continue;
+          if ((char === ' ' || char === '\n' || char === '\r' || char === '\t') && !inArray)
+            continue;
         }
-        
+
         if (inArray) {
           currentValue += char;
         } else {
@@ -85,10 +85,10 @@ export function PhpSerializerPage() {
                 let tempValue = '';
                 let tempInString = false;
                 let tempStringContent = '';
-                
+
                 for (let j = 0; j < arrayContent.length; j++) {
                   const tempChar = arrayContent[j];
-                  
+
                   if (tempChar === "'" && arrayContent[j - 1] !== '\\') {
                     tempInString = !tempInString;
                     if (tempInString) {
@@ -98,12 +98,12 @@ export function PhpSerializerPage() {
                     }
                     continue;
                   }
-                  
+
                   if (tempInString) {
                     tempStringContent += tempChar;
                     continue;
                   }
-                  
+
                   if (tempChar === '=' && arrayContent[j + 1] === '>') {
                     tempKey = tempValue.slice(1, -1);
                     tempValue = '';
@@ -124,7 +124,7 @@ export function PhpSerializerPage() {
                     tempValue += tempChar;
                   }
                 }
-                
+
                 // Process last value
                 if (tempKey && tempValue) {
                   tempValue = tempValue.trim();
@@ -138,13 +138,14 @@ export function PhpSerializerPage() {
                     obj[tempKey] = Number(tempValue);
                   }
                 }
-                
+
                 result[currentKey] = obj;
               } else {
                 // Numeric array
-                const values = arrayContent.split(',')
-                  .map(v => v.trim())
-                  .map(v => {
+                const values = arrayContent
+                  .split(',')
+                  .map((v) => v.trim())
+                  .map((v) => {
                     if (v.startsWith("'") && v.endsWith("'")) {
                       return v.slice(1, -1);
                     } else if (v === 'true' || v === 'false') {
@@ -170,7 +171,7 @@ export function PhpSerializerPage() {
           }
         }
       }
-      
+
       // Process last value
       if (currentKey && currentValue) {
         currentValue = currentValue.trim();
@@ -185,10 +186,10 @@ export function PhpSerializerPage() {
             let tempValue = '';
             let tempInString = false;
             let tempStringContent = '';
-            
+
             for (let j = 0; j < arrayContent.length; j++) {
               const tempChar = arrayContent[j];
-              
+
               if (tempChar === "'" && arrayContent[j - 1] !== '\\') {
                 tempInString = !tempInString;
                 if (tempInString) {
@@ -198,12 +199,12 @@ export function PhpSerializerPage() {
                 }
                 continue;
               }
-              
+
               if (tempInString) {
                 tempStringContent += tempChar;
                 continue;
               }
-              
+
               if (tempChar === '=' && arrayContent[j + 1] === '>') {
                 tempKey = tempValue.slice(1, -1);
                 tempValue = '';
@@ -224,7 +225,7 @@ export function PhpSerializerPage() {
                 tempValue += tempChar;
               }
             }
-            
+
             // Process last value
             if (tempKey && tempValue) {
               tempValue = tempValue.trim();
@@ -238,13 +239,14 @@ export function PhpSerializerPage() {
                 obj[tempKey] = Number(tempValue);
               }
             }
-            
+
             result[currentKey] = obj;
           } else {
             // Numeric array
-            const values = arrayContent.split(',')
-              .map(v => v.trim())
-              .map(v => {
+            const values = arrayContent
+              .split(',')
+              .map((v) => v.trim())
+              .map((v) => {
                 if (v.startsWith("'") && v.endsWith("'")) {
                   return v.slice(1, -1);
                 } else if (v === 'true' || v === 'false') {
@@ -271,7 +273,7 @@ export function PhpSerializerPage() {
         if (value === null) {
           return 'N;';
         }
-        
+
         switch (typeof value) {
           case 'string':
             return `s:${value.length}:"${value}";`;
@@ -288,9 +290,9 @@ export function PhpSerializerPage() {
               return `a:${value.length}:{${elements}}`;
             } else {
               const entries = Object.entries(value);
-              const elements = entries.map(([key, val]) => 
-                `${serialize(key)}${serialize(val)}`
-              ).join('');
+              const elements = entries
+                .map(([key, val]) => `${serialize(key)}${serialize(val)}`)
+                .join('');
               return `a:${entries.length}:{${elements}}`;
             }
           default:
@@ -298,12 +300,10 @@ export function PhpSerializerPage() {
         }
       };
 
-      const output = `O:8:"stdClass":${Object.keys(result).length}:{${
-        Object.entries(result)
-          .map(([key, val]) => `${serialize(key)}${serialize(val)}`)
-          .join('')
-      }}`;
-      
+      const output = `O:8:"stdClass":${Object.keys(result).length}:{${Object.entries(result)
+        .map(([key, val]) => `${serialize(key)}${serialize(val)}`)
+        .join('')}}`;
+
       setOutput(output);
       setError('');
     } catch (err) {
@@ -356,21 +356,23 @@ export function PhpSerializerPage() {
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                setOutput('');
-                setError('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  setOutput('');
+                  setError('');
+                }}
+              >
                 Clear
               </Button>
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[
                 php(),
                 EditorView.lineWrapping,
@@ -381,9 +383,9 @@ export function PhpSerializerPage() {
                   '.cm-line': {
                     'word-wrap': 'break-word',
                     'white-space': 'pre-wrap',
-                    'word-break': 'break-all'
-                  }
-                })
+                    'word-break': 'break-all',
+                  },
+                }),
               ]}
               onChange={(value) => {
                 setInput(value);
@@ -393,7 +395,7 @@ export function PhpSerializerPage() {
               basicSetup={{
                 lineNumbers: true,
                 foldGutter: true,
-                highlightActiveLine: true
+                highlightActiveLine: true,
               }}
             />
           </div>
@@ -406,18 +408,15 @@ export function PhpSerializerPage() {
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 height="100%"
                 className="h-[calc(100vh-17rem)]"
-                theme={oneDark}
                 extensions={[
                   php(),
                   EditorView.lineWrapping,
@@ -428,15 +427,15 @@ export function PhpSerializerPage() {
                     '.cm-line': {
                       'word-wrap': 'break-word',
                       'white-space': 'pre-wrap',
-                      'word-break': 'break-all'
-                    }
-                  })
+                      'word-break': 'break-all',
+                    },
+                  }),
                 ]}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
                   foldGutter: true,
-                  highlightActiveLine: false
+                  highlightActiveLine: false,
                 }}
               />
             </div>
@@ -445,4 +444,4 @@ export function PhpSerializerPage() {
       </div>
     </div>
   );
-} 
+}

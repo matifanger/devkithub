@@ -1,9 +1,8 @@
+import { html } from '@codemirror/lang-html';
 import React, { useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { html } from '@codemirror/lang-html';
-import { oneDark } from '@codemirror/theme-one-dark';
 
 export function HtmlPreviewPage() {
   const [input, setInput] = useState('');
@@ -157,11 +156,10 @@ export function HtmlPreviewPage() {
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[html()]}
               onChange={setInput}
               placeholder="Write your HTML here"
@@ -178,11 +176,9 @@ export function HtmlPreviewPage() {
           <div className="flex items-center justify-between mt-3 mb-[18px]">
             <Label>Preview</Label>
           </div>
-          
+
           {error ? (
-            <div className="bg-destructive/10 text-destructive rounded-lg p-4">
-              {error}
-            </div>
+            <div className="bg-destructive/10 text-destructive rounded-lg p-4">{error}</div>
           ) : (
             <div className="relative h-[calc(100vh-17rem)] bg-transparent dark:bg-zinc-900 rounded-lg border">
               <iframe
@@ -197,4 +193,4 @@ export function HtmlPreviewPage() {
       </div>
     </div>
   );
-} 
+}

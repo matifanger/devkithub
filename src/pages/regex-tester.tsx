@@ -1,19 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Input } from '../components/ui/input';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
-import { Copy, Settings, Book } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
-import { Switch } from "../components/ui/switch";
+import { Book, Copy, Settings } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -21,12 +10,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../components/ui/dialog";
+} from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { Switch } from '../components/ui/switch';
 
 interface RegExpFlags {
   global: boolean;
@@ -56,47 +51,60 @@ const SAMPLE_PATTERNS = [
   {
     name: 'Email',
     pattern: '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$',
-    text: 'test@example.com\ninvalid.email@com\nanother.valid@sub.domain.com'
+    text: 'test@example.com\ninvalid.email@com\nanother.valid@sub.domain.com',
   },
   {
     name: 'URL',
-    pattern: 'https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)',
-    text: 'https://www.example.com\nhttp://subdomain.site.com/path?param=1\nNot a URL\nhttps://invalid.'
+    pattern:
+      'https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)',
+    text: 'https://www.example.com\nhttp://subdomain.site.com/path?param=1\nNot a URL\nhttps://invalid.',
   },
   {
     name: 'Date (YYYY-MM-DD)',
     pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$',
-    text: '2024-01-31\n2023-13-01\n2024-02-30'
-  }
+    text: '2024-01-31\n2023-13-01\n2024-02-30',
+  },
 ];
 
 const CHEAT_SHEET = [
-  { category: "Character Classes", items: [
-    { pattern: ".", description: "Any character except newline" },
-    { pattern: "\\w", description: "Word character [a-zA-Z0-9_]" },
-    { pattern: "\\d", description: "Digit [0-9]" },
-    { pattern: "\\s", description: "Whitespace character" },
-    { pattern: "[abc]", description: "Single character (a or b or c)" },
-    { pattern: "[^abc]", description: "Single character (not a, b, or c)" },
-  ]},
-  { category: "Anchors", items: [
-    { pattern: "^", description: "Start of line" },
-    { pattern: "$", description: "End of line" },
-    { pattern: "\\b", description: "Word boundary" },
-  ]},
-  { category: "Quantifiers", items: [
-    { pattern: "*", description: "0 or more" },
-    { pattern: "+", description: "1 or more" },
-    { pattern: "?", description: "0 or 1" },
-    { pattern: "{n}", description: "Exactly n times" },
-    { pattern: "{n,}", description: "n or more times" },
-    { pattern: "{n,m}", description: "Between n and m times" },
-  ]},
-  { category: "Groups", items: [
-    { pattern: "(abc)", description: "Capturing group" },
-    { pattern: "(?:abc)", description: "Non-capturing group" },
-    { pattern: "(?<name>abc)", description: "Named capturing group" },
-  ]},
+  {
+    category: 'Character Classes',
+    items: [
+      { pattern: '.', description: 'Any character except newline' },
+      { pattern: '\\w', description: 'Word character [a-zA-Z0-9_]' },
+      { pattern: '\\d', description: 'Digit [0-9]' },
+      { pattern: '\\s', description: 'Whitespace character' },
+      { pattern: '[abc]', description: 'Single character (a or b or c)' },
+      { pattern: '[^abc]', description: 'Single character (not a, b, or c)' },
+    ],
+  },
+  {
+    category: 'Anchors',
+    items: [
+      { pattern: '^', description: 'Start of line' },
+      { pattern: '$', description: 'End of line' },
+      { pattern: '\\b', description: 'Word boundary' },
+    ],
+  },
+  {
+    category: 'Quantifiers',
+    items: [
+      { pattern: '*', description: '0 or more' },
+      { pattern: '+', description: '1 or more' },
+      { pattern: '?', description: '0 or 1' },
+      { pattern: '{n}', description: 'Exactly n times' },
+      { pattern: '{n,}', description: 'n or more times' },
+      { pattern: '{n,m}', description: 'Between n and m times' },
+    ],
+  },
+  {
+    category: 'Groups',
+    items: [
+      { pattern: '(abc)', description: 'Capturing group' },
+      { pattern: '(?:abc)', description: 'Non-capturing group' },
+      { pattern: '(?<name>abc)', description: 'Named capturing group' },
+    ],
+  },
 ];
 
 export function RegexTesterPage() {
@@ -108,12 +116,14 @@ export function RegexTesterPage() {
   const [matchFilter, setMatchFilter] = useState('');
 
   const getFlagsString = useCallback(() => {
-    return (flags.global ? 'g' : '') +
-           (flags.ignoreCase ? 'i' : '') +
-           (flags.multiline ? 'm' : '') +
-           (flags.dotAll ? 's' : '') +
-           (flags.unicode ? 'u' : '') +
-           (flags.sticky ? 'y' : '');
+    return (
+      (flags.global ? 'g' : '') +
+      (flags.ignoreCase ? 'i' : '') +
+      (flags.multiline ? 'm' : '') +
+      (flags.dotAll ? 's' : '') +
+      (flags.unicode ? 'u' : '') +
+      (flags.sticky ? 'y' : '')
+    );
   }, [flags]);
 
   const updateMatches = useCallback(() => {
@@ -126,14 +136,14 @@ export function RegexTesterPage() {
     try {
       const regex = new RegExp(pattern, getFlagsString());
       const newMatches: Match[] = [];
-      
+
       if (flags.global) {
         let match;
         while ((match = regex.exec(text)) !== null) {
           newMatches.push({
             text: match[0],
             index: match.index,
-            groups: match.groups
+            groups: match.groups,
           });
         }
       } else {
@@ -142,7 +152,7 @@ export function RegexTesterPage() {
           newMatches.push({
             text: match[0],
             index: match.index,
-            groups: match.groups
+            groups: match.groups,
           });
         }
       }
@@ -159,13 +169,13 @@ export function RegexTesterPage() {
     updateMatches();
   }, [pattern, text, flags, updateMatches]);
 
-  const loadSample = (sample: typeof SAMPLE_PATTERNS[0]) => {
+  const loadSample = (sample: (typeof SAMPLE_PATTERNS)[0]) => {
     setPattern(sample.pattern);
     setText(sample.text);
   };
 
   const toggleFlag = (key: keyof RegExpFlags) => {
-    setFlags(prev => ({ ...prev, [key]: !prev[key] }));
+    setFlags((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const getMatchesOutput = useCallback(() => {
@@ -173,15 +183,18 @@ export function RegexTesterPage() {
     if (!matches.length) return 'No matches found';
 
     let output = `Found ${matches.length} match${matches.length !== 1 ? 'es' : ''}\n\n`;
-    
+
     matches.forEach((match, index) => {
       if (matchFilter && !String(index).match(new RegExp(matchFilter))) return;
-      
+
       output += `Match ${index + 1}:\n`;
       output += `  Text: ${match.text}\n`;
       output += `  Index: ${match.index}\n`;
       if (match.groups && Object.keys(match.groups).length > 0) {
-        output += `  Groups:\n${JSON.stringify(match.groups, null, 2).split('\n').map(line => '    ' + line).join('\n')}\n`;
+        output += `  Groups:\n${JSON.stringify(match.groups, null, 2)
+          .split('\n')
+          .map((line) => '    ' + line)
+          .join('\n')}\n`;
       }
       output += '\n';
     });
@@ -193,7 +206,9 @@ export function RegexTesterPage() {
     <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Regular Expression Tester</h1>
-        <p className="text-muted-foreground">Test and debug regular expressions with real-time matching</p>
+        <p className="text-muted-foreground">
+          Test and debug regular expressions with real-time matching
+        </p>
       </div>
 
       <div className="flex items-end gap-4">
@@ -211,9 +226,7 @@ export function RegexTesterPage() {
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Regular Expression Cheat Sheet</DialogTitle>
-                    <DialogDescription>
-                      Common patterns and their descriptions
-                    </DialogDescription>
+                    <DialogDescription>Common patterns and their descriptions</DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     {CHEAT_SHEET.map((category) => (
@@ -243,9 +256,7 @@ export function RegexTesterPage() {
                   <div className="grid gap-4">
                     <div className="space-y-2">
                       <h4 className="font-medium leading-none">Flags</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Configure regex flags
-                      </p>
+                      <p className="text-sm text-muted-foreground">Configure regex flags</p>
                     </div>
                     <div className="grid gap-2">
                       <div className="flex items-center justify-between">
@@ -302,7 +313,8 @@ export function RegexTesterPage() {
               </Popover>
               <Select
                 value=""
-                onValueChange={(value) => loadSample(SAMPLE_PATTERNS[parseInt(value)])}>
+                onValueChange={(value) => loadSample(SAMPLE_PATTERNS[parseInt(value)])}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Load Sample" />
                 </SelectTrigger>
@@ -327,10 +339,9 @@ export function RegexTesterPage() {
 
       <div className="space-y-2">
         <Label>Test Text</Label>
-        <CodeMirror
+        <AppCodeMirror
           value={text}
           height="200px"
-          theme={oneDark}
           onChange={setText}
           extensions={[EditorView.lineWrapping]}
           basicSetup={{
@@ -351,8 +362,8 @@ export function RegexTesterPage() {
               placeholder="Filter matches (e.g. $0)"
               className="w-[200px]"
             />
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => navigator.clipboard.writeText(getMatchesOutput())}
             >
@@ -361,10 +372,9 @@ export function RegexTesterPage() {
             </Button>
           </div>
         </div>
-        <CodeMirror
+        <AppCodeMirror
           value={getMatchesOutput()}
           height="200px"
-          theme={oneDark}
           editable={false}
           extensions={[EditorView.lineWrapping]}
           basicSetup={{
@@ -376,4 +386,4 @@ export function RegexTesterPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,21 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import { Settings } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Settings } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
+} from '../components/ui/select';
 
 export function LineSortDedupePage() {
   const [input, setInput] = useState('');
@@ -26,51 +21,60 @@ export function LineSortDedupePage() {
   const [dedupe, setDedupe] = useState('true');
   const [trim, setTrim] = useState('true');
 
-  const processLines = useCallback((text: string, newSortOrder = sortOrder, newCaseSensitive = caseSensitive, newDedupe = dedupe, newTrim = trim) => {
-    try {
-      if (!text.trim()) {
-        setOutput('');
+  const processLines = useCallback(
+    (
+      text: string,
+      newSortOrder = sortOrder,
+      newCaseSensitive = caseSensitive,
+      newDedupe = dedupe,
+      newTrim = trim
+    ) => {
+      try {
+        if (!text.trim()) {
+          setOutput('');
+          setError('');
+          return;
+        }
+
+        // Split into lines and optionally trim
+        let lines = text.split('\n');
+        if (newTrim === 'true') {
+          lines = lines.map((line) => line.trim());
+        }
+
+        // Remove empty lines
+        lines = lines.filter((line) => line.length > 0);
+
+        // Deduplicate if enabled
+        if (newDedupe === 'true') {
+          lines = Array.from(new Set(lines));
+        }
+
+        // Sort lines
+        lines.sort((a, b) => {
+          if (newCaseSensitive === 'false') {
+            a = a.toLowerCase();
+            b = b.toLowerCase();
+          }
+          if (newSortOrder === 'asc') {
+            return a.localeCompare(b);
+          } else if (newSortOrder === 'desc') {
+            return b.localeCompare(a);
+          } else {
+            // Random sort using Fisher-Yates shuffle
+            return Math.random() - 0.5;
+          }
+        });
+
+        setOutput(lines.join('\n'));
         setError('');
-        return;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error processing lines');
+        setOutput('');
       }
-
-      // Split into lines and optionally trim
-      let lines = text.split('\n');
-      if (newTrim === 'true') {
-        lines = lines.map(line => line.trim());
-      }
-
-      // Remove empty lines
-      lines = lines.filter(line => line.length > 0);
-
-      // Deduplicate if enabled
-      if (newDedupe === 'true') {
-        lines = Array.from(new Set(lines));
-      }
-
-      // Sort lines
-      lines.sort((a, b) => {
-        if (newCaseSensitive === 'false') {
-          a = a.toLowerCase();
-          b = b.toLowerCase();
-        }
-        if (newSortOrder === 'asc') {
-          return a.localeCompare(b);
-        } else if (newSortOrder === 'desc') {
-          return b.localeCompare(a);
-        } else {
-          // Random sort using Fisher-Yates shuffle
-          return Math.random() - 0.5;
-        }
-      });
-
-      setOutput(lines.join('\n'));
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error processing lines');
-      setOutput('');
-    }
-  }, []);
+    },
+    []
+  );
 
   const handleSample = () => {
     const sample = `
@@ -136,10 +140,13 @@ line 3`;
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Sort Order</Label>
                         <div className="col-span-2">
-                          <Select value={sortOrder} onValueChange={(value) => {
-                            setSortOrder(value);
-                            processLines(input, value);
-                          }}>
+                          <Select
+                            value={sortOrder}
+                            onValueChange={(value) => {
+                              setSortOrder(value);
+                              processLines(input, value);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Sort Order" />
                             </SelectTrigger>
@@ -154,10 +161,13 @@ line 3`;
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Case Sensitive</Label>
                         <div className="col-span-2">
-                          <Select value={caseSensitive} onValueChange={(value) => {
-                            setCaseSensitive(value);
-                            processLines(input, sortOrder, value);
-                          }}>
+                          <Select
+                            value={caseSensitive}
+                            onValueChange={(value) => {
+                              setCaseSensitive(value);
+                              processLines(input, sortOrder, value);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Case" />
                             </SelectTrigger>
@@ -171,10 +181,13 @@ line 3`;
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Deduplicate</Label>
                         <div className="col-span-2">
-                          <Select value={dedupe} onValueChange={(value) => {
-                            setDedupe(value);
-                            processLines(input, sortOrder, caseSensitive, value);
-                          }}>
+                          <Select
+                            value={dedupe}
+                            onValueChange={(value) => {
+                              setDedupe(value);
+                              processLines(input, sortOrder, caseSensitive, value);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Dedupe" />
                             </SelectTrigger>
@@ -188,10 +201,13 @@ line 3`;
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Trim Lines</Label>
                         <div className="col-span-2">
-                          <Select value={trim} onValueChange={(value) => {
-                            setTrim(value);
-                            processLines(input, sortOrder, caseSensitive, dedupe, value);
-                          }}>
+                          <Select
+                            value={trim}
+                            onValueChange={(value) => {
+                              setTrim(value);
+                              processLines(input, sortOrder, caseSensitive, dedupe, value);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Trim" />
                             </SelectTrigger>
@@ -214,20 +230,22 @@ line 3`;
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                processLines('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  processLines('');
+                }}
+              >
                 Clear
               </Button>
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               onChange={(value) => {
                 setInput(value);
                 processLines(value);
@@ -249,18 +267,15 @@ line 3`;
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 className="h-[calc(100vh-17rem)]"
                 height="100%"
-                theme={oneDark}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
@@ -274,4 +289,4 @@ line 3`;
       </div>
     </div>
   );
-} 
+}

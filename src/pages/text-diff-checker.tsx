@@ -1,11 +1,10 @@
 import { StreamLanguage } from '@codemirror/language';
 import { diff } from '@codemirror/legacy-modes/mode/diff';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
-import CodeMirror from '@uiw/react-codemirror';
 import { Change, diffChars, diffLines, diffSentences, diffWords, diffWordsWithSpace } from 'diff';
 import { ArrowLeftRight, Clipboard, Copy, Download, Settings, Trash2, Upload } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
@@ -492,10 +491,9 @@ export function TextDiffCheckerPage() {
               </Button>
             </div>
           </div>
-          <CodeMirror
+          <AppCodeMirror
             value={text1}
             height="400px"
-            theme={oneDark}
             onChange={setText1}
             extensions={config.wrapLines ? [EditorView.lineWrapping] : []}
             basicSetup={{
@@ -535,10 +533,9 @@ export function TextDiffCheckerPage() {
               </Button>
             </div>
           </div>
-          <CodeMirror
+          <AppCodeMirror
             value={text2}
             height="400px"
-            theme={oneDark}
             onChange={setText2}
             extensions={config.wrapLines ? [EditorView.lineWrapping] : []}
             basicSetup={{
@@ -576,10 +573,9 @@ export function TextDiffCheckerPage() {
             </Button>
           </div>
           {config.view === 'unified' && (
-            <CodeMirror
+            <AppCodeMirror
               value={unifiedOutput}
               height="240px"
-              theme={oneDark}
               extensions={[EditorView.lineWrapping, StreamLanguage.define(diff)]}
               editable={false}
               basicSetup={{

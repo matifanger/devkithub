@@ -1,8 +1,7 @@
 import { php } from '@codemirror/lang-php';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
-import CodeMirror from '@uiw/react-codemirror';
 import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 
@@ -378,11 +377,10 @@ export function PhpDeserializerPage() {
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[
                 php(),
                 EditorView.lineWrapping,
@@ -423,11 +421,10 @@ export function PhpDeserializerPage() {
             <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 height="100%"
                 className="h-[calc(100vh-17rem)]"
-                theme={oneDark}
                 extensions={[
                   php(),
                   EditorView.lineWrapping,

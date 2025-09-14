@@ -1,8 +1,7 @@
 // import { ruby } from '@codemirror/lang-ruby';
-import { oneDark } from '@codemirror/theme-one-dark';
-import CodeMirror from '@uiw/react-codemirror';
 import { html as beautifyHtml } from 'js-beautify';
 import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import {
@@ -143,12 +142,11 @@ export function ErbBeautifyPage() {
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               onChange={(value) => setInput(value)}
               // extensions={[ruby()]}
               placeholder="Paste your ERB template here"
@@ -196,12 +194,11 @@ export function ErbBeautifyPage() {
             <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 className="h-[calc(100vh-17rem)]"
                 height="100%"
                 width="100%"
-                theme={oneDark}
                 // extensions={[ruby()]}
                 editable={false}
                 basicSetup={{

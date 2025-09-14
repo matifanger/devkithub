@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { CopyButton } from '../components/ui/copy-button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { Card } from '../components/ui/card';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-okaidia.css';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-css';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 
 interface ColorFormats {
   hex: string;
@@ -39,11 +36,7 @@ export function ColorConverterPage() {
   const hexToRgb = (hex: string): number[] => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
-      ? [
-          parseInt(result[1], 16),
-          parseInt(result[2], 16),
-          parseInt(result[3], 16),
-        ]
+      ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
       : [0, 0, 0];
   };
 
@@ -54,7 +47,8 @@ export function ColorConverterPage() {
 
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    let h = 0, s = 0;
+    let h = 0,
+      s = 0;
     const l = (max + min) / 2;
 
     if (max !== min) {
@@ -76,11 +70,7 @@ export function ColorConverterPage() {
       h /= 6;
     }
 
-    return [
-      Math.round(h * 360),
-      Math.round(s * 100),
-      Math.round(l * 100),
-    ];
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
   };
 
   const rgbToHsb = (r: number, g: number, b: number): number[] => {
@@ -109,17 +99,13 @@ export function ColorConverterPage() {
       h /= 6;
     }
 
-    return [
-      Math.round(h * 360),
-      Math.round(s * 100),
-      Math.round(v * 100),
-    ];
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(v * 100)];
   };
 
   const rgbToCmyk = (r: number, g: number, b: number): number[] => {
-    let c = 1 - (r / 255);
-    let m = 1 - (g / 255);
-    let y = 1 - (b / 255);
+    let c = 1 - r / 255;
+    let m = 1 - g / 255;
+    let y = 1 - b / 255;
     const k = Math.min(c, Math.min(m, y));
 
     if (k === 1) {
@@ -130,18 +116,13 @@ export function ColorConverterPage() {
     m = ((m - k) / (1 - k)) * 100;
     y = ((y - k) / (1 - k)) * 100;
 
-    return [
-      Math.round(c),
-      Math.round(m),
-      Math.round(y),
-      Math.round(k * 100),
-    ];
+    return [Math.round(c), Math.round(m), Math.round(y), Math.round(k * 100)];
   };
 
   const rgbToHwb = (r: number, g: number, b: number): number[] => {
     const [h] = rgbToHsb(r, g, b);
-    const w = Math.min(r, g, b) / 255 * 100;
-    const b_ = 100 - Math.max(r, g, b) / 255 * 100;
+    const w = (Math.min(r, g, b) / 255) * 100;
+    const b_ = 100 - (Math.max(r, g, b) / 255) * 100;
     return [h, Math.round(w), Math.round(b_)];
   };
 
@@ -172,14 +153,22 @@ export function ColorConverterPage() {
   }, [color]);
 
   useEffect(() => {
-    Prism.highlightAll();
+    // No-op: syntax highlighting is handled by AppCodeMirror in read-only mode
   }, [formats]);
 
   const colorPresets = [
-    '#FF0000', '#00FF00', '#0000FF',
-    '#FFFF00', '#FF00FF', '#00FFFF',
-    '#FFA500', '#800080', '#008000',
-    '#000000', '#808080', '#FFFFFF'
+    '#FF0000',
+    '#00FF00',
+    '#0000FF',
+    '#FFFF00',
+    '#FF00FF',
+    '#00FFFF',
+    '#FFA500',
+    '#800080',
+    '#008000',
+    '#000000',
+    '#808080',
+    '#FFFFFF',
   ];
 
   const codeExample = `// Color values
@@ -211,7 +200,10 @@ border-[${formats.hex}]`;
     <div className="container mx-auto p-6 space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Color Converter</h1>
-        <p className="text-muted-foreground">Professional color format converter with support for HEX, RGB(A), HSL(A), HSB/HSV, HWB, and CMYK</p>
+        <p className="text-muted-foreground">
+          Professional color format converter with support for HEX, RGB(A), HSL(A), HSB/HSV, HWB,
+          and CMYK
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -219,7 +211,10 @@ border-[${formats.hex}]`;
           <div className="flex items-center justify-between mb-2">
             <Label>Input</Label>
             <div className="space-x-2">
-              <Button variant="outline" onClick={() => navigator.clipboard.readText().then(setColor)}>
+              <Button
+                variant="outline"
+                onClick={() => navigator.clipboard.readText().then(setColor)}
+              >
                 Clipboard
               </Button>
               <Button variant="outline" onClick={() => setColor('#000000')}>
@@ -321,14 +316,20 @@ border-[${formats.hex}]`;
         <div className="space-y-4">
           <Tabs defaultValue="code">
             <TabsList className="w-full">
-              <TabsTrigger value="code" className="flex-1">Code</TabsTrigger>
-              <TabsTrigger value="presets" className="flex-1">Color Presets</TabsTrigger>
-              <TabsTrigger value="variables" className="flex-1">Variables</TabsTrigger>
+              <TabsTrigger value="code" className="flex-1">
+                Code
+              </TabsTrigger>
+              <TabsTrigger value="presets" className="flex-1">
+                Color Presets
+              </TabsTrigger>
+              <TabsTrigger value="variables" className="flex-1">
+                Variables
+              </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="presets">
               <Card className="p-4">
-                <div 
+                <div
                   className="h-32 rounded-lg transition-colors duration-200 mb-4"
                   style={{ backgroundColor: formats.hex }}
                 />
@@ -348,18 +349,18 @@ border-[${formats.hex}]`;
 
             <TabsContent value="code">
               <Card className="p-4">
-                <pre className="rounded-lg overflow-x-auto bg-[#272822] p-4">
-                  <code
-                    className="language-javascript text-sm"
-                    dangerouslySetInnerHTML={{
-                      __html: Prism.highlight(
-                        codeExample,
-                        Prism.languages.javascript,
-                        'javascript'
-                      ),
-                    }}
-                  />
-                </pre>
+                <AppCodeMirror
+                  value={codeExample}
+                  height="260px"
+                  className="text-sm"
+                  extensions={[]}
+                  editable={false}
+                  basicSetup={{
+                    lineNumbers: true,
+                    foldGutter: true,
+                    highlightActiveLine: false,
+                  }}
+                />
               </Card>
             </TabsContent>
 
@@ -368,40 +369,34 @@ border-[${formats.hex}]`;
                 <div className="space-y-4">
                   <div>
                     <Label>CSS Custom Properties</Label>
-                    <pre className="rounded-lg overflow-x-auto bg-[#272822] p-4 mt-2">
-                      <code
-                        className="language-css text-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: Prism.highlight(
-                            `:root {
-  --color-hex: ${formats.hex};
-  --color-rgb: ${formats.rgb};
-  --color-hsl: ${formats.hsl};
-}`,
-                            Prism.languages.css,
-                            'css'
-                          ),
-                        }}
-                      />
-                    </pre>
+                    <AppCodeMirror
+                      value={`:root {\n  --color-hex: ${formats.hex};\n  --color-rgb: ${formats.rgb};\n  --color-hsl: ${formats.hsl};\n}`}
+                      height="180px"
+                      className="text-sm"
+                      extensions={[]}
+                      editable={false}
+                      basicSetup={{
+                        lineNumbers: true,
+                        foldGutter: true,
+                        highlightActiveLine: false,
+                      }}
+                    />
                   </div>
 
                   <div>
                     <Label>Tailwind CSS</Label>
-                    <pre className="rounded-lg overflow-x-auto bg-[#272822] p-4 mt-2">
-                      <code
-                        className="language-javascript text-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: Prism.highlight(
-                            `bg-[${formats.hex}]
-text-[${formats.hex}]
-border-[${formats.hex}]`,
-                            Prism.languages.javascript,
-                            'javascript'
-                          ),
-                        }}
-                      />
-                    </pre>
+                    <AppCodeMirror
+                      value={`bg-[${formats.hex}]\ntext-[${formats.hex}]\nborder-[${formats.hex}]`}
+                      height="140px"
+                      className="text-sm"
+                      extensions={[]}
+                      editable={false}
+                      basicSetup={{
+                        lineNumbers: true,
+                        foldGutter: true,
+                        highlightActiveLine: false,
+                      }}
+                    />
                   </div>
                 </div>
               </Card>
@@ -411,4 +406,4 @@ border-[${formats.hex}]`,
       </div>
     </div>
   );
-} 
+}

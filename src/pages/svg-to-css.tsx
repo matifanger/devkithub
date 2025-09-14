@@ -1,8 +1,8 @@
 import { css } from '@codemirror/lang-css';
 import { xml } from '@codemirror/lang-xml';
-import { oneDark } from '@codemirror/theme-one-dark';
-import CodeMirror, { EditorView } from '@uiw/react-codemirror';
+import { EditorView } from '@uiw/react-codemirror';
 import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 
@@ -86,12 +86,11 @@ export function SvgToCssPage() {
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               onChange={(value) => {
                 setInput(value);
                 convertToCss(value);
@@ -118,12 +117,11 @@ export function SvgToCssPage() {
           {error ? (
             <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
-            <CodeMirror
+            <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               extensions={[css(), EditorView.lineWrapping]}
               editable={false}
               basicSetup={{

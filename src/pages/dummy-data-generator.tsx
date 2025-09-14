@@ -1,12 +1,11 @@
 import { json } from '@codemirror/lang-json';
 import { sql } from '@codemirror/lang-sql';
 import { xml } from '@codemirror/lang-xml';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
 import { faker } from '@faker-js/faker';
-import CodeMirror from '@uiw/react-codemirror';
 import { RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -660,11 +659,10 @@ export function DummyDataGeneratorPage() {
           )}
 
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[
                 EditorView.lineWrapping,
                 config.format === 'json'

@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import yaml from 'js-yaml';
-import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { yaml as yamlLang } from '@codemirror/lang-yaml';
-import { oneDark } from '@codemirror/theme-one-dark';
+import yaml from 'js-yaml';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
 export function JsonToYamlPage() {
   const [input, setInput] = useState('');
@@ -47,24 +46,28 @@ export function JsonToYamlPage() {
   }, [convertToYaml]);
 
   const handleSample = () => {
-    const sample = JSON.stringify({
-      store: {
-        book: [
-          {
-            category: "reference",
-            author: "Nigel Rees",
-            title: "Sayings of the Century",
-            price: 8.95
-          },
-          {
-            category: "fiction",
-            author: "Evelyn Waugh",
-            title: "Sword of Honour",
-            price: 12.99
-          }
-        ]
-      }
-    }, null, 2);
+    const sample = JSON.stringify(
+      {
+        store: {
+          book: [
+            {
+              category: 'reference',
+              author: 'Nigel Rees',
+              title: 'Sayings of the Century',
+              price: 8.95,
+            },
+            {
+              category: 'fiction',
+              author: 'Evelyn Waugh',
+              title: 'Sword of Honour',
+              price: 12.99,
+            },
+          ],
+        },
+      },
+      null,
+      2
+    );
     setInput(sample);
   };
 
@@ -105,12 +108,11 @@ export function JsonToYamlPage() {
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               onChange={(value) => setInput(value)}
               extensions={[json()]}
               placeholder="Paste your JSON here"
@@ -143,18 +145,15 @@ export function JsonToYamlPage() {
               </Button>
             </div>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
-            <CodeMirror
+            <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               extensions={[yamlLang()]}
               editable={false}
               basicSetup={{
@@ -168,4 +167,4 @@ export function JsonToYamlPage() {
       </div>
     </div>
   );
-} 
+}

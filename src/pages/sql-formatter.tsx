@@ -1,28 +1,42 @@
-import React, { useState, useCallback } from 'react';
+import { sql } from '@codemirror/lang-sql';
+import { EditorView } from '@codemirror/view';
+import { Settings } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { format } from 'sql-formatter';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { sql } from '@codemirror/lang-sql';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { format } from 'sql-formatter';
-import { Settings } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
-import { Switch } from "../components/ui/switch";
-import { EditorView } from '@codemirror/view';
+} from '../components/ui/select';
+import { Switch } from '../components/ui/switch';
 
 interface FormatterConfig {
-  language: 'sql' | 'bigquery' | 'db2' | 'db2i' | 'hive' | 'mariadb' | 'mysql' | 'n1ql' | 'plsql' | 'postgresql' | 'redshift' | 'singlestoredb' | 'snowflake' | 'spark' | 'sqlite' | 'tidb' | 'transactsql' | 'trino' | 'tsql';
+  language:
+    | 'sql'
+    | 'bigquery'
+    | 'db2'
+    | 'db2i'
+    | 'hive'
+    | 'mariadb'
+    | 'mysql'
+    | 'n1ql'
+    | 'plsql'
+    | 'postgresql'
+    | 'redshift'
+    | 'singlestoredb'
+    | 'snowflake'
+    | 'spark'
+    | 'sqlite'
+    | 'tidb'
+    | 'transactsql'
+    | 'trino'
+    | 'tsql';
   tabWidth: number;
   useTabs: boolean;
   keywordCase: 'upper' | 'lower' | 'preserve';
@@ -48,36 +62,39 @@ export function SqlFormatterPage() {
     functionCase: 'preserve',
     identifierCase: 'preserve',
     indentStyle: 'standard',
-    linesBetweenQueries: 1
+    linesBetweenQueries: 1,
   });
 
-  const formatSql = useCallback((sql: string, newConfig = config) => {
-    try {
-      if (!sql.trim()) {
-        setOutput('');
+  const formatSql = useCallback(
+    (sql: string, newConfig = config) => {
+      try {
+        if (!sql.trim()) {
+          setOutput('');
+          setError('');
+          return;
+        }
+
+        const formatted = format(sql, {
+          language: newConfig.language,
+          tabWidth: newConfig.tabWidth,
+          useTabs: newConfig.useTabs,
+          keywordCase: newConfig.keywordCase,
+          dataTypeCase: newConfig.dataTypeCase,
+          functionCase: newConfig.functionCase,
+          identifierCase: newConfig.identifierCase,
+          indentStyle: newConfig.indentStyle,
+          linesBetweenQueries: newConfig.linesBetweenQueries,
+        });
+
+        setOutput(formatted);
         setError('');
-        return;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Invalid SQL');
+        setOutput('');
       }
-
-      const formatted = format(sql, {
-        language: newConfig.language,
-        tabWidth: newConfig.tabWidth,
-        useTabs: newConfig.useTabs,
-        keywordCase: newConfig.keywordCase,
-        dataTypeCase: newConfig.dataTypeCase,
-        functionCase: newConfig.functionCase,
-        identifierCase: newConfig.identifierCase,
-        indentStyle: newConfig.indentStyle,
-        linesBetweenQueries: newConfig.linesBetweenQueries,
-      });
-
-      setOutput(formatted);
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid SQL');
-      setOutput('');
-    }
-  }, [config]);
+    },
+    [config]
+  );
 
   const handleSample = () => {
     const sample = `SELECT u.id, u.name, u.email, COUNT(o.id) as total_orders, SUM(o.amount) as total_amount 
@@ -111,7 +128,9 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
     <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">SQL Formatter</h1>
-        <p className="text-muted-foreground">Format and beautify SQL queries with customizable options</p>
+        <p className="text-muted-foreground">
+          Format and beautify SQL queries with customizable options
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
@@ -138,7 +157,12 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>SQL Dialect</Label>
                         <div className="col-span-2">
-                          <Select value={config.language} onValueChange={(value) => updateConfig('language', value as FormatterConfig['language'])}>
+                          <Select
+                            value={config.language}
+                            onValueChange={(value) =>
+                              updateConfig('language', value as FormatterConfig['language'])
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Language" />
                             </SelectTrigger>
@@ -170,7 +194,10 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Indent Width</Label>
                         <div className="col-span-2">
-                          <Select value={config.tabWidth.toString()} onValueChange={(value) => updateConfig('tabWidth', parseInt(value))}>
+                          <Select
+                            value={config.tabWidth.toString()}
+                            onValueChange={(value) => updateConfig('tabWidth', parseInt(value))}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Tab Width" />
                             </SelectTrigger>
@@ -186,7 +213,12 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Keyword Case</Label>
                         <div className="col-span-2">
-                          <Select value={config.keywordCase} onValueChange={(value: 'upper' | 'lower' | 'preserve') => updateConfig('keywordCase', value)}>
+                          <Select
+                            value={config.keywordCase}
+                            onValueChange={(value: 'upper' | 'lower' | 'preserve') =>
+                              updateConfig('keywordCase', value)
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Keyword Case" />
                             </SelectTrigger>
@@ -202,7 +234,12 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Data Type Case</Label>
                         <div className="col-span-2">
-                          <Select value={config.dataTypeCase} onValueChange={(value: 'upper' | 'lower' | 'preserve') => updateConfig('dataTypeCase', value)}>
+                          <Select
+                            value={config.dataTypeCase}
+                            onValueChange={(value: 'upper' | 'lower' | 'preserve') =>
+                              updateConfig('dataTypeCase', value)
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Data Type Case" />
                             </SelectTrigger>
@@ -218,7 +255,12 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Function Case</Label>
                         <div className="col-span-2">
-                          <Select value={config.functionCase} onValueChange={(value: 'upper' | 'lower' | 'preserve') => updateConfig('functionCase', value)}>
+                          <Select
+                            value={config.functionCase}
+                            onValueChange={(value: 'upper' | 'lower' | 'preserve') =>
+                              updateConfig('functionCase', value)
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Function Case" />
                             </SelectTrigger>
@@ -234,7 +276,12 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Identifier Case</Label>
                         <div className="col-span-2">
-                          <Select value={config.identifierCase} onValueChange={(value: 'upper' | 'lower' | 'preserve') => updateConfig('identifierCase', value)}>
+                          <Select
+                            value={config.identifierCase}
+                            onValueChange={(value: 'upper' | 'lower' | 'preserve') =>
+                              updateConfig('identifierCase', value)
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Identifier Case" />
                             </SelectTrigger>
@@ -250,7 +297,12 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Indent Style</Label>
                         <div className="col-span-2">
-                          <Select value={config.indentStyle} onValueChange={(value: 'standard' | 'tabularLeft' | 'tabularRight') => updateConfig('indentStyle', value)}>
+                          <Select
+                            value={config.indentStyle}
+                            onValueChange={(value: 'standard' | 'tabularLeft' | 'tabularRight') =>
+                              updateConfig('indentStyle', value)
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Indent Style" />
                             </SelectTrigger>
@@ -266,7 +318,12 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Lines Between Queries</Label>
                         <div className="col-span-2">
-                          <Select value={config.linesBetweenQueries.toString()} onValueChange={(value) => updateConfig('linesBetweenQueries', parseInt(value))}>
+                          <Select
+                            value={config.linesBetweenQueries.toString()}
+                            onValueChange={(value) =>
+                              updateConfig('linesBetweenQueries', parseInt(value))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Lines Between" />
                             </SelectTrigger>
@@ -298,25 +355,24 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                setOutput('');
-                setError('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  setOutput('');
+                  setError('');
+                }}
+              >
                 Clear
               </Button>
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
-              extensions={[
-                sql(),
-                EditorView.lineWrapping
-              ]}
+              extensions={[sql(), EditorView.lineWrapping]}
               onChange={(value) => {
                 setInput(value);
                 formatSql(value);
@@ -338,22 +394,16 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 height="100%"
                 className="h-[calc(100vh-17rem)]"
-                theme={oneDark}
-                extensions={[
-                  sql(),
-                  EditorView.lineWrapping
-                ]}
+                extensions={[sql(), EditorView.lineWrapping]}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
@@ -367,4 +417,4 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
       </div>
     </div>
   );
-} 
+}

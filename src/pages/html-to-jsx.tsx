@@ -1,10 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
 import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
+import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
 
 export function HtmlToJsxPage() {
   const [input, setInput] = useState('');
@@ -33,14 +32,19 @@ export function HtmlToJsxPage() {
             .map((style: string) => {
               const [property, value] = style.split(':').map((s: string) => s.trim());
               // Convert kebab-case to camelCase
-              const camelProperty = property.replace(/-([a-z])/g, (g: string) => g[1].toUpperCase());
+              const camelProperty = property.replace(/-([a-z])/g, (g: string) =>
+                g[1].toUpperCase()
+              );
               return `${camelProperty}: "${value}"`;
             })
             .join(', ');
           return `style={{${styleObject}}}`;
         })
         // Self-closing tags
-        .replace(/<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)([^>]*?)>/g, '<$1$2 />')
+        .replace(
+          /<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)([^>]*?)>/g,
+          '<$1$2 />'
+        )
         // Convert inline event handlers
         .replace(/on([a-z]+)="([^"]*)"/gi, (match, event, handler) => {
           return `on${event.charAt(0).toUpperCase() + event.slice(1)}={() => ${handler}}`;
@@ -102,21 +106,23 @@ export function HtmlToJsxPage() {
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                setOutput('');
-                setError('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  setOutput('');
+                  setError('');
+                }}
+              >
                 Clear
               </Button>
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[html()]}
               onChange={(value) => {
                 setInput(value);
@@ -139,18 +145,15 @@ export function HtmlToJsxPage() {
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 className="h-[calc(100vh-17rem)]"
                 height="100%"
-                theme={oneDark}
                 extensions={[javascript({ jsx: true })]}
                 editable={false}
                 basicSetup={{
@@ -165,4 +168,4 @@ export function HtmlToJsxPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,19 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { EditorView } from '@codemirror/view';
+import { RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { RefreshCw } from 'lucide-react';
-import { EditorView } from '@codemirror/view';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Switch } from "../components/ui/switch";
-import { Slider } from "../components/ui/slider";
+} from '../components/ui/select';
+import { Slider } from '../components/ui/slider';
+import { Switch } from '../components/ui/switch';
 
 interface GeneratorConfig {
   type: 'paragraphs' | 'sentences' | 'words';
@@ -42,14 +41,69 @@ const DEFAULT_CONFIG: GeneratorConfig = {
 };
 
 const LOREM_WORDS = [
-  'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
-  'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore',
-  'magna', 'aliqua', 'enim', 'ad', 'minim', 'veniam', 'quis', 'nostrud',
-  'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo',
-  'consequat', 'duis', 'aute', 'irure', 'in', 'reprehenderit', 'voluptate',
-  'velit', 'esse', 'cillum', 'eu', 'fugiat', 'nulla', 'pariatur', 'excepteur',
-  'sint', 'occaecat', 'cupidatat', 'non', 'proident', 'sunt', 'culpa', 'qui',
-  'officia', 'deserunt', 'mollit', 'anim', 'id', 'est', 'laborum'
+  'lorem',
+  'ipsum',
+  'dolor',
+  'sit',
+  'amet',
+  'consectetur',
+  'adipiscing',
+  'elit',
+  'sed',
+  'do',
+  'eiusmod',
+  'tempor',
+  'incididunt',
+  'ut',
+  'labore',
+  'et',
+  'dolore',
+  'magna',
+  'aliqua',
+  'enim',
+  'ad',
+  'minim',
+  'veniam',
+  'quis',
+  'nostrud',
+  'exercitation',
+  'ullamco',
+  'laboris',
+  'nisi',
+  'aliquip',
+  'ex',
+  'ea',
+  'commodo',
+  'consequat',
+  'duis',
+  'aute',
+  'irure',
+  'in',
+  'reprehenderit',
+  'voluptate',
+  'velit',
+  'esse',
+  'cillum',
+  'eu',
+  'fugiat',
+  'nulla',
+  'pariatur',
+  'excepteur',
+  'sint',
+  'occaecat',
+  'cupidatat',
+  'non',
+  'proident',
+  'sunt',
+  'culpa',
+  'qui',
+  'officia',
+  'deserunt',
+  'mollit',
+  'anim',
+  'id',
+  'est',
+  'laborum',
 ];
 
 export function LoremIpsumGeneratorPage() {
@@ -75,8 +129,13 @@ export function LoremIpsumGeneratorPage() {
   };
 
   const generateParagraph = (isFirst: boolean) => {
-    const sentenceCount = getRandomInt(config.minSentencesPerParagraph, config.maxSentencesPerParagraph);
-    const sentences = Array.from({ length: sentenceCount }, (_, i) => generateSentence(isFirst && i === 0));
+    const sentenceCount = getRandomInt(
+      config.minSentencesPerParagraph,
+      config.maxSentencesPerParagraph
+    );
+    const sentences = Array.from({ length: sentenceCount }, (_, i) =>
+      generateSentence(isFirst && i === 0)
+    );
     return sentences.join(' ');
   };
 
@@ -86,16 +145,16 @@ export function LoremIpsumGeneratorPage() {
     switch (config.type) {
       case 'paragraphs':
         result = Array.from({ length: config.count }, (_, i) => generateParagraph(i === 0))
-          .map(p => config.format === 'html' ? `<p>${p}</p>` : p)
+          .map((p) => (config.format === 'html' ? `<p>${p}</p>` : p))
           .join(config.format === 'html' ? '\n' : '\n\n');
         break;
       case 'sentences':
-        result = Array.from({ length: config.count }, (_, i) => generateSentence(i === 0))
-          .join(' ');
+        result = Array.from({ length: config.count }, (_, i) => generateSentence(i === 0)).join(
+          ' '
+        );
         break;
       case 'words':
-        result = Array.from({ length: config.count }, (_, i) => generateWord(i))
-          .join(' ');
+        result = Array.from({ length: config.count }, (_, i) => generateWord(i)).join(' ');
         if (config.addPeriod) result += '.';
         break;
     }
@@ -112,14 +171,16 @@ export function LoremIpsumGeneratorPage() {
   };
 
   const updateConfig = <K extends keyof GeneratorConfig>(key: K, value: GeneratorConfig[K]) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    setConfig((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Lorem Ipsum Generator</h1>
-        <p className="text-muted-foreground">Generate customizable Lorem Ipsum text for your design and development needs</p>
+        <p className="text-muted-foreground">
+          Generate customizable Lorem Ipsum text for your design and development needs
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -136,7 +197,10 @@ export function LoremIpsumGeneratorPage() {
             <div className="grid grid-cols-3 items-center gap-4">
               <Label>Type</Label>
               <div className="col-span-2">
-                <Select value={config.type} onValueChange={(value: GeneratorConfig['type']) => updateConfig('type', value)}>
+                <Select
+                  value={config.type}
+                  onValueChange={(value: GeneratorConfig['type']) => updateConfig('type', value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Type" />
                   </SelectTrigger>
@@ -178,7 +242,9 @@ export function LoremIpsumGeneratorPage() {
                       step={1}
                       onValueChange={([value]) => updateConfig('minWordsPerSentence', value)}
                     />
-                    <span className="text-sm text-muted-foreground">{config.minWordsPerSentence} words</span>
+                    <span className="text-sm text-muted-foreground">
+                      {config.minWordsPerSentence} words
+                    </span>
                   </div>
                   <div>
                     <Label className="text-sm">Maximum</Label>
@@ -189,7 +255,9 @@ export function LoremIpsumGeneratorPage() {
                       step={1}
                       onValueChange={([value]) => updateConfig('maxWordsPerSentence', value)}
                     />
-                    <span className="text-sm text-muted-foreground">{config.maxWordsPerSentence} words</span>
+                    <span className="text-sm text-muted-foreground">
+                      {config.maxWordsPerSentence} words
+                    </span>
                   </div>
                 </div>
               </div>
@@ -208,7 +276,9 @@ export function LoremIpsumGeneratorPage() {
                       step={1}
                       onValueChange={([value]) => updateConfig('minSentencesPerParagraph', value)}
                     />
-                    <span className="text-sm text-muted-foreground">{config.minSentencesPerParagraph} sentences</span>
+                    <span className="text-sm text-muted-foreground">
+                      {config.minSentencesPerParagraph} sentences
+                    </span>
                   </div>
                   <div>
                     <Label className="text-sm">Maximum</Label>
@@ -219,7 +289,9 @@ export function LoremIpsumGeneratorPage() {
                       step={1}
                       onValueChange={([value]) => updateConfig('maxSentencesPerParagraph', value)}
                     />
-                    <span className="text-sm text-muted-foreground">{config.maxSentencesPerParagraph} sentences</span>
+                    <span className="text-sm text-muted-foreground">
+                      {config.maxSentencesPerParagraph} sentences
+                    </span>
                   </div>
                 </div>
               </div>
@@ -228,7 +300,12 @@ export function LoremIpsumGeneratorPage() {
             <div className="grid grid-cols-3 items-center gap-4">
               <Label>Format</Label>
               <div className="col-span-2">
-                <Select value={config.format} onValueChange={(value: GeneratorConfig['format']) => updateConfig('format', value)}>
+                <Select
+                  value={config.format}
+                  onValueChange={(value: GeneratorConfig['format']) =>
+                    updateConfig('format', value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Format" />
                   </SelectTrigger>
@@ -275,11 +352,10 @@ export function LoremIpsumGeneratorPage() {
           </div>
 
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[EditorView.lineWrapping]}
               editable={false}
               basicSetup={{
@@ -293,4 +369,4 @@ export function LoremIpsumGeneratorPage() {
       </div>
     </div>
   );
-} 
+}
