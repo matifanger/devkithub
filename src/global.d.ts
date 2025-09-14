@@ -24,6 +24,10 @@ interface Window {
     // Window close dialog events
     onShowCloseDialog: (callback: () => void) => void;
     sendCloseDialogSelection: (action: 'quit' | 'tray', remember: boolean) => Promise<void>;
+    // Autostart dialog events
+    onShowAutostartDialog: (callback: () => void) => void;
+    sendAutostartSelection: (enable: boolean) => Promise<void>;
+    shouldShowAutostartDialog: (currentPref: string | null) => Promise<boolean>;
   };
 }
 

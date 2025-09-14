@@ -14,7 +14,11 @@ import {
 } from './components/ui/dialog';
 import { Label } from './components/ui/label';
 import { Toaster } from './components/ui/toaster';
-import { REJECTED_VERSION_KEY, UPDATE_PREFERENCE_KEY } from './constants/settings-keys';
+import {
+  LAUNCH_ON_STARTUP_KEY,
+  REJECTED_VERSION_KEY,
+  UPDATE_PREFERENCE_KEY,
+} from './constants/settings-keys';
 import { AuthProvider } from './contexts/auth-context';
 import { ClipboardSettingsProvider } from './contexts/clipboard-settings-context';
 import { useToast } from './hooks/use-toast';
@@ -79,6 +83,7 @@ const App = () => {
   const { toast } = useToast();
   const [showCloseDialog, setShowCloseDialog] = React.useState(false);
   const [rememberChoice, setRememberChoice] = React.useState(false);
+  const [showAutostartDialog, setShowAutostartDialog] = React.useState(false);
 
   useEffect(() => {
     checkForUpdates();
@@ -89,11 +94,34 @@ const App = () => {
     window.electron.onShowCloseDialog(() => {
       setShowCloseDialog(true);
     });
+    // Listen for autostart question
+    window.electron.onShowAutostartDialog(() => {
+      setShowAutostartDialog(true);
+    });
+  }, []);
+
+  // Fallback: proactively check if we should show the autostart dialog
+  React.useEffect(() => {
+    const ensureAutostartPrompt = async () => {
+      try {
+        const pref = await window.electron.settingsStore.get(LAUNCH_ON_STARTUP_KEY);
+        const shouldShow = await window.electron.shouldShowAutostartDialog(pref);
+        if (shouldShow) setShowAutostartDialog(true);
+      } catch (err) {
+        console.error('Failed checking autostart dialog need:', err);
+      }
+    };
+    ensureAutostartPrompt();
   }, []);
 
   const handleCloseSelection = async (action: 'quit' | 'tray') => {
     await window.electron.sendCloseDialogSelection(action, rememberChoice);
     setShowCloseDialog(false);
+  };
+
+  const handleAutostartSelection = async (enable: boolean) => {
+    await window.electron.sendAutostartSelection(enable);
+    setShowAutostartDialog(false);
   };
 
   const checkForUpdates = async () => {
@@ -246,6 +274,28 @@ const App = () => {
                     </Button>
                     <Button variant="destructive" onClick={() => handleCloseSelection('quit')}>
                       Exit
+                    </Button>
+                  </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Autostart prompt dialog */}
+            <Dialog open={showAutostartDialog} onOpenChange={setShowAutostartDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Launch at startup</DialogTitle>
+                  <DialogDescription>
+                    Would you like DevKitHub to start automatically when you sign in?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <div className="flex w-full justify-end gap-2">
+                    <Button variant="secondary" onClick={() => handleAutostartSelection(false)}>
+                      No, thanks
+                    </Button>
+                    <Button variant="default" onClick={() => handleAutostartSelection(true)}>
+                      Enable
                     </Button>
                   </div>
                 </DialogFooter>

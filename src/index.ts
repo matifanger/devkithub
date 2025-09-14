@@ -2,7 +2,13 @@ import { app, BrowserWindow, ipcMain, Menu, protocol, Tray } from 'electron';
 import * as fs from 'fs';
 import * as keytar from 'keytar';
 import * as path from 'path';
-import { ACCOUNT_NAME, SERVICE_NAME } from './constants/settings-keys';
+import { ACCOUNT_NAME, LAUNCH_ON_STARTUP_KEY, SERVICE_NAME } from './constants/settings-keys';
+import {
+  applyAutostart,
+  attachAutostartPrompt,
+  registerAutostartIpc,
+  shouldStartHidden,
+} from './main/autostart';
 import {
   attachCloseBehavior,
   createTray as createAppTray,
@@ -68,10 +74,12 @@ function saveSettings() {
 
 const createWindow = (): void => {
   // Create the browser window.
+  const startHidden = shouldStartHidden(() => persistentStore[LAUNCH_ON_STARTUP_KEY] || null);
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     frame: true,
+    show: !startHidden,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       nodeIntegration: true, // Deshabilitado por seguridad
@@ -118,8 +126,8 @@ const createWindow = (): void => {
     () => isQuitting
   );
 
-  // Open DevTools only in development
-  if (!app.isPackaged) {
+  // Open DevTools only in development and only when visible
+  if (!app.isPackaged && !startHidden) {
     mainWindow.webContents.openDevTools();
   }
 };
@@ -169,6 +177,9 @@ function setupSecureStore() {
     try {
       persistentStore[key] = value;
       saveSettings();
+      if (key === LAUNCH_ON_STARTUP_KEY) {
+        applyAutostart(value === 'true');
+      }
       return true;
     } catch (error) {
       console.error(`Failed to set ${key} in store:`, error);
@@ -217,6 +228,14 @@ function setupSecureStore() {
       isQuitting = v;
     }
   );
+
+  registerAutostartIpc(
+    (value) => {
+      persistentStore[LAUNCH_ON_STARTUP_KEY] = value;
+      saveSettings();
+    },
+    (openAtLogin) => applyAutostart(openAtLogin)
+  );
 }
 
 function registerLocalSoundProtocol() {
@@ -247,6 +266,12 @@ app.whenReady().then(async () => {
   setupSecureStore();
   createTray();
   createWindow();
+
+  // Attach autostart prompt after window load; applies if already decided
+  attachAutostartPrompt(
+    () => mainWindowRef,
+    () => persistentStore[LAUNCH_ON_STARTUP_KEY] || null
+  );
 
   // Quit when all windows are closed, except on macOS. There, it's common
   // for applications and their menu bar to stay active until the user quits
