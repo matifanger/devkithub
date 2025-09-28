@@ -54,6 +54,21 @@ module.exports = {
         md: '`calc(var(--radius) - 2px)`',
         sm: 'calc(var(--radius) - 4px)',
       },
+      fontFamily: {
+        sans: [
+          '"Plus Jakarta Sans"',
+          'ui-sans-serif',
+          'system-ui',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'Noto Sans',
+          'Apple Color Emoji',
+          'Segoe UI Emoji',
+          'Segoe UI Symbol',
+        ],
+      },
       typography: {
         DEFAULT: {
           css: {

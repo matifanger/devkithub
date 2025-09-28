@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { html } from '@codemirror/lang-html';
+import { html as beautify } from 'js-beautify';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { html } from '@codemirror/lang-html';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { html as beautify } from 'js-beautify';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
 export function HtmlBeautifyPage() {
   const [input, setInput] = useState('');
@@ -38,18 +37,15 @@ export function HtmlBeautifyPage() {
           end_with_newline: false,
           wrap_line_length: 0,
           indent_inner_html: false,
-          indent_empty_lines: false
+          indent_empty_lines: false,
         });
         setOutput(formatted);
       } else {
         // Minify: remove all unnecessary whitespace
-        const minified = input
-          .replace(/\s+/g, ' ')
-          .replace(/>\s+</g, '><')
-          .trim();
+        const minified = input.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
         setOutput(minified);
       }
-      
+
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid HTML');
@@ -103,12 +99,11 @@ export function HtmlBeautifyPage() {
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               onChange={(value) => setInput(value)}
               extensions={[html()]}
               placeholder="Paste your HTML here"
@@ -151,19 +146,16 @@ export function HtmlBeautifyPage() {
               </Button>
             </div>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 className="h-[calc(100vh-17rem)]"
                 height="100%"
                 width="100%"
-                theme={oneDark}
                 extensions={[html()]}
                 editable={false}
                 basicSetup={{
@@ -178,4 +170,4 @@ export function HtmlBeautifyPage() {
       </div>
     </div>
   );
-} 
+}

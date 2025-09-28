@@ -2,9 +2,9 @@ import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { php } from '@codemirror/lang-php';
 import { python } from '@codemirror/lang-python';
-import { oneDark } from '@codemirror/theme-one-dark';
-import CodeMirror, { EditorView } from '@uiw/react-codemirror';
+import { EditorView } from '@uiw/react-codemirror';
 import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -308,12 +308,11 @@ ${gettersSetters.join('\n')}
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               extensions={[json(), EditorView.lineWrapping]}
               onChange={(value) => {
                 setInput(value);
@@ -356,12 +355,11 @@ ${gettersSetters.join('\n')}
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={convertJsonToCode(input, activeTab, modelName)}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               extensions={[getLanguageExtension(activeTab)]}
               editable={false}
               basicSetup={{

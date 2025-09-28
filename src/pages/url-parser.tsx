@@ -1,15 +1,13 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import { javascript } from '@codemirror/lang-javascript';
+import { Copy, Settings } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Settings, Copy } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
-import { Switch } from "../components/ui/switch";
+import { Label } from '../components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { Switch } from '../components/ui/switch';
 import {
   Table,
   TableBody,
@@ -17,10 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
-import { javascript } from '@codemirror/lang-javascript';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
+} from '../components/ui/table';
 
 interface URLComponents {
   href: string;
@@ -53,7 +48,7 @@ export function UrlParserPage() {
     showCredentials: false,
     parseIPv6: true,
     normalizeProtocol: true,
-    displayFormat: 'parsed'
+    displayFormat: 'parsed',
   });
 
   const validateUrl = useCallback((input: string): boolean => {
@@ -68,52 +63,63 @@ export function UrlParserPage() {
     }
   }, []);
 
-  const parseUrl = useCallback((input: string): URLComponents | null => {
-    if (!input || !validateUrl(input)) return null;
-    try {
-      const parsed = new URL(input);
-      const params: Record<string, string> = {};
-      parsed.searchParams.forEach((value, key) => {
-        params[key] = settings.decodeComponents ? decodeURIComponent(value) : value;
-      });
+  const parseUrl = useCallback(
+    (input: string): URLComponents | null => {
+      if (!input || !validateUrl(input)) return null;
+      try {
+        const parsed = new URL(input);
+        const params: Record<string, string> = {};
+        parsed.searchParams.forEach((value, key) => {
+          params[key] = settings.decodeComponents ? decodeURIComponent(value) : value;
+        });
 
-      return {
-        href: parsed.href,
-        protocol: settings.normalizeProtocol ? parsed.protocol.replace(':', '') : parsed.protocol,
-        username: settings.showCredentials ? parsed.username : '',
-        password: settings.showCredentials ? parsed.password : '',
-        host: parsed.host,
-        hostname: parsed.hostname,
-        port: parsed.port,
-        pathname: settings.decodeComponents ? decodeURIComponent(parsed.pathname) : parsed.pathname,
-        search: parsed.search,
-        hash: settings.decodeComponents ? decodeURIComponent(parsed.hash) : parsed.hash,
-        origin: parsed.origin,
-        params
-      };
-    } catch (e) {
-      return null;
-    }
-  }, [settings, validateUrl]);
+        return {
+          href: parsed.href,
+          protocol: settings.normalizeProtocol ? parsed.protocol.replace(':', '') : parsed.protocol,
+          username: settings.showCredentials ? parsed.username : '',
+          password: settings.showCredentials ? parsed.password : '',
+          host: parsed.host,
+          hostname: parsed.hostname,
+          port: parsed.port,
+          pathname: settings.decodeComponents
+            ? decodeURIComponent(parsed.pathname)
+            : parsed.pathname,
+          search: parsed.search,
+          hash: settings.decodeComponents ? decodeURIComponent(parsed.hash) : parsed.hash,
+          origin: parsed.origin,
+          params,
+        };
+      } catch (e) {
+        return null;
+      }
+    },
+    [settings, validateUrl]
+  );
 
   const parsedUrl = useMemo(() => parseUrl(url), [url, parseUrl]);
 
-  const generateCurl = useCallback((components: URLComponents): string => {
-    let curl = 'curl';
-    if (settings.showCredentials && components.username) {
-      curl += ` -u "${components.username}:${components.password}"`;
-    }
-    curl += ` "${components.href}"`;
-    return curl;
-  }, [settings]);
+  const generateCurl = useCallback(
+    (components: URLComponents): string => {
+      let curl = 'curl';
+      if (settings.showCredentials && components.username) {
+        curl += ` -u "${components.username}:${components.password}"`;
+      }
+      curl += ` "${components.href}"`;
+      return curl;
+    },
+    [settings]
+  );
 
-  const generateFetch = useCallback((components: URLComponents): string => {
-    let options = '';
-    if (settings.showCredentials && components.username) {
-      options = `,\n  headers: {\n    "Authorization": "Basic ${btoa(`${components.username}:${components.password}`)}\n  }"`;
-    }
-    return `fetch("${components.href}"${options})`;
-  }, [settings]);
+  const generateFetch = useCallback(
+    (components: URLComponents): string => {
+      let options = '';
+      if (settings.showCredentials && components.username) {
+        options = `,\n  headers: {\n    "Authorization": "Basic ${btoa(`${components.username}:${components.password}`)}\n  }"`;
+      }
+      return `fetch("${components.href}"${options})`;
+    },
+    [settings]
+  );
 
   const handleCopy = async (text: string) => {
     try {
@@ -124,7 +130,8 @@ export function UrlParserPage() {
   };
 
   const handleSample = () => {
-    const sample = 'https://user:pass@api.example.com:8080/path/to/resource?key1=value1&key2=value2&complex=%7B%22nested%22%3A%22value%22%7D#section-1';
+    const sample =
+      'https://user:pass@api.example.com:8080/path/to/resource?key1=value1&key2=value2&complex=%7B%22nested%22%3A%22value%22%7D#section-1';
     setUrl(sample);
   };
 
@@ -142,7 +149,8 @@ export function UrlParserPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">URL Parser</h1>
         <p className="text-muted-foreground">
-          Parse, analyze, and format URLs. Supports complex URLs with authentication, query parameters, and fragments.
+          Parse, analyze, and format URLs. Supports complex URLs with authentication, query
+          parameters, and fragments.
         </p>
       </div>
 
@@ -174,7 +182,7 @@ export function UrlParserPage() {
                             id="decode"
                             checked={settings.decodeComponents}
                             onCheckedChange={(checked) =>
-                              setSettings(prev => ({ ...prev, decodeComponents: checked }))
+                              setSettings((prev) => ({ ...prev, decodeComponents: checked }))
                             }
                           />
                         </div>
@@ -184,7 +192,7 @@ export function UrlParserPage() {
                             id="credentials"
                             checked={settings.showCredentials}
                             onCheckedChange={(checked) =>
-                              setSettings(prev => ({ ...prev, showCredentials: checked }))
+                              setSettings((prev) => ({ ...prev, showCredentials: checked }))
                             }
                           />
                         </div>
@@ -194,7 +202,7 @@ export function UrlParserPage() {
                             id="ipv6"
                             checked={settings.parseIPv6}
                             onCheckedChange={(checked) =>
-                              setSettings(prev => ({ ...prev, parseIPv6: checked }))
+                              setSettings((prev) => ({ ...prev, parseIPv6: checked }))
                             }
                           />
                         </div>
@@ -204,7 +212,7 @@ export function UrlParserPage() {
                             id="protocol"
                             checked={settings.normalizeProtocol}
                             onCheckedChange={(checked) =>
-                              setSettings(prev => ({ ...prev, normalizeProtocol: checked }))
+                              setSettings((prev) => ({ ...prev, normalizeProtocol: checked }))
                             }
                           />
                         </div>
@@ -263,11 +271,14 @@ export function UrlParserPage() {
                     <TableBody>
                       {Object.entries(parsedUrl).map(([key, value]) => {
                         if (key === 'params') return null;
-                        if (!settings.showCredentials && (key === 'username' || key === 'password')) return null;
+                        if (!settings.showCredentials && (key === 'username' || key === 'password'))
+                          return null;
                         return (
                           <TableRow key={key}>
                             <TableCell className="font-mono font-medium">{key}</TableCell>
-                            <TableCell className="font-mono truncate max-w-[300px]">{value || '(empty)'}</TableCell>
+                            <TableCell className="font-mono truncate max-w-[300px]">
+                              {value || '(empty)'}
+                            </TableCell>
                             <TableCell className="text-right">
                               <Button
                                 variant="ghost"
@@ -304,7 +315,9 @@ export function UrlParserPage() {
                         {Object.entries(parsedUrl.params).map(([key, value]) => (
                           <TableRow key={key}>
                             <TableCell className="font-mono font-medium">{key}</TableCell>
-                            <TableCell className="font-mono truncate max-w-[300px]">{value}</TableCell>
+                            <TableCell className="font-mono truncate max-w-[300px]">
+                              {value}
+                            </TableCell>
                             <TableCell className="text-right">
                               <Button
                                 variant="ghost"
@@ -345,10 +358,9 @@ export function UrlParserPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <CodeMirror
+                      <AppCodeMirror
                         value={JSON.stringify(parsedUrl, null, 2)}
                         height="200px"
-                        theme={oneDark}
                         extensions={[javascript({ jsx: true })]}
                         editable={false}
                         basicSetup={{
@@ -376,10 +388,9 @@ export function UrlParserPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <CodeMirror
+                      <AppCodeMirror
                         value={generateCurl(parsedUrl)}
                         height="100px"
-                        theme={oneDark}
                         editable={false}
                         basicSetup={{
                           lineNumbers: true,
@@ -406,10 +417,9 @@ export function UrlParserPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <CodeMirror
+                      <AppCodeMirror
                         value={generateFetch(parsedUrl)}
                         height="100px"
-                        theme={oneDark}
                         extensions={[javascript({ jsx: true })]}
                         editable={false}
                         basicSetup={{
@@ -428,4 +438,4 @@ export function UrlParserPage() {
       </div>
     </div>
   );
-} 
+}

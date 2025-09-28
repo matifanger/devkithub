@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { javascript } from '@codemirror/lang-javascript';
+import { js as beautifyJs } from 'js-beautify';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { js as beautifyJs } from 'js-beautify';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
 export function JsBeautifyPage() {
   const [input, setInput] = useState('');
@@ -44,7 +43,7 @@ export function JsBeautifyPage() {
           wrap_line_length: 0,
           comma_first: false,
           e4x: false,
-          indent_empty_lines: false
+          indent_empty_lines: false,
         });
         setOutput(formatted);
       } else {
@@ -58,7 +57,7 @@ export function JsBeautifyPage() {
           .trim();
         setOutput(minified);
       }
-      
+
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid JavaScript');
@@ -136,12 +135,11 @@ console.log('Total:', calculateTotal(items));`;
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               onChange={(value) => setInput(value)}
               extensions={[javascript()]}
               placeholder="Paste your JavaScript here"
@@ -184,19 +182,16 @@ console.log('Total:', calculateTotal(items));`;
               </Button>
             </div>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 className="h-[calc(100vh-17rem)]"
                 height="100%"
                 width="100%"
-                theme={oneDark}
                 extensions={[javascript()]}
                 editable={false}
                 basicSetup={{
@@ -211,4 +206,4 @@ console.log('Total:', calculateTotal(items));`;
       </div>
     </div>
   );
-} 
+}

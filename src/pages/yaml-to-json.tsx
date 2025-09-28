@@ -1,20 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Input } from '../components/ui/input';
-import { JSONPath } from 'jsonpath-plus';
-import yaml from 'js-yaml';
-import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { yaml as yamlLang } from '@codemirror/lang-yaml';
-import { oneDark } from '@codemirror/theme-one-dark';
+import yaml from 'js-yaml';
+import { JSONPath } from 'jsonpath-plus';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
 export function YamlToJsonPage() {
   const [input, setInput] = useState('');
@@ -111,12 +110,11 @@ export function YamlToJsonPage() {
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
               width="100%"
-              theme={oneDark}
               onChange={(value) => setInput(value)}
               extensions={[yamlLang()]}
               placeholder="Paste your YAML here"
@@ -149,30 +147,29 @@ export function YamlToJsonPage() {
               </Button>
             </div>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
-              <CodeMirror
-                value={output}
-                className="h-[calc(100vh-17rem)]"
-                height="100%"
-                width="100%"
-                theme={oneDark}
-                extensions={[json()]}
-                editable={false}
-                basicSetup={{
-                  lineNumbers: true,
-                  foldGutter: true,
-                  highlightActiveLine: false,
-                }}
-              />
+            <AppCodeMirror
+              value={output}
+              className="h-[calc(100vh-17rem)]"
+              height="100%"
+              width="100%"
+              extensions={[json()]}
+              editable={false}
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: false,
+              }}
+            />
           )}
-          
+
           <div className="space-y-2 mt-4">
-            <Label htmlFor="jsonpath" spellCheck={false}>JSONPath Query</Label>
+            <Label htmlFor="jsonpath" spellCheck={false}>
+              JSONPath Query
+            </Label>
             <Input
               id="jsonpath"
               value={jsonPath}
@@ -185,4 +182,4 @@ export function YamlToJsonPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { javascript } from '@codemirror/lang-javascript';
+import React, { useEffect, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { CopyButton } from '../components/ui/copy-button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { Card } from '../components/ui/card';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-okaidia.css';
-import 'prismjs/components/prism-javascript';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 
 interface CronFields {
   minute: string;
@@ -26,7 +25,7 @@ export function CronJobParserPage() {
     hour: '*',
     dayOfMonth: '*',
     month: '*',
-    dayOfWeek: '*'
+    dayOfWeek: '*',
   });
 
   const parseField = (field: string): string => {
@@ -69,7 +68,7 @@ export function CronJobParserPage() {
   const parseCronExpression = (expression: string) => {
     try {
       const [minute, hour, dayOfMonth, month, dayOfWeek] = expression.split(' ');
-      
+
       if (expression.split(' ').length !== 5) {
         throw new Error('Invalid cron expression format');
       }
@@ -79,7 +78,7 @@ export function CronJobParserPage() {
         hour,
         dayOfMonth,
         month,
-        dayOfWeek
+        dayOfWeek,
       });
 
       let result = 'Schedule breakdown:\n';
@@ -107,7 +106,7 @@ export function CronJobParserPage() {
     { expression: '0 0 * * *', description: 'Every day at midnight' },
     { expression: '0 0 * * 0', description: 'Every Sunday at midnight' },
     { expression: '*/15 * * * *', description: 'Every 15 minutes' },
-    { expression: '0 0 1 * *', description: 'First day of every month' }
+    { expression: '0 0 1 * *', description: 'First day of every month' },
   ];
 
   const codeExample = `// Node.js Cron Job Example
@@ -119,13 +118,15 @@ cron.schedule('${cronExpression}', () => {
 });
 
 // Next 5 executions:
-${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
+${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Cron Job Parser</h1>
-        <p className="text-muted-foreground">Parse and understand cron expressions with detailed breakdown and next execution times</p>
+        <p className="text-muted-foreground">
+          Parse and understand cron expressions with a clear breakdown and the next execution times
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -133,11 +134,20 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
           <div className="flex items-center justify-between mb-2">
             <Label>Cron Expression</Label>
             <div className="space-x-2">
-              <Button variant="outline" onClick={() => navigator.clipboard.readText().then(setCronExpression)}>
+              <Button
+                variant="outline"
+                onClick={() => navigator.clipboard.readText().then(setCronExpression)}
+              >
                 Paste
               </Button>
               <Button variant="outline" onClick={() => setCronExpression('* * * * *')}>
                 Reset
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigator.clipboard.writeText(cronExpression)}
+              >
+                Copy
               </Button>
             </div>
           </div>
@@ -149,11 +159,22 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
             className="font-mono"
           />
 
+          {cronExpression.trim().split(' ').length !== 5 && (
+            <div className="text-sm text-destructive">
+              Invalid cron expression: expected 5 fields (minute hour day-of-month month
+              day-of-week)
+            </div>
+          )}
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Minutes ({fields.minute})</Label>
               <div className="flex gap-2">
-                <Input value={`Minutes: ${parseField(fields.minute)}`} readOnly className="font-mono bg-muted flex-1" />
+                <Input
+                  value={`Minutes: ${parseField(fields.minute)}`}
+                  readOnly
+                  className="font-mono bg-muted flex-1"
+                />
                 <CopyButton value={fields.minute} src="minute" />
               </div>
             </div>
@@ -161,7 +182,11 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
             <div className="space-y-2">
               <Label>Hours ({fields.hour})</Label>
               <div className="flex gap-2">
-                <Input value={`Hours: ${parseField(fields.hour)}`} readOnly className="font-mono bg-muted flex-1" />
+                <Input
+                  value={`Hours: ${parseField(fields.hour)}`}
+                  readOnly
+                  className="font-mono bg-muted flex-1"
+                />
                 <CopyButton value={fields.hour} src="hour" />
               </div>
             </div>
@@ -169,7 +194,11 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
             <div className="space-y-2">
               <Label>Day of Month ({fields.dayOfMonth})</Label>
               <div className="flex gap-2">
-                <Input value={`Day of Month: ${parseField(fields.dayOfMonth)}`} readOnly className="font-mono bg-muted flex-1" />
+                <Input
+                  value={`Day of Month: ${parseField(fields.dayOfMonth)}`}
+                  readOnly
+                  className="font-mono bg-muted flex-1"
+                />
                 <CopyButton value={fields.dayOfMonth} src="day-of-month" />
               </div>
             </div>
@@ -177,7 +206,11 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
             <div className="space-y-2">
               <Label>Month ({fields.month})</Label>
               <div className="flex gap-2">
-                <Input value={`Month: ${parseField(fields.month)}`} readOnly className="font-mono bg-muted flex-1" />
+                <Input
+                  value={`Month: ${parseField(fields.month)}`}
+                  readOnly
+                  className="font-mono bg-muted flex-1"
+                />
                 <CopyButton value={fields.month} src="month" />
               </div>
             </div>
@@ -185,7 +218,11 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
             <div className="space-y-2">
               <Label>Day of Week ({fields.dayOfWeek})</Label>
               <div className="flex gap-2">
-                <Input value={`Day of Week: ${parseField(fields.dayOfWeek)}`} readOnly className="font-mono bg-muted flex-1" />
+                <Input
+                  value={`Day of Week: ${parseField(fields.dayOfWeek)}`}
+                  readOnly
+                  className="font-mono bg-muted flex-1"
+                />
                 <CopyButton value={fields.dayOfWeek} src="day-of-week" />
               </div>
             </div>
@@ -195,11 +232,17 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
         <div className="space-y-4">
           <Tabs defaultValue="next">
             <TabsList className="w-full">
-              <TabsTrigger value="next" className="flex-1">Next Executions</TabsTrigger>
-              <TabsTrigger value="code" className="flex-1">Code Example</TabsTrigger>
-              <TabsTrigger value="presets" className="flex-1">Presets</TabsTrigger>
+              <TabsTrigger value="next" className="flex-1">
+                Next Executions
+              </TabsTrigger>
+              <TabsTrigger value="code" className="flex-1">
+                Code Example
+              </TabsTrigger>
+              <TabsTrigger value="presets" className="flex-1">
+                Presets
+              </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="next">
               <Card className="p-4">
                 <h3 className="font-semibold mb-4">Next 5 Executions</h3>
@@ -215,18 +258,18 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
 
             <TabsContent value="code">
               <Card className="p-4">
-                <pre className="rounded-lg overflow-x-auto bg-[#272822] p-4">
-                  <code
-                    className="language-javascript text-sm"
-                    dangerouslySetInnerHTML={{
-                      __html: Prism.highlight(
-                        codeExample,
-                        Prism.languages.javascript,
-                        'javascript'
-                      ),
-                    }}
-                  />
-                </pre>
+                <AppCodeMirror
+                  value={codeExample}
+                  height="240px"
+                  className="text-sm"
+                  extensions={[javascript()]}
+                  editable={false}
+                  basicSetup={{
+                    lineNumbers: true,
+                    foldGutter: true,
+                    highlightActiveLine: false,
+                  }}
+                />
               </Card>
             </TabsContent>
 
@@ -251,4 +294,4 @@ ${nextExecutions.map(exec => `// ${exec}`).join('\n')}`;
       </div>
     </div>
   );
-} 
+}

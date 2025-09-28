@@ -1,23 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import { json } from '@codemirror/lang-json';
+import { Settings } from 'lucide-react';
+import Papa from 'papaparse';
+import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
-import { oneDark } from '@codemirror/theme-one-dark';
-import Papa from 'papaparse';
-import { Settings } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
+} from '../components/ui/select';
 
 export function JsonToCsvPage() {
   const [input, setInput] = useState('');
@@ -26,31 +21,34 @@ export function JsonToCsvPage() {
   const [delimiter, setDelimiter] = useState(',');
   const [quotes, setQuotes] = useState('true');
 
-  const convertJsonToCsv = useCallback((value: string, newDelimiter = delimiter, newQuotes = quotes) => {
-    try {
-      if (!value.trim()) {
-        setOutput('');
+  const convertJsonToCsv = useCallback(
+    (value: string, newDelimiter = delimiter, newQuotes = quotes) => {
+      try {
+        if (!value.trim()) {
+          setOutput('');
+          setError('');
+          return;
+        }
+
+        const data = JSON.parse(value);
+        if (!Array.isArray(data)) {
+          throw new Error('Input must be an array of objects');
+        }
+
+        const csv = Papa.unparse(data, {
+          delimiter: newDelimiter,
+          quotes: newQuotes === 'true',
+        });
+
+        setOutput(csv);
         setError('');
-        return;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Invalid JSON');
+        setOutput('');
       }
-
-      const data = JSON.parse(value);
-      if (!Array.isArray(data)) {
-        throw new Error('Input must be an array of objects');
-      }
-
-      const csv = Papa.unparse(data, {
-        delimiter: newDelimiter,
-        quotes: newQuotes === 'true',
-      });
-      
-      setOutput(csv);
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid JSON');
-      setOutput('');
-    }
-  }, []);
+    },
+    []
+  );
 
   const handleSample = () => {
     const sample = [
@@ -58,20 +56,20 @@ export function JsonToCsvPage() {
         name: 'John Doe',
         age: 30,
         city: 'New York',
-        country: 'USA'
+        country: 'USA',
       },
       {
         name: 'Jane Smith',
         age: 25,
         city: 'London',
-        country: 'UK'
+        country: 'UK',
       },
       {
         name: 'Bob Johnson',
         age: 35,
         city: 'Paris',
-        country: 'France'
-      }
+        country: 'France',
+      },
     ];
     const sampleStr = JSON.stringify(sample, null, 2);
     setInput(sampleStr);
@@ -123,10 +121,13 @@ export function JsonToCsvPage() {
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Delimiter</Label>
                         <div className="col-span-2">
-                          <Select value={delimiter} onValueChange={(value) => {
-                            setDelimiter(value);
-                            convertJsonToCsv(input, value);
-                          }}>
+                          <Select
+                            value={delimiter}
+                            onValueChange={(value) => {
+                              setDelimiter(value);
+                              convertJsonToCsv(input, value);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Delimiter" />
                             </SelectTrigger>
@@ -142,10 +143,13 @@ export function JsonToCsvPage() {
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Quote fields</Label>
                         <div className="col-span-2">
-                          <Select value={quotes} onValueChange={(value) => {
-                            setQuotes(value);
-                            convertJsonToCsv(input, delimiter, value);
-                          }}>
+                          <Select
+                            value={quotes}
+                            onValueChange={(value) => {
+                              setQuotes(value);
+                              convertJsonToCsv(input, delimiter, value);
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Quotes" />
                             </SelectTrigger>
@@ -168,20 +172,22 @@ export function JsonToCsvPage() {
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                setOutput('');
-                setError('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  setOutput('');
+                  setError('');
+                }}
+              >
                 Clear
               </Button>
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
-              theme={oneDark}
               extensions={[json()]}
               height="100%"
               onChange={(value) => {
@@ -205,18 +211,15 @@ export function JsonToCsvPage() {
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 className="h-[calc(100vh-17rem)]"
                 height="100%"
-                theme={oneDark}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
@@ -230,4 +233,4 @@ export function JsonToCsvPage() {
       </div>
     </div>
   );
-} 
+}

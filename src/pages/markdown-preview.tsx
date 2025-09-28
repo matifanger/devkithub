@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
-import { oneDark } from '@codemirror/theme-one-dark';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import remarkGemoji from 'remark-gemoji';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
-import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import 'katex/dist/katex.min.css';
+import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import remarkGemoji from 'remark-gemoji';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
 
 export function MarkdownPreviewPage() {
   const [input, setInput] = useState('');
@@ -204,11 +203,10 @@ You can hide content in here.
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               extensions={[markdown()]}
               onChange={setInput}
               placeholder="Write your Markdown here"
@@ -225,28 +223,18 @@ You can hide content in here.
           <div className="flex items-center justify-between mt-3 mb-[18px]">
             <Label>Preview</Label>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="relative h-[calc(100vh-17rem)] bg-white dark:bg-zinc-900 border">
               <div className="absolute inset-0 overflow-auto p-4 prose prose-sm md:prose-base dark:prose-invert max-w-none">
                 <ReactMarkdown
-                  remarkPlugins={[
-                    remarkGfm,
-                    remarkMath,
-                    remarkGemoji,
-                  ]}
-                  rehypePlugins={[
-                    rehypeRaw,
-                    rehypeHighlight,
-                    [rehypeKatex, { strict: false }]
-                  ]}
+                  remarkPlugins={[remarkGfm, remarkMath, remarkGemoji]}
+                  rehypePlugins={[rehypeRaw, rehypeHighlight, [rehypeKatex, { strict: false }]]}
                   components={{
                     code(props) {
-                      const {className, children} = props;
+                      const { className, children } = props;
                       const match = /language-(\w+)/.exec(className || '');
                       return match ? (
                         <div className="relative">
@@ -262,17 +250,28 @@ You can hide content in here.
                       return <img {...props} className="rounded-lg shadow-md" />;
                     },
                     table(props) {
-                      return <table {...props} className="border-collapse table-auto w-full my-4" />;
+                      return (
+                        <table {...props} className="border-collapse table-auto w-full my-4" />
+                      );
                     },
                     th(props) {
-                      return <th {...props} className="border dark:border-zinc-700 px-6 py-3 bg-gray-50 dark:bg-zinc-800" />;
+                      return (
+                        <th
+                          {...props}
+                          className="border dark:border-zinc-700 px-6 py-3 bg-gray-50 dark:bg-zinc-800"
+                        />
+                      );
                     },
                     td(props) {
                       return <td {...props} className="border dark:border-zinc-700 px-6 py-3" />;
                     },
                     input(props) {
                       return props.type === 'checkbox' ? (
-                        <input {...props} disabled className="w-4 h-4 mr-1 rounded border-gray-300" />
+                        <input
+                          {...props}
+                          disabled
+                          className="w-4 h-4 mr-1 rounded border-gray-300"
+                        />
                       ) : (
                         <input {...props} />
                       );
@@ -295,8 +294,13 @@ You can hide content in here.
                       );
                     },
                     mark(props) {
-                      return <mark {...props} className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded" />;
-                    }
+                      return (
+                        <mark
+                          {...props}
+                          className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded"
+                        />
+                      );
+                    },
                   }}
                 >
                   {input}
@@ -308,4 +312,4 @@ You can hide content in here.
       </div>
     </div>
   );
-} 
+}

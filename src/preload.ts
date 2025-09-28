@@ -179,4 +179,18 @@ contextBridge.exposeInMainWorld('electron', {
     }
   },
   isPackaged: () => ipcRenderer.invoke('isPackaged'),
+  // Close behavior prompt
+  onShowCloseDialog: (callback: () => void) => {
+    ipcRenderer.on('show-close-dialog', () => callback());
+  },
+  sendCloseDialogSelection: (action: 'quit' | 'tray', remember: boolean) =>
+    ipcRenderer.invoke('handle-close-dialog-selection', action, remember),
+  // Autostart prompt
+  onShowAutostartDialog: (callback: () => void) => {
+    ipcRenderer.on('show-autostart-dialog', () => callback());
+  },
+  sendAutostartSelection: (enable: boolean) =>
+    ipcRenderer.invoke('handle-autostart-selection', enable),
+  shouldShowAutostartDialog: (currentPref: string | null) =>
+    ipcRenderer.invoke('should-show-autostart-dialog', currentPref),
 });

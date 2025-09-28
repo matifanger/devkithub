@@ -1,21 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import { Settings } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import CodeMirror from '@uiw/react-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { Settings } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
+} from '../components/ui/select';
 
 export function AsciiToHexPage() {
   const [input, setInput] = useState('');
@@ -23,55 +18,63 @@ export function AsciiToHexPage() {
   const [error, setError] = useState('');
   const [format, setFormat] = useState('space');
 
-  const convertAsciiToHex = useCallback((ascii: string) => {
-    try {
-      if (!ascii.trim()) {
-        setOutput('');
-        setError('');
-        return;
-      }
-
-      const hex = Array.from(ascii)
-        .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
-        .join(format === 'space' ? ' ' : '');
-
-      setOutput(hex);
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid ASCII string');
-      setOutput('');
-    }
-  }, [format]);
-
-  const convertHexToAscii = useCallback((hex: string) => {
-    try {
-      if (!hex.trim()) {
-        setOutput('');
-        setError('');
-        return;
-      }
-
-      const cleanHex = hex.replace(format === 'space' ? /[^0-9A-Fa-f\s]/g : /[^0-9A-Fa-f]/g, '');
-      const pairs = format === 'space' ? cleanHex.split(/\s+/) : cleanHex.match(/.{1,2}/g) || [];
-      
-      const ascii = pairs.map(pair => {
-        if (pair.length !== 2) {
-          throw new Error('Invalid hex pair length');
+  const convertAsciiToHex = useCallback(
+    (ascii: string) => {
+      try {
+        if (!ascii.trim()) {
+          setOutput('');
+          setError('');
+          return;
         }
-        const charCode = parseInt(pair, 16);
-        if (isNaN(charCode)) {
-          throw new Error('Invalid hex value');
-        }
-        return String.fromCharCode(charCode);
-      }).join('');
 
-      setOutput(ascii);
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid hex string');
-      setOutput('');
-    }
-  }, [format]);
+        const hex = Array.from(ascii)
+          .map((char) => char.charCodeAt(0).toString(16).padStart(2, '0'))
+          .join(format === 'space' ? ' ' : '');
+
+        setOutput(hex);
+        setError('');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Invalid ASCII string');
+        setOutput('');
+      }
+    },
+    [format]
+  );
+
+  const convertHexToAscii = useCallback(
+    (hex: string) => {
+      try {
+        if (!hex.trim()) {
+          setOutput('');
+          setError('');
+          return;
+        }
+
+        const cleanHex = hex.replace(format === 'space' ? /[^0-9A-Fa-f\s]/g : /[^0-9A-Fa-f]/g, '');
+        const pairs = format === 'space' ? cleanHex.split(/\s+/) : cleanHex.match(/.{1,2}/g) || [];
+
+        const ascii = pairs
+          .map((pair) => {
+            if (pair.length !== 2) {
+              throw new Error('Invalid hex pair length');
+            }
+            const charCode = parseInt(pair, 16);
+            if (isNaN(charCode)) {
+              throw new Error('Invalid hex value');
+            }
+            return String.fromCharCode(charCode);
+          })
+          .join('');
+
+        setOutput(ascii);
+        setError('');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Invalid hex string');
+        setOutput('');
+      }
+    },
+    [format]
+  );
 
   const handleSample = () => {
     const sample = 'Hello World';
@@ -120,22 +123,23 @@ export function AsciiToHexPage() {
                   <div className="grid gap-4">
                     <div className="space-y-2">
                       <h4 className="font-medium leading-none">Settings</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Configure hex format options
-                      </p>
+                      <p className="text-sm text-muted-foreground">Configure hex format options</p>
                     </div>
                     <div className="grid gap-2">
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label>Hex Format</Label>
                         <div className="col-span-2">
-                          <Select value={format} onValueChange={(value) => {
-                            setFormat(value);
-                            if (/^[0-9A-Fa-f\s]*$/.test(input)) {
-                              convertHexToAscii(input);
-                            } else {
-                              convertAsciiToHex(input);
-                            }
-                          }}>
+                          <Select
+                            value={format}
+                            onValueChange={(value) => {
+                              setFormat(value);
+                              if (/^[0-9A-Fa-f\s]*$/.test(input)) {
+                                convertHexToAscii(input);
+                              } else {
+                                convertAsciiToHex(input);
+                              }
+                            }}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Format" />
                             </SelectTrigger>
@@ -158,21 +162,23 @@ export function AsciiToHexPage() {
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => {
-                setInput('');
-                setOutput('');
-                setError('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInput('');
+                  setOutput('');
+                  setError('');
+                }}
+              >
                 Clear
               </Button>
             </div>
           </div>
           <div className="h-[calc(100vh-17rem)]">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              theme={oneDark}
               onChange={(value) => {
                 setInput(value);
                 if (/^[0-9A-Fa-f\s]*$/.test(value)) {
@@ -198,18 +204,15 @@ export function AsciiToHexPage() {
               Copy
             </Button>
           </div>
-          
+
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {error}
-            </div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           ) : (
             <div className="h-[calc(100vh-17rem)]">
-              <CodeMirror
+              <AppCodeMirror
                 value={output}
                 height="100%"
                 className="h-[calc(100vh-17rem)]"
-                theme={oneDark}
                 editable={false}
                 basicSetup={{
                   lineNumbers: true,
@@ -223,4 +226,4 @@ export function AsciiToHexPage() {
       </div>
     </div>
   );
-} 
+}

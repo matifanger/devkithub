@@ -1,8 +1,7 @@
 import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
-import CodeMirror from '@uiw/react-codemirror';
 import { FileText } from 'lucide-react';
 import React, { useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
@@ -194,12 +193,11 @@ export function HashGeneratorPage() {
             </div>
           </div>
 
-          <CodeMirror
+          <AppCodeMirror
             value={input}
             className="h-[calc(100vh-17rem)]"
             height="100%"
             width="100%"
-            theme={oneDark}
             onChange={(value) => {
               setInput(value);
               generateHashes(value);

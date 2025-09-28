@@ -1,8 +1,19 @@
-import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, protocol, Tray } from 'electron';
 import * as fs from 'fs';
 import * as keytar from 'keytar';
 import * as path from 'path';
-import { ACCOUNT_NAME, SERVICE_NAME } from './constants/settings-keys';
+import { ACCOUNT_NAME, LAUNCH_ON_STARTUP_KEY, SERVICE_NAME } from './constants/settings-keys';
+import {
+  applyAutostart,
+  attachAutostartPrompt,
+  registerAutostartIpc,
+  shouldStartHidden,
+} from './main/autostart';
+import {
+  attachCloseBehavior,
+  createTray as createAppTray,
+  registerCloseDialogIpc,
+} from './main/tray';
 import { getBaseApiUrl } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
 import { getSimpleHwid } from './utils/mac';
@@ -27,6 +38,9 @@ if (require('electron-squirrel-startup')) {
 
 // Persistent settings store
 const persistentStore: Record<string, string> = {};
+let tray: Tray | null = null;
+let mainWindowRef: BrowserWindow | null = null;
+let isQuitting = false;
 
 // Load settings from file
 function loadSettings() {
@@ -60,10 +74,12 @@ function saveSettings() {
 
 const createWindow = (): void => {
   // Create the browser window.
+  const startHidden = shouldStartHidden(() => persistentStore[LAUNCH_ON_STARTUP_KEY] || null);
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     frame: true,
+    show: !startHidden,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       nodeIntegration: true, // Deshabilitado por seguridad
@@ -98,8 +114,22 @@ const createWindow = (): void => {
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // Keep a reference for later actions
+  mainWindowRef = mainWindow;
+
+  attachCloseBehavior(
+    mainWindow,
+    () => persistentStore['close-to-tray'] || null,
+    (v) => {
+      isQuitting = v;
+    },
+    () => isQuitting
+  );
+
+  // Open DevTools only in development and only when visible
+  if (!app.isPackaged && !startHidden) {
+    mainWindow.webContents.openDevTools();
+  }
 };
 
 // Set up IPC handlers for secure storage
@@ -147,6 +177,9 @@ function setupSecureStore() {
     try {
       persistentStore[key] = value;
       saveSettings();
+      if (key === LAUNCH_ON_STARTUP_KEY) {
+        applyAutostart(value === 'true');
+      }
       return true;
     } catch (error) {
       console.error(`Failed to set ${key} in store:`, error);
@@ -184,6 +217,25 @@ function setupSecureStore() {
   ipcMain.handle('isPackaged', () => {
     return app.isPackaged;
   });
+
+  registerCloseDialogIpc(
+    (value) => {
+      persistentStore['close-to-tray'] = value;
+      saveSettings();
+    },
+    () => mainWindowRef,
+    (v) => {
+      isQuitting = v;
+    }
+  );
+
+  registerAutostartIpc(
+    (value) => {
+      persistentStore[LAUNCH_ON_STARTUP_KEY] = value;
+      saveSettings();
+    },
+    (openAtLogin) => applyAutostart(openAtLogin)
+  );
 }
 
 function registerLocalSoundProtocol() {
@@ -194,6 +246,17 @@ function registerLocalSoundProtocol() {
   });
 }
 
+function createTray() {
+  const show = () => {
+    if (mainWindowRef) mainWindowRef.show();
+  };
+  const quit = () => {
+    isQuitting = true;
+    app.quit();
+  };
+  tray = createAppTray(show, quit);
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -201,7 +264,14 @@ app.whenReady().then(async () => {
   registerLocalSoundProtocol();
   loadSettings();
   setupSecureStore();
+  createTray();
   createWindow();
+
+  // Attach autostart prompt after window load; applies if already decided
+  attachAutostartPrompt(
+    () => mainWindowRef,
+    () => persistentStore[LAUNCH_ON_STARTUP_KEY] || null
+  );
 
   // Quit when all windows are closed, except on macOS. There, it's common
   // for applications and their menu bar to stay active until the user quits

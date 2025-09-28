@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Card } from '../components/ui/card';
-import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
+import React, { useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { Label } from '../components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 
 export function UrlEncoderDecoderPage() {
   const [input, setInput] = useState('');
@@ -86,17 +91,18 @@ export function UrlEncoderDecoderPage() {
           </div>
 
           <Card className="relative p-4">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               height="200px"
               width="100%"
-              theme={oneDark}
               onChange={(value) => {
                 setInput(value);
                 handleProcess(value, mode);
               }}
               extensions={[javascript()]}
-              placeholder={mode === 'encode' ? 'Enter text to encode' : 'Enter URL encoded text to decode'}
+              placeholder={
+                mode === 'encode' ? 'Enter text to encode' : 'Enter URL encoded text to decode'
+              }
               basicSetup={{
                 lineNumbers: true,
                 foldGutter: true,
@@ -120,11 +126,10 @@ export function UrlEncoderDecoderPage() {
           </div>
 
           <Card className="relative p-4">
-            <CodeMirror
+            <AppCodeMirror
               value={output}
               height="200px"
               width="100%"
-              theme={oneDark}
               extensions={[javascript()]}
               editable={false}
               basicSetup={{
@@ -138,4 +143,4 @@ export function UrlEncoderDecoderPage() {
       </div>
     </div>
   );
-} 
+}

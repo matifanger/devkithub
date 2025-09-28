@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Card } from '../components/ui/card';
-import CodeMirror from '@uiw/react-codemirror';
 import { html } from '@codemirror/lang-html';
-import { oneDark } from '@codemirror/theme-one-dark';
+import React, { useState } from 'react';
+import { AppCodeMirror } from '../components/app-code-mirror';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { Label } from '../components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 
 export function HtmlEntityEncoderDecoderPage() {
   const [input, setInput] = useState('');
@@ -98,17 +103,18 @@ export function HtmlEntityEncoderDecoderPage() {
           </div>
 
           <Card className="relative p-4">
-            <CodeMirror
+            <AppCodeMirror
               value={input}
               height="200px"
               width="100%"
-              theme={oneDark}
               onChange={(value) => {
                 setInput(value);
                 handleProcess(value, mode);
               }}
               extensions={[html()]}
-              placeholder={mode === 'encode' ? 'Enter text to encode' : 'Enter HTML entities to decode'}
+              placeholder={
+                mode === 'encode' ? 'Enter text to encode' : 'Enter HTML entities to decode'
+              }
               basicSetup={{
                 lineNumbers: true,
                 foldGutter: true,
@@ -132,11 +138,10 @@ export function HtmlEntityEncoderDecoderPage() {
           </div>
 
           <Card className="relative p-4">
-            <CodeMirror
+            <AppCodeMirror
               value={output}
               height="200px"
               width="100%"
-              theme={oneDark}
               extensions={[html()]}
               editable={false}
               basicSetup={{
@@ -150,4 +155,4 @@ export function HtmlEntityEncoderDecoderPage() {
       </div>
     </div>
   );
-} 
+}

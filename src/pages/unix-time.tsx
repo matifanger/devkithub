@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { CopyButton } from '../components/ui/copy-button';
 
 function formatRelativeTime(timestamp: number): string {
   const now = Date.now() / 1000;
@@ -24,7 +24,7 @@ function getWeekNumber(date: Date): number {
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 function getDayOfYear(date: Date): number {
@@ -96,14 +96,18 @@ export function UnixTimePage() {
     <div className="container mx-auto p-6 pb-12 space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Unix Time Converter and Analysis</h1>
-        <p className="text-muted-foreground">High-precision Unix timestamp analysis and conversion utility</p>
+        <p className="text-muted-foreground">
+          High-precision Unix timestamp analysis and conversion utility
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="lg:min-h-[400px]">
           <CardHeader>
             <CardTitle className="text-lg">Timestamp Analysis</CardTitle>
-            <CardDescription>Enter Unix timestamp for comprehensive temporal analysis</CardDescription>
+            <CardDescription>
+              Enter Unix timestamp for comprehensive temporal analysis
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -117,13 +121,15 @@ export function UnixTimePage() {
                   placeholder="Enter Unix timestamp (e.g., 1625731200)"
                   className="font-mono flex-1"
                 />
-                <Button onClick={convertToHuman} className="sm:w-auto w-full">Analyze</Button>
+                <Button onClick={convertToHuman} className="sm:w-auto w-full">
+                  Analyze
+                </Button>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   const now = new Date();
                   setUnixTime(Math.floor(now.getTime() / 1000).toString());
@@ -136,9 +142,9 @@ export function UnixTimePage() {
                   <span className="text-xs opacity-70">({currentUnix})</span>
                 </div>
               </Button>
-              <Button 
-                className='h-full'
-                variant="outline" 
+              <Button
+                className="h-full"
+                variant="outline"
                 onClick={() => {
                   setUnixTime('0');
                   convertToHuman();
@@ -146,8 +152,8 @@ export function UnixTimePage() {
               >
                 Unix Epoch (0)
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   const time = 1000000000;
                   setUnixTime(time.toString());
@@ -160,8 +166,8 @@ export function UnixTimePage() {
                   <span className="text-xs opacity-70">(2001-09-09)</span>
                 </div>
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   const time = 2000000000;
                   setUnixTime(time.toString());
@@ -184,16 +190,22 @@ export function UnixTimePage() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <p>
-              The Unix epoch (or Unix time or POSIX time or Unix timestamp) is the number of seconds that have elapsed since January 1, 1970 (midnight UTC/GMT), not counting leap seconds (in ISO 8601: 1970-01-01T00:00:00Z).
+              The Unix epoch (or Unix time or POSIX time or Unix timestamp) is the number of seconds
+              that have elapsed since January 1, 1970 (midnight UTC/GMT), not counting leap seconds
+              (in ISO 8601: 1970-01-01T00:00:00Z).
             </p>
             <p>
-              Some systems store epoch dates as a signed 32-bit integer, which might cause problems on January 19, 2038 (known as the Year 2038 problem or Y2038).
+              Some systems store epoch dates as a signed 32-bit integer, which might cause problems
+              on January 19, 2038 (known as the Year 2038 problem or Y2038).
             </p>
             <div className="space-y-2">
               <h4 className="font-semibold">Common Time Units in Seconds:</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {TIME_UNITS.map(({ label, seconds }) => (
-                  <div key={label} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                  <div
+                    key={label}
+                    className="flex items-center justify-between p-2 bg-muted rounded-md"
+                  >
                     <span>{label}</span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono">{seconds}</span>
@@ -215,37 +227,22 @@ export function UnixTimePage() {
               <CardDescription>Comprehensive timestamp breakdown</CardDescription>
             </CardHeader>
             <CardContent className="space-y-0">
-              <TimeDisplay 
-                label="Unix timestamp" 
-                value={unixTime} 
+              <TimeDisplay label="Unix timestamp" value={unixTime} />
+              <TimeDisplay label="ISO 8601 (UTC)" value={humanDate} />
+              <TimeDisplay label="Local date & time" value={new Date(humanDate).toLocaleString()} />
+              <TimeDisplay label="UTC string" value={new Date(humanDate).toUTCString()} />
+              <TimeDisplay label="Relative time" value={formatRelativeTime(parseInt(unixTime))} />
+              <TimeDisplay
+                label="Day of year"
+                value={getDayOfYear(new Date(humanDate)).toString()}
               />
-              <TimeDisplay 
-                label="ISO 8601 (UTC)" 
-                value={humanDate} 
+              <TimeDisplay
+                label="Week of year"
+                value={getWeekNumber(new Date(humanDate)).toString()}
               />
-              <TimeDisplay 
-                label="Local date & time" 
-                value={new Date(humanDate).toLocaleString()} 
-              />
-              <TimeDisplay 
-                label="UTC string" 
-                value={new Date(humanDate).toUTCString()} 
-              />
-              <TimeDisplay 
-                label="Relative time" 
-                value={formatRelativeTime(parseInt(unixTime))} 
-              />
-              <TimeDisplay 
-                label="Day of year" 
-                value={getDayOfYear(new Date(humanDate)).toString()} 
-              />
-              <TimeDisplay 
-                label="Week of year" 
-                value={getWeekNumber(new Date(humanDate)).toString()} 
-              />
-              <TimeDisplay 
-                label="Is leap year" 
-                value={isLeapYear(new Date(humanDate).getFullYear()).toString()} 
+              <TimeDisplay
+                label="Is leap year"
+                value={isLeapYear(new Date(humanDate).getFullYear()).toString()}
               />
             </CardContent>
           </Card>
@@ -256,52 +253,46 @@ export function UnixTimePage() {
               <CardDescription>Format variations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-0">
-              <TimeDisplay 
-                label="Milliseconds since epoch" 
-                value={(parseInt(unixTime) * 1000).toString()} 
+              <TimeDisplay
+                label="Milliseconds since epoch"
+                value={(parseInt(unixTime) * 1000).toString()}
               />
-              <TimeDisplay 
-                label="Full date" 
-                value={new Date(humanDate).toLocaleDateString(undefined, { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })} 
+              <TimeDisplay
+                label="Full date"
+                value={new Date(humanDate).toLocaleDateString(undefined, {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
               />
-              <TimeDisplay 
-                label="ISO date only" 
-                value={humanDate.split('T')[0]} 
-              />
-              <TimeDisplay 
-                label="ISO time only" 
-                value={humanDate.split('T')[1]} 
-              />
-              <TimeDisplay 
-                label="24-hour time" 
+              <TimeDisplay label="ISO date only" value={humanDate.split('T')[0]} />
+              <TimeDisplay label="ISO time only" value={humanDate.split('T')[1]} />
+              <TimeDisplay
+                label="24-hour time"
                 value={new Date(humanDate).toLocaleTimeString(undefined, {
                   hour12: false,
                   hour: '2-digit',
                   minute: '2-digit',
-                  second: '2-digit'
-                })} 
+                  second: '2-digit',
+                })}
               />
-              <TimeDisplay 
-                label="12-hour time" 
+              <TimeDisplay
+                label="12-hour time"
                 value={new Date(humanDate).toLocaleTimeString(undefined, {
                   hour12: true,
                   hour: '2-digit',
                   minute: '2-digit',
-                  second: '2-digit'
-                })} 
+                  second: '2-digit',
+                })}
               />
-              <TimeDisplay 
-                label="Timezone" 
-                value={Intl.DateTimeFormat().resolvedOptions().timeZone} 
+              <TimeDisplay
+                label="Timezone"
+                value={Intl.DateTimeFormat().resolvedOptions().timeZone}
               />
-              <TimeDisplay 
-                label="Timezone offset" 
-                value={`UTC${new Date(humanDate).toTimeString().slice(9, 17)}`} 
+              <TimeDisplay
+                label="Timezone offset"
+                value={`UTC${new Date(humanDate).toTimeString().slice(9, 17)}`}
               />
             </CardContent>
           </Card>
@@ -316,7 +307,10 @@ export function UnixTimePage() {
         <CardContent>
           <div className="grid gap-2 sm:grid-cols-2">
             {CODE_EXAMPLES.map(({ language, code }) => (
-              <div key={language} className="flex items-center justify-between p-2 bg-muted rounded-md">
+              <div
+                key={language}
+                className="flex items-center justify-between p-2 bg-muted rounded-md"
+              >
                 <span className="font-semibold min-w-[80px]">{language}</span>
                 <div className="flex items-center gap-2 overflow-x-auto">
                   <code className="font-mono text-sm whitespace-nowrap">{code}</code>
@@ -329,4 +323,4 @@ export function UnixTimePage() {
       </Card>
     </div>
   );
-} 
+}
