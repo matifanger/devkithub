@@ -332,7 +332,7 @@ export function RandomStringGeneratorPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-4 overflow-y-auto h-[calc(100vh-12rem)]">
+        <div className="space-y-4 overflow-y-auto h-[calc(100vh-12rem)] pr-2">
           <div className="flex items-center justify-between">
             <Label>Configuration</Label>
             <Button variant="outline" onClick={generateString}>
