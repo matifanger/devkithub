@@ -57,10 +57,10 @@ const slugify = (title: string) =>
 
 export const allTools = [
   {
-    id: slugify('Hash Generator'),
-    title: 'Hash Generator',
-    description: 'Generate various types of hashes from text input',
-    url: '/hash-generator',
+    id: slugify('Encode & Decode Tools'),
+    title: 'Encode & Decode Tools',
+    description: 'String encoding, hashing, and encryption in one place',
+    url: '/encode-decode',
     icon: Hash,
     color: 'bg-blue-500/10 text-blue-500',
   },

@@ -17,10 +17,12 @@ function RecommendedToolItem({ tool }: RecommendedToolItemProps) {
           to={tool.url}
           className="flex items-center gap-3 pl-2 rounded-lg hover:bg-accent/50 dark:hover:bg-accent/30 transition-colors overflow-hidden w-full"
         >
-          <tool.icon className="w-4 h-4 flex-shrink-0" />
-          <span className="font-medium truncate hover:animate-scroll whitespace-nowrap">
-            {tool.title}
-          </span>
+          <div className="flex items-center gap-3 min-w-0 w-48 lg:w-52">
+            <tool.icon className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium truncate hover:animate-scroll whitespace-nowrap">
+              {tool.title}
+            </span>
+          </div>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>

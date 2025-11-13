@@ -37,8 +37,8 @@ import { CsvToJsonPage } from './pages/csv-to-json';
 import { CurlToCodePage } from './pages/curl-to-code';
 import { DiscordTimestampPage } from './pages/discord-timestamp';
 import { DummyDataGeneratorPage } from './pages/dummy-data-generator';
+import { EncodeDecodePage } from './pages/encode-decode';
 import { ErbBeautifyPage } from './pages/erb-beautify';
-import { HashGeneratorPage } from './pages/hash-generator';
 import { HexToAsciiPage } from './pages/hex-to-ascii';
 import { HtmlBeautifyPage } from './pages/html-beautify';
 import { HtmlEntityEncoderDecoderPage } from './pages/html-entity-encoder-decoder';
@@ -185,7 +185,8 @@ const App = () => {
                 <Route path="/validate-license" element={<ValidateLicensePage />} />
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<MainPage />} />
-                  <Route path="/hash-generator" element={<HashGeneratorPage />} />
+                  <Route path="/encode-decode" element={<EncodeDecodePage />} />
+                  <Route path="/hash-generator" element={<EncodeDecodePage />} />
                   <Route path="/number-base-converter" element={<NumberBaseConverterPage />} />
                   <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
                   <Route path="/json-to-yaml" element={<JsonToYamlPage />} />

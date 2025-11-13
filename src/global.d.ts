@@ -1,7 +1,35 @@
 // Extends the window object with the cryptoAPI object
+type CryptoEncoding = 'utf8' | 'hex' | 'base64' | 'latin1';
+
+interface EncryptOptions {
+  algorithm: string;
+  data: string;
+  key: string;
+  iv?: string;
+  inputEncoding?: CryptoEncoding;
+  outputEncoding?: CryptoEncoding;
+  keyEncoding?: CryptoEncoding;
+  ivEncoding?: CryptoEncoding;
+  aad?: string;
+  aadEncoding?: CryptoEncoding;
+  authTagLength?: number;
+  autoPadding?: boolean;
+}
+
+interface DecryptOptions extends Omit<EncryptOptions, 'outputEncoding'> {
+  outputEncoding?: CryptoEncoding;
+  authTag?: string;
+  authTagEncoding?: CryptoEncoding;
+}
+
 interface Window {
   cryptoAPI: {
-    hash: (algorithm: string, data: string) => Promise<string>;
+    hash: (algorithm: string, data: string) => Promise<string | null>;
+    encrypt: (
+      options: EncryptOptions
+    ) => Promise<{ output: string; authTag: string | null }>;
+    decrypt: (options: DecryptOptions) => Promise<string>;
+    getCiphers: () => Promise<string[]>;
     generateRandomBytes: (size: number) => string;
   };
   electron: {

@@ -10,8 +10,8 @@ export class ToolRecommender {
     javascript: ['JavaScript Beautify/Minify', 'HTML Preview'],
     xml: ['XML Beautify/Minify', 'HTML Beautify/Minify'],
     sql: ['SQL Formatter'],
-    hex: ['Hex to ASCII', 'ASCII to Hex', 'Number Base Converter'],
-    base64: ['Base64 String Encoder/Decoder', 'Base64 Image Encoder/Decoder'],
+    hex: ['Encode & Decode Tools', 'Hex to ASCII', 'ASCII to Hex', 'Number Base Converter'],
+    base64: ['Encode & Decode Tools', 'Base64 String Encoder/Decoder', 'Base64 Image Encoder/Decoder'],
     url: ['URL Encoder/Decoder', 'URL Parser'],
     jwt: ['JWT Debugger'],
     'unix-timestamp': ['Unix Time Converter'],
@@ -24,6 +24,7 @@ export class ToolRecommender {
     color: ['Color Converter'],
     number: ['Number Base Converter', 'Unix Time Converter'],
     text: [
+      'Encode & Decode Tools',
       'String Case Converter',
       'Random String Generator',
       'Lorem Ipsum Generator',
@@ -125,11 +126,13 @@ export class ToolRecommender {
         'SQL Formatter': 'Format and beautify SQL queries',
       },
       hex: {
+        'Encode & Decode Tools': 'Handle hex encodings alongside hashing and encryption',
         'Hex to ASCII': 'Convert hexadecimal to ASCII text',
         'ASCII to Hex': 'Convert ASCII to hexadecimal',
         'Number Base Converter': 'Convert between number bases',
       },
       base64: {
+        'Encode & Decode Tools': 'Convert between Base64, hashes, and encrypted data',
         'Base64 String Encoder/Decoder': 'Decode Base64 string data',
         'Base64 Image Encoder/Decoder': 'Handle Base64 image data',
       },
@@ -171,6 +174,7 @@ export class ToolRecommender {
         'Unix Time Converter': "Check if it's a timestamp",
       },
       text: {
+        'Encode & Decode Tools': 'All-in-one hub for encoding, hashing, and encryption',
         'String Case Converter': 'Change text case',
         'Random String Generator': 'Generate similar text',
         'Lorem Ipsum Generator': 'Generate placeholder text',
