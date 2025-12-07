@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -433,6 +433,9 @@ const HashPanel: React.FC = () => {
 const EncryptionPanel: React.FC = () => {
   const [availableCiphers, setAvailableCiphers] = useState<Set<string>>(new Set());
   const [algorithm, setAlgorithm] = useState<string>('aes-256-gcm');
+  const [algorithmSearch, setAlgorithmSearch] = useState('');
+  const [algorithmSelectOpen, setAlgorithmSelectOpen] = useState(false);
+  const algorithmSearchRef = useRef<HTMLInputElement | null>(null);
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -440,6 +443,7 @@ const EncryptionPanel: React.FC = () => {
   const [iv, setIv] = useState('');
   const [aad, setAad] = useState('');
   const [authTag, setAuthTag] = useState('');
+  const [generatedAuthTag, setGeneratedAuthTag] = useState<string | null>(null);
   const [authTagLength, setAuthTagLength] = useState('');
   const [inputEncoding, setInputEncoding] = useState<CryptoEncoding>('utf8');
   const [outputEncoding, setOutputEncoding] = useState<CryptoEncoding>('base64');
@@ -450,7 +454,6 @@ const EncryptionPanel: React.FC = () => {
   const [autoPadding, setAutoPadding] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resultAuthTag, setResultAuthTag] = useState<string | null>(null);
 
   useEffect(() => {
     window.cryptoAPI
@@ -471,16 +474,39 @@ const EncryptionPanel: React.FC = () => {
     }
   }, [mode]);
 
+  useEffect(() => {
+    if (!algorithmSelectOpen) return;
+    // Keep the inline search focused even if the list re-renders while typing
+    requestAnimationFrame(() => algorithmSearchRef.current?.focus());
+  }, [algorithmSearch, algorithmSelectOpen]);
+
   const filteredEncryptionGroups = useMemo(() => {
-    if (!availableCiphers.size) return encryptionAlgorithmGroups;
-    const set = availableCiphers;
-    return encryptionAlgorithmGroups
+    const search = algorithmSearch.trim().toLowerCase();
+    const hasAvailabilityFilter = availableCiphers.size > 0;
+
+    const byAvailability = hasAvailabilityFilter
+      ? encryptionAlgorithmGroups
+          .map((group) => ({
+            ...group,
+            algorithms: group.algorithms.filter((algo) =>
+              availableCiphers.has(algo.id.toLowerCase())
+            ),
+          }))
+          .filter((group) => group.algorithms.length > 0)
+      : encryptionAlgorithmGroups;
+
+    if (!search) return byAvailability;
+
+    return byAvailability
       .map((group) => ({
         ...group,
-        algorithms: group.algorithms.filter((algo) => set.has(algo.id.toLowerCase())),
+        algorithms: group.algorithms.filter((algo) => {
+          const name = (algo.label ?? algo.id).toLowerCase();
+          return name.includes(search) || algo.id.toLowerCase().includes(search);
+        }),
       }))
       .filter((group) => group.algorithms.length > 0);
-  }, [availableCiphers]);
+  }, [availableCiphers, algorithmSearch]);
 
   useEffect(() => {
     if (!availableCiphers.size) return;
@@ -502,7 +528,9 @@ const EncryptionPanel: React.FC = () => {
 
   const handleProcess = async () => {
     setError(null);
-    setResultAuthTag(null);
+    if (mode === 'encrypt') {
+      setGeneratedAuthTag(null);
+    }
     setProcessing(true);
     try {
       if (!key) {
@@ -544,7 +572,14 @@ const EncryptionPanel: React.FC = () => {
           outputEncoding,
         });
         setOutput(response.output);
-        setResultAuthTag(response.authTag ?? null);
+        const nextAuthTag = response.authTag ?? null;
+        setGeneratedAuthTag(nextAuthTag);
+        setAuthTag(nextAuthTag ?? '');
+        if (needsTag && !nextAuthTag) {
+          setError(
+            'Encryption succeeded, but the host crypto module did not return an auth tag for this algorithm.'
+          );
+        }
       } else {
         if (needsTag && !authTag) {
           throw new Error('Auth tag is required for decryption with this algorithm');
@@ -573,11 +608,37 @@ const EncryptionPanel: React.FC = () => {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1.5">
             <Label>Algorithm</Label>
-            <Select value={algorithm} onValueChange={setAlgorithm}>
+            <Select
+              value={algorithm}
+              onValueChange={setAlgorithm}
+              open={algorithmSelectOpen}
+              onOpenChange={(nextOpen) => {
+                setAlgorithmSelectOpen(nextOpen);
+                if (nextOpen) {
+                  requestAnimationFrame(() => algorithmSearchRef.current?.focus());
+                }
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="max-h-[24rem]">
+              <SelectContent
+                className="max-h-[26rem]"
+                onCloseAutoFocus={(event: Event) => {
+                  // Avoid focusing a null target when the content unmounts
+                  event.preventDefault();
+                }}
+              >
+                <div className="sticky top-0 z-10 bg-popover p-2">
+                  <Input
+                    ref={algorithmSearchRef}
+                    value={algorithmSearch}
+                    onChange={(event) => setAlgorithmSearch(event.target.value)}
+                    onKeyDown={(event) => event.stopPropagation()}
+                    placeholder="Search algorithms..."
+                    className="h-9"
+                  />
+                </div>
                 {filteredEncryptionGroups.map((group) => (
                   <SelectGroup key={group.label}>
                     <SelectLabel>{group.label}</SelectLabel>
@@ -731,11 +792,37 @@ const EncryptionPanel: React.FC = () => {
                 highlightActiveLine: false,
               }}
             />
-            {resultAuthTag && (
-              <div className="flex items-center gap-2">
-                <Input value={resultAuthTag} readOnly className="font-mono" />
-                <CopyButton value={resultAuthTag} src="auth-tag" />
-                <Label className="text-xs text-muted-foreground">Auth tag</Label>
+            {needsTag && (
+              <div className="space-y-2 rounded-md border border-dashed border-muted/60 bg-muted/40 p-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold uppercase text-muted-foreground">
+                    Auth tag (last run)
+                  </Label>
+                  {generatedAuthTag && (
+                    <span className="text-[11px] text-muted-foreground">
+                      Auto-filled in the form below
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={generatedAuthTag ?? ''}
+                    readOnly
+                    className="font-mono"
+                    placeholder="Run an encryption to generate the auth tag"
+                  />
+                  <CopyButton
+                    value={generatedAuthTag ?? ''}
+                    disabled={!generatedAuthTag}
+                    src="generated-auth-tag"
+                  />
+                </div>
+                {!generatedAuthTag && (
+                  <p className="text-xs text-muted-foreground">
+                    AEAD ciphers (GCM/CCM/OCB) output an auth tag after encrypting. You will need it
+                    for decryption.
+                  </p>
+                )}
               </div>
             )}
             {error && <p className="text-sm text-destructive">{error}</p>}
@@ -860,6 +947,11 @@ const EncryptionPanel: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    {mode === 'encrypt'
+                      ? 'Value is populated automatically every time you encrypt.'
+                      : 'Paste the auth tag captured during encryption if it differs from the auto-filled value.'}
+                  </p>
                 </div>
 
                 <div className="space-y-1.5">

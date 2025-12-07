@@ -1,36 +1,37 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import crypto, {
+import type {
   CipherCCMOptions,
+  CipherGCM,
   CipherGCMOptions,
   CipherOCBOptions,
+  DecipherGCM,
 } from 'crypto';
 import { contextBridge, ipcRenderer, shell } from 'electron';
 import {
-  adler32 as wasmAdler32,
   blake2b,
   blake2s,
   blake3,
-  crc64 as wasmCrc64,
   keccak,
+  adler32 as wasmAdler32,
+  crc64 as wasmCrc64,
   md4 as wasmMd4,
   md5 as wasmMd5,
   ripemd160 as wasmRipemd160,
   sha1 as wasmSha1,
   sha224 as wasmSha224,
   sha256 as wasmSha256,
+  sha3 as wasmSha3,
   sha384 as wasmSha384,
   sha512 as wasmSha512,
-  sha3 as wasmSha3,
   sm3 as wasmSm3,
   whirlpool as wasmWhirlpool,
   xxhash128,
-  xxhash32,
   xxhash3,
+  xxhash32,
   xxhash64,
 } from 'hash-wasm';
-import { md2 } from './utils/md2';
 import {
   crc32 as crc32Basic,
   crc32c,
@@ -43,14 +44,21 @@ import {
   murmur3c,
   murmur3f,
 } from './utils/custom-hashers';
+import { md2 } from './utils/md2';
+declare const __non_webpack_require__: NodeRequire | undefined;
+const getNodeRequire = (): NodeRequire => {
+  if (typeof __non_webpack_require__ === 'function') {
+    return __non_webpack_require__;
+  }
+  return eval('require');
+};
+const crypto: typeof import('crypto') = getNodeRequire()('crypto');
 
 const textEncoder = new TextEncoder();
 
 type SupportedEncoding = 'utf8' | 'hex' | 'base64' | 'latin1';
 
-const normalizeEncoding = (
-  encoding: SupportedEncoding = 'utf8'
-): BufferEncoding => encoding;
+const normalizeEncoding = (encoding: SupportedEncoding = 'utf8'): BufferEncoding => encoding;
 
 const toBuffer = (value: string, encoding: SupportedEncoding): Buffer =>
   Buffer.from(value, normalizeEncoding(encoding));
@@ -64,11 +72,7 @@ const toOptionalBuffer = (
   return Buffer.from(value, normalizeEncoding(encoding));
 };
 
-type CipherOption =
-  | CipherGCMOptions
-  | CipherCCMOptions
-  | CipherOCBOptions
-  | undefined;
+type CipherOption = CipherGCMOptions | CipherCCMOptions | CipherOCBOptions | undefined;
 
 interface EncryptOptions {
   algorithm: string;
@@ -111,10 +115,10 @@ const wasmHashers: Record<string, (input: Uint8Array) => Promise<string>> = {
   sm3: (input) => wasmSm3(input),
   adler32: (input) => wasmAdler32(input),
   crc64: (input) => wasmCrc64(input),
-  'xxh32': (input) => xxhash32(input),
-  'xxh64': (input) => xxhash64(input),
-  'xxh3': (input) => xxhash3(input),
-  'xxh128': (input) => xxhash128(input),
+  xxh32: (input) => xxhash32(input),
+  xxh64: (input) => xxhash64(input),
+  xxh3: (input) => xxhash3(input),
+  xxh128: (input) => xxhash128(input),
   'keccak-224': (input) => keccak(input, 224),
   'keccak-256': (input) => keccak(input, 256),
   'keccak-384': (input) => keccak(input, 384),
@@ -135,21 +139,15 @@ const customHashers: Record<string, (input: Uint8Array) => string> = {
   crc32c: (input) => crc32c(input),
 };
 
-const nodeHashers: Record<
-  string,
-  { algorithm: string; outputLength?: number }
-> = {
+const nodeHashers: Record<string, { algorithm: string; outputLength?: number }> = {
   shake128: { algorithm: 'shake128', outputLength: 32 },
   shake256: { algorithm: 'shake256', outputLength: 64 },
 };
 
 const getCipherOptions = (authTagLength?: number): CipherOption =>
-  typeof authTagLength === 'number'
-    ? ({ authTagLength } as CipherGCMOptions)
-    : undefined;
+  typeof authTagLength === 'number' ? ({ authTagLength } as CipherGCMOptions) : undefined;
 
-const resolveIvArgument = (iv: Buffer | null) =>
-  iv && iv.length > 0 ? iv : Buffer.alloc(0);
+const resolveIvArgument = (iv: Buffer | null) => (iv && iv.length > 0 ? iv : Buffer.alloc(0));
 
 const createCipherInstance = (
   algorithm: string,
@@ -202,9 +200,7 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
         const nodeHasher = outputLength
           ? crypto.createHash(algoName, { outputLength })
           : crypto.createHash(algoName);
-        return nodeHasher
-          .update(data)
-          .digest('hex');
+        return nodeHasher.update(data).digest('hex');
       }
 
       return crypto.createHash(normalized).update(data).digest('hex');
@@ -236,8 +232,8 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
 
       cipher.setAutoPadding(autoPadding);
 
-      if (aad && typeof (cipher as crypto.CipherGCM).setAAD === 'function') {
-        (cipher as crypto.CipherGCM).setAAD(toBuffer(aad, aadEncoding));
+      if (aad && typeof (cipher as CipherGCM).setAAD === 'function') {
+        (cipher as CipherGCM).setAAD(toBuffer(aad, aadEncoding));
       }
 
       const encrypted = Buffer.concat([
@@ -246,9 +242,9 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
       ]);
 
       let authTag: string | null = null;
-      if (typeof (cipher as crypto.CipherGCM).getAuthTag === 'function') {
+      if (typeof (cipher as CipherGCM).getAuthTag === 'function') {
         try {
-          authTag = (cipher as crypto.CipherGCM).getAuthTag().toString('hex');
+          authTag = (cipher as CipherGCM).getAuthTag().toString('hex');
         } catch {
           authTag = null;
         }
@@ -288,12 +284,12 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
 
       decipher.setAutoPadding(autoPadding);
 
-      if (aad && typeof (decipher as crypto.DecipherGCM).setAAD === 'function') {
-        (decipher as crypto.DecipherGCM).setAAD(toBuffer(aad, aadEncoding));
+      if (aad && typeof (decipher as DecipherGCM).setAAD === 'function') {
+        (decipher as DecipherGCM).setAAD(toBuffer(aad, aadEncoding));
       }
 
-      if (authTag && typeof (decipher as crypto.DecipherGCM).setAuthTag === 'function') {
-        (decipher as crypto.DecipherGCM).setAuthTag(toBuffer(authTag, authTagEncoding));
+      if (authTag && typeof (decipher as DecipherGCM).setAuthTag === 'function') {
+        (decipher as DecipherGCM).setAuthTag(toBuffer(authTag, authTagEncoding));
       }
 
       const decrypted = Buffer.concat([
