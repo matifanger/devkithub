@@ -3,6 +3,7 @@ import { ActivateLicenseResponse } from '../types/types';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean;
   userData: ActivateLicenseResponse | null;
   login: (key: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
@@ -260,6 +261,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         isAuthenticated,
+        isLoading,
         userData,
         login,
         logout,

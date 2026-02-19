@@ -79,6 +79,7 @@ import { XmlBeautifyPage } from './pages/xml-beautify';
 import { YamlToJsonPage } from './pages/yaml-to-json';
 import { ThemeProvider } from './providers/theme-provider';
 import { getBaseApiUrl } from './utils/environment';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const App = () => {
   const { toast } = useToast();
@@ -183,7 +184,7 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/validate-license" element={<ValidateLicensePage />} />
-                <Route element={<AppLayout />}>
+                <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                   <Route path="/" element={<MainPage />} />
                   <Route path="/encode-decode" element={<EncodeDecodePage />} />
                   <Route path="/hash-generator" element={<EncodeDecodePage />} />
