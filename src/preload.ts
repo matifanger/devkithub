@@ -7,8 +7,8 @@ import type {
   CipherGCMOptions,
   CipherOCBOptions,
   DecipherGCM,
-} from 'crypto';
-import { contextBridge, ipcRenderer, shell } from 'electron';
+} from "crypto";
+import { contextBridge, ipcRenderer, shell } from "electron";
 import {
   blake2b,
   blake2s,
@@ -31,7 +31,7 @@ import {
   xxhash3,
   xxhash32,
   xxhash64,
-} from 'hash-wasm';
+} from "hash-wasm";
 import {
   crc32 as crc32Basic,
   crc32c,
@@ -43,36 +43,42 @@ import {
   murmur3a,
   murmur3c,
   murmur3f,
-} from './utils/custom-hashers';
-import { md2 } from './utils/md2';
+} from "./utils/custom-hashers";
+import { md2 } from "./utils/md2";
 declare const __non_webpack_require__: NodeRequire | undefined;
 const getNodeRequire = (): NodeRequire => {
-  if (typeof __non_webpack_require__ === 'function') {
+  if (typeof __non_webpack_require__ === "function") {
     return __non_webpack_require__;
   }
-  return eval('require');
+  return eval("require");
 };
-const crypto: typeof import('crypto') = getNodeRequire()('crypto');
+const crypto: typeof import("crypto") = getNodeRequire()("crypto");
 
 const textEncoder = new TextEncoder();
 
-type SupportedEncoding = 'utf8' | 'hex' | 'base64' | 'latin1';
+type SupportedEncoding = "utf8" | "hex" | "base64" | "latin1";
 
-const normalizeEncoding = (encoding: SupportedEncoding = 'utf8'): BufferEncoding => encoding;
+const normalizeEncoding = (
+  encoding: SupportedEncoding = "utf8",
+): BufferEncoding => encoding;
 
 const toBuffer = (value: string, encoding: SupportedEncoding): Buffer =>
   Buffer.from(value, normalizeEncoding(encoding));
 
 const toOptionalBuffer = (
   value: string | undefined | null,
-  encoding: SupportedEncoding
+  encoding: SupportedEncoding,
 ): Buffer | null => {
   if (value === undefined || value === null) return null;
   if (value.length === 0) return null;
   return Buffer.from(value, normalizeEncoding(encoding));
 };
 
-type CipherOption = CipherGCMOptions | CipherCCMOptions | CipherOCBOptions | undefined;
+type CipherOption =
+  | CipherGCMOptions
+  | CipherCCMOptions
+  | CipherOCBOptions
+  | undefined;
 
 interface EncryptOptions {
   algorithm: string;
@@ -89,7 +95,7 @@ interface EncryptOptions {
   autoPadding?: boolean;
 }
 
-interface DecryptOptions extends Omit<EncryptOptions, 'outputEncoding'> {
+interface DecryptOptions extends Omit<EncryptOptions, "outputEncoding"> {
   outputEncoding?: SupportedEncoding;
   authTag?: string;
   authTagEncoding?: SupportedEncoding;
@@ -103,10 +109,10 @@ const wasmHashers: Record<string, (input: Uint8Array) => Promise<string>> = {
   sha256: (input) => wasmSha256(input),
   sha384: (input) => wasmSha384(input),
   sha512: (input) => wasmSha512(input),
-  'sha3-224': (input) => wasmSha3(input, 224),
-  'sha3-256': (input) => wasmSha3(input, 256),
-  'sha3-384': (input) => wasmSha3(input, 384),
-  'sha3-512': (input) => wasmSha3(input, 512),
+  "sha3-224": (input) => wasmSha3(input, 224),
+  "sha3-256": (input) => wasmSha3(input, 256),
+  "sha3-384": (input) => wasmSha3(input, 384),
+  "sha3-512": (input) => wasmSha3(input, 512),
   blake2b: (input) => blake2b(input),
   blake2s: (input) => blake2s(input),
   blake3: (input) => blake3(input),
@@ -119,10 +125,10 @@ const wasmHashers: Record<string, (input: Uint8Array) => Promise<string>> = {
   xxh64: (input) => xxhash64(input),
   xxh3: (input) => xxhash3(input),
   xxh128: (input) => xxhash128(input),
-  'keccak-224': (input) => keccak(input, 224),
-  'keccak-256': (input) => keccak(input, 256),
-  'keccak-384': (input) => keccak(input, 384),
-  'keccak-512': (input) => keccak(input, 512),
+  "keccak-224": (input) => keccak(input, 224),
+  "keccak-256": (input) => keccak(input, 256),
+  "keccak-384": (input) => keccak(input, 384),
+  "keccak-512": (input) => keccak(input, 512),
 };
 
 const customHashers: Record<string, (input: Uint8Array) => string> = {
@@ -139,21 +145,27 @@ const customHashers: Record<string, (input: Uint8Array) => string> = {
   crc32c: (input) => crc32c(input),
 };
 
-const nodeHashers: Record<string, { algorithm: string; outputLength?: number }> = {
-  shake128: { algorithm: 'shake128', outputLength: 32 },
-  shake256: { algorithm: 'shake256', outputLength: 64 },
+const nodeHashers: Record<
+  string,
+  { algorithm: string; outputLength?: number }
+> = {
+  shake128: { algorithm: "shake128", outputLength: 32 },
+  shake256: { algorithm: "shake256", outputLength: 64 },
 };
 
 const getCipherOptions = (authTagLength?: number): CipherOption =>
-  typeof authTagLength === 'number' ? ({ authTagLength } as CipherGCMOptions) : undefined;
+  typeof authTagLength === "number"
+    ? ({ authTagLength } as CipherGCMOptions)
+    : undefined;
 
-const resolveIvArgument = (iv: Buffer | null) => (iv && iv.length > 0 ? iv : Buffer.alloc(0));
+const resolveIvArgument = (iv: Buffer | null) =>
+  iv && iv.length > 0 ? iv : Buffer.alloc(0);
 
 const createCipherInstance = (
   algorithm: string,
   key: Buffer,
   iv: Buffer | null,
-  authTagLength?: number
+  authTagLength?: number,
 ) => {
   const options = getCipherOptions(authTagLength);
   const ivArg = resolveIvArgument(iv);
@@ -166,7 +178,7 @@ const createDecipherInstance = (
   algorithm: string,
   key: Buffer,
   iv: Buffer | null,
-  authTagLength?: number
+  authTagLength?: number,
 ) => {
   const options = getCipherOptions(authTagLength);
   const ivArg = resolveIvArgument(iv);
@@ -176,12 +188,12 @@ const createDecipherInstance = (
 };
 
 // Exponiendo funciones específicas al renderer
-contextBridge.exposeInMainWorld('cryptoAPI', {
+contextBridge.exposeInMainWorld("cryptoAPI", {
   hash: async (algorithm: string, data: string) => {
     const normalized = algorithm.toLowerCase();
 
     try {
-      if (normalized === 'md2') {
+      if (normalized === "md2") {
         return md2(data);
       }
 
@@ -200,10 +212,10 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
         const nodeHasher = outputLength
           ? crypto.createHash(algoName, { outputLength })
           : crypto.createHash(algoName);
-        return nodeHasher.update(data).digest('hex');
+        return nodeHasher.update(data).digest("hex");
       }
 
-      return crypto.createHash(normalized).update(data).digest('hex');
+      return crypto.createHash(normalized).update(data).digest("hex");
     } catch (err) {
       console.error(`Error al calcular hash (${algorithm}):`, err);
       return null;
@@ -215,12 +227,12 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
       data,
       key,
       iv,
-      inputEncoding = 'utf8',
-      outputEncoding = 'base64',
-      keyEncoding = 'utf8',
-      ivEncoding = 'utf8',
+      inputEncoding = "utf8",
+      outputEncoding = "base64",
+      keyEncoding = "utf8",
+      ivEncoding = "utf8",
       aad,
-      aadEncoding = 'utf8',
+      aadEncoding = "utf8",
       authTagLength,
       autoPadding = true,
     } = options;
@@ -228,11 +240,16 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
     try {
       const keyBuffer = toBuffer(key, keyEncoding);
       const ivBuffer = toOptionalBuffer(iv, ivEncoding);
-      const cipher = createCipherInstance(algorithm, keyBuffer, ivBuffer, authTagLength);
+      const cipher = createCipherInstance(
+        algorithm,
+        keyBuffer,
+        ivBuffer,
+        authTagLength,
+      );
 
       cipher.setAutoPadding(autoPadding);
 
-      if (aad && typeof (cipher as CipherGCM).setAAD === 'function') {
+      if (aad && typeof (cipher as CipherGCM).setAAD === "function") {
         (cipher as CipherGCM).setAAD(toBuffer(aad, aadEncoding));
       }
 
@@ -242,9 +259,9 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
       ]);
 
       let authTag: string | null = null;
-      if (typeof (cipher as CipherGCM).getAuthTag === 'function') {
+      if (typeof (cipher as CipherGCM).getAuthTag === "function") {
         try {
-          authTag = (cipher as CipherGCM).getAuthTag().toString('hex');
+          authTag = (cipher as CipherGCM).getAuthTag().toString("hex");
         } catch {
           authTag = null;
         }
@@ -255,7 +272,7 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
         authTag,
       };
     } catch (err) {
-      console.error('Error al cifrar:', err);
+      console.error("Error al cifrar:", err);
       throw err;
     }
   },
@@ -265,14 +282,14 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
       data,
       key,
       iv,
-      inputEncoding = 'base64',
-      outputEncoding = 'utf8',
-      keyEncoding = 'utf8',
-      ivEncoding = 'utf8',
+      inputEncoding = "base64",
+      outputEncoding = "utf8",
+      keyEncoding = "utf8",
+      ivEncoding = "utf8",
       aad,
-      aadEncoding = 'utf8',
+      aadEncoding = "utf8",
       authTag,
-      authTagEncoding = 'hex',
+      authTagEncoding = "hex",
       authTagLength,
       autoPadding = true,
     } = options;
@@ -280,16 +297,26 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
     try {
       const keyBuffer = toBuffer(key, keyEncoding);
       const ivBuffer = toOptionalBuffer(iv, ivEncoding);
-      const decipher = createDecipherInstance(algorithm, keyBuffer, ivBuffer, authTagLength);
+      const decipher = createDecipherInstance(
+        algorithm,
+        keyBuffer,
+        ivBuffer,
+        authTagLength,
+      );
 
       decipher.setAutoPadding(autoPadding);
 
-      if (aad && typeof (decipher as DecipherGCM).setAAD === 'function') {
+      if (aad && typeof (decipher as DecipherGCM).setAAD === "function") {
         (decipher as DecipherGCM).setAAD(toBuffer(aad, aadEncoding));
       }
 
-      if (authTag && typeof (decipher as DecipherGCM).setAuthTag === 'function') {
-        (decipher as DecipherGCM).setAuthTag(toBuffer(authTag, authTagEncoding));
+      if (
+        authTag &&
+        typeof (decipher as DecipherGCM).setAuthTag === "function"
+      ) {
+        (decipher as DecipherGCM).setAuthTag(
+          toBuffer(authTag, authTagEncoding),
+        );
       }
 
       const decrypted = Buffer.concat([
@@ -299,16 +326,16 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
 
       return decrypted.toString(normalizeEncoding(outputEncoding));
     } catch (err) {
-      console.error('Error al descifrar:', err);
+      console.error("Error al descifrar:", err);
       throw err;
     }
   },
   getCiphers: async () => crypto.getCiphers(),
   generateRandomBytes: (size: number) => {
     try {
-      return crypto.randomBytes(size).toString('hex');
+      return crypto.randomBytes(size).toString("hex");
     } catch (err) {
-      console.error('Error al generar random bytes:', err);
+      console.error("Error al generar random bytes:", err);
       return null;
     }
   },
@@ -316,131 +343,147 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('electron', {
+contextBridge.exposeInMainWorld("electron", {
   store: {
-    get: (key: string) => ipcRenderer.invoke('get-secure-store', key),
-    set: (key: string, value: string) => ipcRenderer.invoke('set-secure-store', key, value),
-    delete: (key: string) => ipcRenderer.invoke('delete-secure-store', key),
+    get: (key: string) => ipcRenderer.invoke("get-secure-store", key),
+    set: (key: string, value: string) =>
+      ipcRenderer.invoke("set-secure-store", key, value),
+    delete: (key: string) => ipcRenderer.invoke("delete-secure-store", key),
   },
   // General settings store
   settingsStore: {
-    get: (key: string) => ipcRenderer.invoke('get-store', key),
-    set: (key: string, value: string) => ipcRenderer.invoke('set-store', key, value),
-    delete: (key: string) => ipcRenderer.invoke('delete-store', key),
+    get: (key: string) => ipcRenderer.invoke("get-store", key),
+    set: (key: string, value: string) =>
+      ipcRenderer.invoke("set-store", key, value),
+    delete: (key: string) => ipcRenderer.invoke("delete-store", key),
   },
   env: {
-    get: (key: string) => ipcRenderer.invoke('get-env', key),
+    get: (key: string) => ipcRenderer.invoke("get-env", key),
   },
-  getSimpleHwid: () => ipcRenderer.invoke('getSimpleHwid'),
+  getSimpleHwid: () => ipcRenderer.invoke("getSimpleHwid"),
   openExternal: (url: string) => {
     if (shell && shell.openExternal) {
       shell.openExternal(url).catch((err) => {
-        console.error('Error opening external URL:', err);
+        console.error("Error opening external URL:", err);
       });
     } else {
-      console.error('shell.openExternal is not available');
+      console.error("shell.openExternal is not available");
     }
   },
-  isPackaged: () => ipcRenderer.invoke('isPackaged'),
-  onShowCloseDialog: (callback: () => void) => {
-    ipcRenderer.on('show-close-dialog', () => callback());
+  isPackaged: () => ipcRenderer.invoke("isPackaged"),
+  window: {
+    minimize: () => ipcRenderer.invoke("window-minimize"),
+    maximize: () => ipcRenderer.invoke("window-maximize"),
+    close: () => ipcRenderer.invoke("window-close"),
+    isMaximized: () => ipcRenderer.invoke("window-is-maximized"),
   },
-  sendCloseDialogSelection: (action: 'quit' | 'tray', remember: boolean) =>
-    ipcRenderer.invoke('handle-close-dialog-selection', action, remember),
+  onShowCloseDialog: (callback: () => void) => {
+    ipcRenderer.on("show-close-dialog", () => callback());
+  },
+  sendCloseDialogSelection: (action: "quit" | "tray", remember: boolean) =>
+    ipcRenderer.invoke("handle-close-dialog-selection", action, remember),
   onShowAutostartDialog: (callback: () => void) => {
-    ipcRenderer.on('show-autostart-dialog', () => callback());
+    ipcRenderer.on("show-autostart-dialog", () => callback());
   },
   sendAutostartSelection: (enable: boolean) =>
-    ipcRenderer.invoke('handle-autostart-selection', enable),
+    ipcRenderer.invoke("handle-autostart-selection", enable),
   shouldShowAutostartDialog: (currentPref: string | null) =>
-    ipcRenderer.invoke('should-show-autostart-dialog', currentPref),
+    ipcRenderer.invoke("should-show-autostart-dialog", currentPref),
 });
 
-contextBridge.exposeInMainWorld('cursor', {
-  startTracking: () => ipcRenderer.invoke('cursor:start-tracking'),
-  stopTracking: () => ipcRenderer.invoke('cursor:stop-tracking'),
-  addPosition: (x: number, y: number, click?: 'left' | 'right' | 'double') =>
-    ipcRenderer.invoke('cursor:add-position', x, y, click),
-  getPositions: () => ipcRenderer.invoke('cursor:get-positions'),
-  clear: () => ipcRenderer.invoke('cursor:clear'),
-  getScreenSize: () => ipcRenderer.invoke('cursor:get-screen-size'),
+contextBridge.exposeInMainWorld("cursor", {
+  startTracking: () => ipcRenderer.invoke("cursor:start-tracking"),
+  stopTracking: () => ipcRenderer.invoke("cursor:stop-tracking"),
+  addPosition: (x: number, y: number, click?: "left" | "right" | "double") =>
+    ipcRenderer.invoke("cursor:add-position", x, y, click),
+  getPositions: () => ipcRenderer.invoke("cursor:get-positions"),
+  clear: () => ipcRenderer.invoke("cursor:clear"),
+  getScreenSize: () => ipcRenderer.invoke("cursor:get-screen-size"),
 });
 
-contextBridge.exposeInMainWorld('recorder', {
+contextBridge.exposeInMainWorld("recorder", {
   setSelectedSource: (sourceId: string, captureAudio: boolean) =>
-    ipcRenderer.invoke('recorder:set-source', sourceId, captureAudio),
-  getSources: () => ipcRenderer.invoke('recorder:get-sources'),
-  getPrimaryDisplay: () => ipcRenderer.invoke('recorder:get-primary-display'),
-  getAllDisplays: () => ipcRenderer.invoke('recorder:get-all-displays'),
-  generateId: () => ipcRenderer.invoke('recorder:generate-id'),
-  getPath: () => ipcRenderer.invoke('recorder:get-path'),
+    ipcRenderer.invoke("recorder:set-source", sourceId, captureAudio),
+  getSources: () => ipcRenderer.invoke("recorder:get-sources"),
+  getPrimaryDisplay: () => ipcRenderer.invoke("recorder:get-primary-display"),
+  getAllDisplays: () => ipcRenderer.invoke("recorder:get-all-displays"),
+  generateId: () => ipcRenderer.invoke("recorder:generate-id"),
+  getPath: () => ipcRenderer.invoke("recorder:get-path"),
   saveChunk: (chunk: ArrayBuffer, filePath: string) =>
-    ipcRenderer.invoke('recorder:save-chunk', chunk, filePath),
+    ipcRenderer.invoke("recorder:save-chunk", chunk, filePath),
   saveCursorData: (data: string, filePath: string) =>
-    ipcRenderer.invoke('recorder:save-cursor-data', data, filePath),
+    ipcRenderer.invoke("recorder:save-cursor-data", data, filePath),
   saveMetadata: (data: string, filePath: string) =>
-    ipcRenderer.invoke('recorder:save-metadata', data, filePath),
+    ipcRenderer.invoke("recorder:save-metadata", data, filePath),
   finalizeVideo: (tempPath: string, finalPath: string) =>
-    ipcRenderer.invoke('recorder:finalize-video', tempPath, finalPath),
+    ipcRenderer.invoke("recorder:finalize-video", tempPath, finalPath),
   saveFileDialog: (defaultName: string) =>
-    ipcRenderer.invoke('recorder:save-file-dialog', defaultName),
-  openFolder: (folderPath: string) => ipcRenderer.invoke('recorder:open-folder', folderPath),
+    ipcRenderer.invoke("recorder:save-file-dialog", defaultName),
+  openFolder: (folderPath: string) =>
+    ipcRenderer.invoke("recorder:open-folder", folderPath),
 });
 
-contextBridge.exposeInMainWorld('shortcuts', {
-  register: (customShortcuts?: any) => ipcRenderer.invoke('shortcuts:register', customShortcuts),
-  unregister: () => ipcRenderer.invoke('shortcuts:unregister'),
-  getCurrent: () => ipcRenderer.invoke('shortcuts:get-current'),
-  isRegistered: () => ipcRenderer.invoke('shortcuts:is-registered'),
+contextBridge.exposeInMainWorld("shortcuts", {
+  register: (customShortcuts?: any) =>
+    ipcRenderer.invoke("shortcuts:register", customShortcuts),
+  unregister: () => ipcRenderer.invoke("shortcuts:unregister"),
+  getCurrent: () => ipcRenderer.invoke("shortcuts:get-current"),
+  isRegistered: () => ipcRenderer.invoke("shortcuts:is-registered"),
   onToggleRecording: (callback: () => void) => {
-    ipcRenderer.on('shortcut:toggle-recording', () => callback());
+    ipcRenderer.on("shortcut:toggle-recording", () => callback());
   },
   onPauseRecording: (callback: () => void) => {
-    ipcRenderer.on('shortcut:pause-recording', () => callback());
+    ipcRenderer.on("shortcut:pause-recording", () => callback());
   },
 });
 
-contextBridge.exposeInMainWorld('ffmpegRecorder', {
-  isAvailable: () => ipcRenderer.invoke('ffmpeg-recorder:is-available'),
-  diagnostics: () => ipcRenderer.invoke('ffmpeg-recorder:diagnostics'),
-  getDefaultConfig: () => ipcRenderer.invoke('ffmpeg-recorder:get-default-config'),
-  listAudioDevices: () => ipcRenderer.invoke('ffmpeg-recorder:list-audio-devices'),
-  start: (config: any) => ipcRenderer.invoke('ffmpeg-recorder:start', config),
-  pause: () => ipcRenderer.invoke('ffmpeg-recorder:pause'),
-  resume: () => ipcRenderer.invoke('ffmpeg-recorder:resume'),
-  stop: () => ipcRenderer.invoke('ffmpeg-recorder:stop'),
-  getStatus: () => ipcRenderer.invoke('ffmpeg-recorder:get-status'),
-  getRecordingsPath: () => ipcRenderer.invoke('ffmpeg-recorder:get-recordings-path'),
-  listRecordings: () => ipcRenderer.invoke('ffmpeg-recorder:list-recordings'),
+contextBridge.exposeInMainWorld("ffmpegRecorder", {
+  isAvailable: () => ipcRenderer.invoke("ffmpeg-recorder:is-available"),
+  diagnostics: () => ipcRenderer.invoke("ffmpeg-recorder:diagnostics"),
+  getDefaultConfig: () =>
+    ipcRenderer.invoke("ffmpeg-recorder:get-default-config"),
+  listAudioDevices: () =>
+    ipcRenderer.invoke("ffmpeg-recorder:list-audio-devices"),
+  start: (config: any) => ipcRenderer.invoke("ffmpeg-recorder:start", config),
+  pause: () => ipcRenderer.invoke("ffmpeg-recorder:pause"),
+  resume: () => ipcRenderer.invoke("ffmpeg-recorder:resume"),
+  stop: () => ipcRenderer.invoke("ffmpeg-recorder:stop"),
+  getStatus: () => ipcRenderer.invoke("ffmpeg-recorder:get-status"),
+  getRecordingsPath: () =>
+    ipcRenderer.invoke("ffmpeg-recorder:get-recordings-path"),
+  listRecordings: () => ipcRenderer.invoke("ffmpeg-recorder:list-recordings"),
   deleteRecording: (filePath: string) =>
-    ipcRenderer.invoke('ffmpeg-recorder:delete-recording', filePath),
-  openRecordingsFolder: () => ipcRenderer.invoke('ffmpeg-recorder:open-recordings-folder'),
+    ipcRenderer.invoke("ffmpeg-recorder:delete-recording", filePath),
+  openRecordingsFolder: () =>
+    ipcRenderer.invoke("ffmpeg-recorder:open-recordings-folder"),
   onStatus: (callback: (status: any) => void) => {
-    ipcRenderer.on('ffmpeg-recorder:status', (_, status) => callback(status));
+    ipcRenderer.on("ffmpeg-recorder:status", (_, status) => callback(status));
   },
 });
 
-contextBridge.exposeInMainWorld('exporter', {
-  getPresets: () => ipcRenderer.invoke('exporter:get-presets'),
+contextBridge.exposeInMainWorld("exporter", {
+  getPresets: () => ipcRenderer.invoke("exporter:get-presets"),
   start: (settings: any, outputPath: string) =>
-    ipcRenderer.invoke('exporter:start', settings, outputPath),
-  cancel: () => ipcRenderer.invoke('exporter:cancel'),
-  isExporting: () => ipcRenderer.invoke('exporter:is-exporting'),
+    ipcRenderer.invoke("exporter:start", settings, outputPath),
+  cancel: () => ipcRenderer.invoke("exporter:cancel"),
+  isExporting: () => ipcRenderer.invoke("exporter:is-exporting"),
   showSaveDialog: (defaultName: string, format: string) =>
-    ipcRenderer.invoke('exporter:show-save-dialog', defaultName, format),
+    ipcRenderer.invoke("exporter:show-save-dialog", defaultName, format),
   onProgress: (callback: (progress: any) => void) => {
-    ipcRenderer.on('exporter:progress', (_, progress) => callback(progress));
+    ipcRenderer.on("exporter:progress", (_, progress) => callback(progress));
   },
 });
 
-contextBridge.exposeInMainWorld('project', {
-  new: (name: string) => ipcRenderer.invoke('project:new', name),
-  save: (project: any) => ipcRenderer.invoke('project:save', project),
-  load: (projectId: string) => ipcRenderer.invoke('project:load', projectId),
-  saveDialog: (defaultName: string) => ipcRenderer.invoke('project:save-dialog', defaultName),
-  openDialog: () => ipcRenderer.invoke('project:open-dialog'),
-  getRecent: () => ipcRenderer.invoke('project:get-recent'),
-  delete: (projectId: string) => ipcRenderer.invoke('project:delete', projectId),
-  list: () => ipcRenderer.invoke('project:list'),
-  getPath: () => ipcRenderer.invoke('project:get-path'),
+contextBridge.exposeInMainWorld("project", {
+  new: (name: string) => ipcRenderer.invoke("project:new", name),
+  save: (project: any) => ipcRenderer.invoke("project:save", project),
+  load: (projectId: string) => ipcRenderer.invoke("project:load", projectId),
+  saveDialog: (defaultName: string) =>
+    ipcRenderer.invoke("project:save-dialog", defaultName),
+  openDialog: () => ipcRenderer.invoke("project:open-dialog"),
+  getRecent: () => ipcRenderer.invoke("project:get-recent"),
+  delete: (projectId: string) =>
+    ipcRenderer.invoke("project:delete", projectId),
+  list: () => ipcRenderer.invoke("project:list"),
+  getPath: () => ipcRenderer.invoke("project:get-path"),
 });

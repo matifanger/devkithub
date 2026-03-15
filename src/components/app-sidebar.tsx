@@ -1,17 +1,16 @@
-import { MessageCircle, Search, Star, User } from 'lucide-react';
-import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { MessageCircle, Search, Star, User } from "lucide-react";
+import * as React from "react";
+import { Link } from "react-router-dom";
 
-import { useEffect, useState } from 'react';
-import logo from '../assets/icons/icon.png';
-import { FAVORITE_TOOLS_KEY } from '../constants/settings-keys';
-import { useAuth } from '../contexts/auth-context';
-import { allTools, Tool } from '../utils/tools-data';
-import { ProfileModal } from './profile-modal';
-import { RecommendedTools } from './sidebar/recommended-tools';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { ScrollArea } from './ui/scroll-area';
+import { useEffect, useState } from "react";
+import { FAVORITE_TOOLS_KEY } from "../constants/settings-keys";
+import { useAuth } from "../contexts/auth-context";
+import { allTools, Tool } from "../utils/tools-data";
+import { ProfileModal } from "./profile-modal";
+import { RecommendedTools } from "./sidebar/recommended-tools";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { ScrollArea } from "./ui/scroll-area";
 import {
   Sidebar,
   SidebarContent,
@@ -22,8 +21,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from './ui/sidebar';
-import { ThemeToggle } from './ui/theme-toggle';
+} from "./ui/sidebar";
+import { ThemeToggle } from "./ui/theme-toggle";
+import { useProfileModal } from "../layouts/app-layout";
 
 interface ToolItemProps {
   tool: Tool;
@@ -54,7 +54,7 @@ function ToolItem({ tool, isFavorite, onToggleFavorite }: ToolItemProps) {
         onClick={() => onToggleFavorite(tool.id)}
       >
         <Star
-          className={`w-4 h-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+          className={`w-4 h-4 ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
         />
       </Button>
     </SidebarMenuItem>
@@ -63,14 +63,16 @@ function ToolItem({ tool, isFavorite, onToggleFavorite }: ToolItemProps) {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [favoriteTools, setFavoriteTools] = React.useState<Tool[]>([]);
   const { userData } = useAuth();
+  const { isProfileOpen, setIsProfileOpen } = useProfileModal();
 
   useEffect(() => {
     const fetchCurrentVersion = async () => {
-      const currentVersion = await window.electron.env.get('npm_package_version');
+      const currentVersion = await window.electron.env.get(
+        "npm_package_version",
+      );
       setCurrentVersion(currentVersion);
     };
     fetchCurrentVersion();
@@ -78,9 +80,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   useEffect(() => {
     const fetchFavorites = async () => {
-      const storedFavorites = await window.electron.settingsStore.get(FAVORITE_TOOLS_KEY);
-      const favorites: string[] = storedFavorites ? JSON.parse(storedFavorites) : [];
-      const favoriteToolsData = allTools.filter((tool) => favorites.includes(tool.id));
+      const storedFavorites =
+        await window.electron.settingsStore.get(FAVORITE_TOOLS_KEY);
+      const favorites: string[] = storedFavorites
+        ? JSON.parse(storedFavorites)
+        : [];
+      const favoriteToolsData = allTools.filter((tool) =>
+        favorites.includes(tool.id),
+      );
       setFavoriteTools(favoriteToolsData);
     };
     fetchFavorites();
@@ -101,18 +108,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setFavoriteTools(updatedFavorites);
     await window.electron.settingsStore.set(
       FAVORITE_TOOLS_KEY,
-      JSON.stringify(updatedFavorites.map((tool) => tool.id))
+      JSON.stringify(updatedFavorites.map((tool) => tool.id)),
     );
   };
 
   const filteredItems = React.useMemo(() => {
     if (!searchQuery)
-      return allTools.filter((tool) => !favoriteTools.some((fav) => fav.id === tool.id));
+      return allTools.filter(
+        (tool) => !favoriteTools.some((fav) => fav.id === tool.id),
+      );
 
     return allTools.filter(
       (item) =>
         !favoriteTools.some((fav) => fav.id === item.id) &&
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [searchQuery, favoriteTools]);
 
@@ -136,17 +145,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         `}
       </style>
       <SidebarHeader className="border-b p-0">
-        <div className="border-b p-2">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 px-2 h-auto py-1"
-            onClick={() => window.electron.openExternal('https://devkithub.com')}
-          >
-            <img src={logo} alt="DevKitHub" className="w-8 h-8" />
-            <span className="font-semibold text-sm">DevKitHub</span>
-          </Button>
-        </div>
-        <div className="px-2">
+        <div className="px-2 pb-2">
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 px-2 h-auto py-2"
@@ -157,7 +156,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span className="font-medium">Settings & Profile</span>
             </div>
           </Button>
-          <ProfileModal open={isProfileOpen} onOpenChange={setIsProfileOpen} userData={userData} />
+          <ProfileModal
+            open={isProfileOpen}
+            onOpenChange={setIsProfileOpen}
+            userData={userData}
+          />
         </div>
         <div className="px-2 pb-2">
           <div className="relative">
@@ -224,7 +227,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
-            onClick={() => window.electron.openExternal('https://devkithub.featurebase.app/en')}
+            onClick={() =>
+              window.electron.openExternal(
+                "https://devkithub.featurebase.app/en",
+              )
+            }
           >
             <MessageCircle className="w-4 h-4" />
             Community
@@ -235,14 +242,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <Button
             variant="link"
             className="text-xs text-muted-foreground p-1"
-            onClick={() => window.electron.openExternal('https://devkithub.com')}
+            onClick={() =>
+              window.electron.openExternal("https://devkithub.com")
+            }
           >
             DevKitHub.com
           </Button>
           <Button
             variant="link"
             className="text-xs text-muted-foreground p-1"
-            onClick={() => window.electron.openExternal('https://devkithub.com/changelog')}
+            onClick={() =>
+              window.electron.openExternal("https://devkithub.com/changelog")
+            }
           >
             v{currentVersion}
           </Button>
