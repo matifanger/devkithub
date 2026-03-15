@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { useEffect, useState } from 'react';
+import logo from '../assets/icons/icon.png';
 import { FAVORITE_TOOLS_KEY } from '../constants/settings-keys';
 import { useAuth } from '../contexts/auth-context';
 import { allTools, Tool } from '../utils/tools-data';
@@ -134,22 +135,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           }
         `}
       </style>
-      <SidebarHeader className="border-b">
-        <div className="p-0">
+      <SidebarHeader className="border-b p-0">
+        <div className="border-b p-2">
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 px-2 h-auto py-3"
+            className="w-full justify-start gap-3 px-2 h-auto py-1"
+            onClick={() => window.electron.openExternal('https://devkithub.com')}
+          >
+            <img src={logo} alt="DevKitHub" className="w-8 h-8" />
+            <span className="font-semibold text-sm">DevKitHub</span>
+          </Button>
+        </div>
+        <div className="px-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 px-2 h-auto py-2"
             onClick={() => setIsProfileOpen(true)}
           >
             <User className="h-5 w-5" />
             <div className="flex flex-col items-start">
-              <span className="font-medium">Welcome</span>
-              <span className="text-xs text-muted-foreground">Settings & Profile</span>
+              <span className="font-medium">Settings & Profile</span>
             </div>
           </Button>
           <ProfileModal open={isProfileOpen} onOpenChange={setIsProfileOpen} userData={userData} />
         </div>
-        <div className="">
+        <div className="px-2 pb-2">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -208,7 +218,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
         </SidebarContent>
       </ScrollArea>
-      <div className="border-t pl-2 pr-2 pt-2 pb-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="border-t pl-2 pr-2 pt-3 pb-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-center gap-2">
           <Button
             variant="outline"

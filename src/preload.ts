@@ -342,13 +342,11 @@ contextBridge.exposeInMainWorld('electron', {
     }
   },
   isPackaged: () => ipcRenderer.invoke('isPackaged'),
-  // Close behavior prompt
   onShowCloseDialog: (callback: () => void) => {
     ipcRenderer.on('show-close-dialog', () => callback());
   },
   sendCloseDialogSelection: (action: 'quit' | 'tray', remember: boolean) =>
     ipcRenderer.invoke('handle-close-dialog-selection', action, remember),
-  // Autostart prompt
   onShowAutostartDialog: (callback: () => void) => {
     ipcRenderer.on('show-autostart-dialog', () => callback());
   },
@@ -356,4 +354,93 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.invoke('handle-autostart-selection', enable),
   shouldShowAutostartDialog: (currentPref: string | null) =>
     ipcRenderer.invoke('should-show-autostart-dialog', currentPref),
+});
+
+contextBridge.exposeInMainWorld('cursor', {
+  startTracking: () => ipcRenderer.invoke('cursor:start-tracking'),
+  stopTracking: () => ipcRenderer.invoke('cursor:stop-tracking'),
+  addPosition: (x: number, y: number, click?: 'left' | 'right' | 'double') =>
+    ipcRenderer.invoke('cursor:add-position', x, y, click),
+  getPositions: () => ipcRenderer.invoke('cursor:get-positions'),
+  clear: () => ipcRenderer.invoke('cursor:clear'),
+  getScreenSize: () => ipcRenderer.invoke('cursor:get-screen-size'),
+});
+
+contextBridge.exposeInMainWorld('recorder', {
+  setSelectedSource: (sourceId: string, captureAudio: boolean) =>
+    ipcRenderer.invoke('recorder:set-source', sourceId, captureAudio),
+  getSources: () => ipcRenderer.invoke('recorder:get-sources'),
+  getPrimaryDisplay: () => ipcRenderer.invoke('recorder:get-primary-display'),
+  getAllDisplays: () => ipcRenderer.invoke('recorder:get-all-displays'),
+  generateId: () => ipcRenderer.invoke('recorder:generate-id'),
+  getPath: () => ipcRenderer.invoke('recorder:get-path'),
+  saveChunk: (chunk: ArrayBuffer, filePath: string) =>
+    ipcRenderer.invoke('recorder:save-chunk', chunk, filePath),
+  saveCursorData: (data: string, filePath: string) =>
+    ipcRenderer.invoke('recorder:save-cursor-data', data, filePath),
+  saveMetadata: (data: string, filePath: string) =>
+    ipcRenderer.invoke('recorder:save-metadata', data, filePath),
+  finalizeVideo: (tempPath: string, finalPath: string) =>
+    ipcRenderer.invoke('recorder:finalize-video', tempPath, finalPath),
+  saveFileDialog: (defaultName: string) =>
+    ipcRenderer.invoke('recorder:save-file-dialog', defaultName),
+  openFolder: (folderPath: string) => ipcRenderer.invoke('recorder:open-folder', folderPath),
+});
+
+contextBridge.exposeInMainWorld('shortcuts', {
+  register: (customShortcuts?: any) => ipcRenderer.invoke('shortcuts:register', customShortcuts),
+  unregister: () => ipcRenderer.invoke('shortcuts:unregister'),
+  getCurrent: () => ipcRenderer.invoke('shortcuts:get-current'),
+  isRegistered: () => ipcRenderer.invoke('shortcuts:is-registered'),
+  onToggleRecording: (callback: () => void) => {
+    ipcRenderer.on('shortcut:toggle-recording', () => callback());
+  },
+  onPauseRecording: (callback: () => void) => {
+    ipcRenderer.on('shortcut:pause-recording', () => callback());
+  },
+});
+
+contextBridge.exposeInMainWorld('ffmpegRecorder', {
+  isAvailable: () => ipcRenderer.invoke('ffmpeg-recorder:is-available'),
+  diagnostics: () => ipcRenderer.invoke('ffmpeg-recorder:diagnostics'),
+  getDefaultConfig: () => ipcRenderer.invoke('ffmpeg-recorder:get-default-config'),
+  listAudioDevices: () => ipcRenderer.invoke('ffmpeg-recorder:list-audio-devices'),
+  start: (config: any) => ipcRenderer.invoke('ffmpeg-recorder:start', config),
+  pause: () => ipcRenderer.invoke('ffmpeg-recorder:pause'),
+  resume: () => ipcRenderer.invoke('ffmpeg-recorder:resume'),
+  stop: () => ipcRenderer.invoke('ffmpeg-recorder:stop'),
+  getStatus: () => ipcRenderer.invoke('ffmpeg-recorder:get-status'),
+  getRecordingsPath: () => ipcRenderer.invoke('ffmpeg-recorder:get-recordings-path'),
+  listRecordings: () => ipcRenderer.invoke('ffmpeg-recorder:list-recordings'),
+  deleteRecording: (filePath: string) =>
+    ipcRenderer.invoke('ffmpeg-recorder:delete-recording', filePath),
+  openRecordingsFolder: () => ipcRenderer.invoke('ffmpeg-recorder:open-recordings-folder'),
+  onStatus: (callback: (status: any) => void) => {
+    ipcRenderer.on('ffmpeg-recorder:status', (_, status) => callback(status));
+  },
+});
+
+contextBridge.exposeInMainWorld('exporter', {
+  getPresets: () => ipcRenderer.invoke('exporter:get-presets'),
+  start: (settings: any, outputPath: string) =>
+    ipcRenderer.invoke('exporter:start', settings, outputPath),
+  cancel: () => ipcRenderer.invoke('exporter:cancel'),
+  isExporting: () => ipcRenderer.invoke('exporter:is-exporting'),
+  showSaveDialog: (defaultName: string, format: string) =>
+    ipcRenderer.invoke('exporter:show-save-dialog', defaultName, format),
+  onProgress: (callback: (progress: any) => void) => {
+    ipcRenderer.on('exporter:progress', (_, progress) => callback(progress));
+  },
+});
+
+contextBridge.exposeInMainWorld('project', {
+  new: (name: string) => ipcRenderer.invoke('project:new', name),
+  save: (project: any) => ipcRenderer.invoke('project:save', project),
+  load: (projectId: string) => ipcRenderer.invoke('project:load', projectId),
+  saveDialog: (defaultName: string) => ipcRenderer.invoke('project:save-dialog', defaultName),
+  openDialog: () => ipcRenderer.invoke('project:open-dialog'),
+  getRecent: () => ipcRenderer.invoke('project:get-recent'),
+  delete: (projectId: string) => ipcRenderer.invoke('project:delete', projectId),
+  list: () => ipcRenderer.invoke('project:list'),
+  getPath: () => ipcRenderer.invoke('project:get-path'),
 });

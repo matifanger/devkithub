@@ -12,8 +12,12 @@ import { rendererConfig } from './webpack.renderer.config';
 
 const config: ForgeConfig = {
   packagerConfig: {
-    icon: path.join(__dirname, 'src/assets/icons/icon'), // Ruta base sin extensión
+    icon: path.join(__dirname, 'src/assets/icons/icon'),
     executableName: 'DevKitHub',
+    asar: true,
+    extraResource: [
+      path.dirname(require.resolve('ffmpeg-static')),
+    ],
   },
   rebuildConfig: {},
   makers: [

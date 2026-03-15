@@ -66,6 +66,7 @@ import { PomodoroTimerPage } from './pages/pomodoro-timer';
 import { QRCodePage } from './pages/qr-code';
 import { RandomStringGeneratorPage } from './pages/random-string-generator';
 import { RegexTesterPage } from './pages/regex-tester';
+// import { ScreenRecorderPage } from './pages/screen-recorder';
 import { ScssBeautifyPage } from './pages/scss-beautify';
 import { SqlFormatterPage } from './pages/sql-formatter';
 import { StringCaseConverterPage } from './pages/string-case-converter';
@@ -75,23 +76,38 @@ import { UnixTimePage } from './pages/unix-time';
 import { UrlEncoderDecoderPage } from './pages/url-encoder-decoder';
 import { UrlParserPage } from './pages/url-parser';
 import { ValidateLicensePage } from './pages/validate-license';
+// import { VideoEditorPage } from './pages/video-editor';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { XmlBeautifyPage } from './pages/xml-beautify';
 import { YamlToJsonPage } from './pages/yaml-to-json';
 import { ThemeProvider } from './providers/theme-provider';
 import { getBaseApiUrl } from './utils/environment';
-import { ProtectedRoute } from './components/ProtectedRoute';
 
 const App = () => {
   const { toast } = useToast();
   const [showCloseDialog, setShowCloseDialog] = React.useState(false);
   const [rememberChoice, setRememberChoice] = React.useState(false);
   const [showAutostartDialog, setShowAutostartDialog] = React.useState(false);
+  const [isElectronReady, setIsElectronReady] = React.useState(false);
 
-  useEffect(() => {
-    checkForUpdates();
+  // Check if window.electron is available
+  React.useEffect(() => {
+    if (window.electron) {
+      setIsElectronReady(true);
+    } else {
+      console.warn('window.electron not available - running in standalone mode');
+    }
   }, []);
 
+  useEffect(() => {
+    if (isElectronReady) {
+      checkForUpdates();
+    }
+  }, [isElectronReady]);
+
   React.useEffect(() => {
+    if (!window.electron) return;
+
     // Listen for main process request to show close dialog
     window.electron.onShowCloseDialog(() => {
       setShowCloseDialog(true);
@@ -184,7 +200,13 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/validate-license" element={<ValidateLicensePage />} />
-                <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
                   <Route path="/" element={<MainPage />} />
                   <Route path="/encode-decode" element={<EncodeDecodePage />} />
                   <Route path="/hash-generator" element={<EncodeDecodePage />} />
@@ -249,6 +271,8 @@ const App = () => {
                   <Route path="/image-optimizer" element={<ImageOptimizerPage />} />
                   <Route path="/css-to-svg" element={<CssToSvgPage />} />
                   <Route path="/pomodoro-timer" element={<PomodoroTimerPage />} />
+                  {/* <Route path="/screen-recorder" element={<ScreenRecorderPage />} /> */}
+                  {/* <Route path="/video-editor" element={<VideoEditorPage />} /> */}
                 </Route>
               </Routes>
               <Toaster />

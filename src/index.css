@@ -8,7 +8,7 @@
     @apply border-border;
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans bg-background text-foreground;
   }
 
   .cm-scope .cm-editor.cm-focused {

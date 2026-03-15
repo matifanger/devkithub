@@ -165,6 +165,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Check if running in standalone window mode (new window)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isStandalone = urlParams.get('standalone') === 'true';
+        
+        if (isStandalone) {
+          console.log('Running in standalone mode - skipping auth');
+          setIsAuthenticated(true);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Check if window.electron is available
+        if (!window.electron) {
+          console.warn('window.electron not available, skipping auth check');
+          setIsLoading(false);
+          return;
+        }
+        
         const storedData = await window.electron.store.get(SECURE_KEY);
 
         console.warn('storedData', storedData);

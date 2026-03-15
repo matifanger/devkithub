@@ -45,6 +45,28 @@ export type Tool = {
   readonly url: string;
   readonly icon: LucideIcon;
   readonly color: string;
+  readonly category: Category;
+};
+
+export type Category =
+  | 'encode-decode'
+  | 'data-conversion'
+  | 'text-string'
+  | 'code-formatting'
+  | 'development'
+  | 'security'
+  | 'media'
+  | 'utilities';
+
+export const categoryLabels: Record<Category, string> = {
+  'encode-decode': 'Encode & Decode',
+  'data-conversion': 'Data Conversion',
+  'text-string': 'Text & String',
+  'code-formatting': 'Code Formatting',
+  development: 'Development',
+  security: 'Security',
+  media: 'Media',
+  utilities: 'Utilities',
 };
 
 // Helper function to create a slug from a title
@@ -57,20 +79,22 @@ const slugify = (title: string) =>
 
 export const allTools = [
   {
-    id: slugify('Encode & Decode Tools'),
-    title: 'Encode & Decode Tools',
-    description: 'String encoding, hashing, and encryption in one place',
-    url: '/encode-decode',
-    icon: Hash,
-    color: 'bg-blue-500/10 text-blue-500',
-  },
-  {
     id: slugify('Dummy Data Generator'),
     title: 'Dummy Data Generator',
     description: 'Generate sample data for testing',
     url: '/dummy-data-generator',
     icon: Database2,
     color: 'bg-violet-500/10 text-violet-500',
+    category: 'development',
+  },
+  {
+    id: slugify('Encode & Decode Tools'),
+    title: 'Encode & Decode Tools',
+    description: 'String encoding, hashing, and encryption in one place',
+    url: '/encode-decode',
+    icon: Hash,
+    color: 'bg-blue-500/10 text-blue-500',
+    category: 'encode-decode',
   },
   {
     id: slugify('YAML to JSON'),
@@ -79,6 +103,7 @@ export const allTools = [
     url: '/yaml-to-json',
     icon: FileJson,
     color: 'bg-yellow-500/10 text-yellow-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('JSON to YAML'),
@@ -87,6 +112,7 @@ export const allTools = [
     url: '/json-to-yaml',
     icon: FileJson,
     color: 'bg-purple-500/10 text-purple-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('JSON Format/Validate'),
@@ -95,6 +121,7 @@ export const allTools = [
     url: '/json-format',
     icon: FileJson,
     color: 'bg-pink-500/10 text-pink-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('Unix Time Converter'),
@@ -103,6 +130,7 @@ export const allTools = [
     url: '/unix-time',
     icon: Clock,
     color: 'bg-orange-500/10 text-orange-500',
+    category: 'development',
   },
   {
     id: slugify('JWT Debugger'),
@@ -111,6 +139,7 @@ export const allTools = [
     url: '/jwt-debug',
     icon: Key,
     color: 'bg-red-500/10 text-red-500',
+    category: 'security',
   },
   {
     id: slugify('Color Converter'),
@@ -119,6 +148,7 @@ export const allTools = [
     url: '/color-converter',
     icon: Palette,
     color: 'bg-indigo-500/10 text-indigo-500',
+    category: 'development',
   },
   {
     id: slugify('Base64 String Encoder/Decoder'),
@@ -127,6 +157,7 @@ export const allTools = [
     url: '/base64-string-encoder-decoder',
     icon: FileCode,
     color: 'bg-teal-500/10 text-teal-500',
+    category: 'encode-decode',
   },
   {
     id: slugify('Base64 Image Encoder/Decoder'),
@@ -135,6 +166,7 @@ export const allTools = [
     url: '/base64-image-encoder-decoder',
     icon: Image,
     color: 'bg-cyan-500/10 text-cyan-500',
+    category: 'encode-decode',
   },
   {
     id: slugify('Regex Tester'),
@@ -143,6 +175,7 @@ export const allTools = [
     url: '/regex-tester',
     icon: Regex,
     color: 'bg-emerald-500/10 text-emerald-500',
+    category: 'text-string',
   },
   {
     id: slugify('URL Encoder/Decoder'),
@@ -151,6 +184,7 @@ export const allTools = [
     url: '/url-encoder-decoder',
     icon: LinkIcon,
     color: 'bg-rose-500/10 text-rose-500',
+    category: 'encode-decode',
   },
   {
     id: slugify('URL Parser'),
@@ -159,6 +193,7 @@ export const allTools = [
     url: '/url-parser',
     icon: LinkIcon,
     color: 'bg-fuchsia-500/10 text-fuchsia-500',
+    category: 'development',
   },
   {
     id: slugify('HTML Entity Encoder/Decoder'),
@@ -167,6 +202,7 @@ export const allTools = [
     url: '/html-entity-encoder-decoder',
     icon: Code,
     color: 'bg-violet-500/10 text-violet-500',
+    category: 'encode-decode',
   },
   {
     id: slugify('Backslash Escape/Unescape'),
@@ -175,6 +211,7 @@ export const allTools = [
     url: '/backslash-escape-unescape',
     icon: Slash,
     color: 'bg-amber-500/10 text-amber-500',
+    category: 'encode-decode',
   },
   {
     id: slugify('HTML Beautify/Minify'),
@@ -183,6 +220,7 @@ export const allTools = [
     url: '/html-beautify',
     icon: FileText,
     color: 'bg-lime-500/10 text-lime-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('CSS Beautify/Minify'),
@@ -191,6 +229,7 @@ export const allTools = [
     url: '/css-beautify',
     icon: FileCode2,
     color: 'bg-sky-500/10 text-sky-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('JavaScript Beautify/Minify'),
@@ -199,6 +238,7 @@ export const allTools = [
     url: '/js-beautify',
     icon: FileJson2,
     color: 'bg-blue-500/10 text-blue-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('XML Beautify/Minify'),
@@ -207,6 +247,7 @@ export const allTools = [
     url: '/xml-beautify',
     icon: FileType2,
     color: 'bg-green-500/10 text-green-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('LESS Beautify/Minify'),
@@ -215,6 +256,7 @@ export const allTools = [
     url: '/less-beautify',
     icon: FileCode2,
     color: 'bg-yellow-500/10 text-yellow-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('SCSS Beautify/Minify'),
@@ -223,6 +265,7 @@ export const allTools = [
     url: '/scss-beautify',
     icon: FileCode2,
     color: 'bg-purple-500/10 text-purple-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('ERB Beautify/Minify'),
@@ -231,6 +274,7 @@ export const allTools = [
     url: '/erb-beautify',
     icon: FileCode2,
     color: 'bg-pink-500/10 text-pink-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('SQL Formatter'),
@@ -239,6 +283,7 @@ export const allTools = [
     url: '/sql-formatter',
     icon: Database,
     color: 'bg-yellow-500/10 text-yellow-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('Line Sort/Dedupe'),
@@ -247,6 +292,7 @@ export const allTools = [
     url: '/line-sort-dedupe',
     icon: ListOrdered,
     color: 'bg-purple-500/10 text-purple-500',
+    category: 'text-string',
   },
   {
     id: slugify('Hex to ASCII'),
@@ -255,6 +301,7 @@ export const allTools = [
     url: '/hex-to-ascii',
     icon: Binary,
     color: 'bg-pink-500/10 text-pink-500',
+    category: 'development',
   },
   {
     id: slugify('ASCII to Hex'),
@@ -263,6 +310,7 @@ export const allTools = [
     url: '/ascii-to-hex',
     icon: Binary,
     color: 'bg-orange-500/10 text-orange-500',
+    category: 'development',
   },
   {
     id: slugify('HTML Preview'),
@@ -271,6 +319,7 @@ export const allTools = [
     url: '/html-preview',
     icon: FileType,
     color: 'bg-red-500/10 text-red-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('Markdown Preview'),
@@ -279,6 +328,7 @@ export const allTools = [
     url: '/markdown-preview',
     icon: FileEdit,
     color: 'bg-indigo-500/10 text-indigo-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('HTML to JSX'),
@@ -287,6 +337,7 @@ export const allTools = [
     url: '/html-to-jsx',
     icon: FilePlus2,
     color: 'bg-teal-500/10 text-teal-500',
+    category: 'code-formatting',
   },
   {
     id: slugify('JSON to CSV'),
@@ -295,6 +346,7 @@ export const allTools = [
     url: '/json-to-csv',
     icon: FileJson3,
     color: 'bg-cyan-500/10 text-cyan-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('CSV to JSON'),
@@ -303,6 +355,7 @@ export const allTools = [
     url: '/csv-to-json',
     icon: FileSpreadsheet,
     color: 'bg-emerald-500/10 text-emerald-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('JSON to Code'),
@@ -311,6 +364,7 @@ export const allTools = [
     url: '/json-to-code',
     icon: FileJson3,
     color: 'bg-cyan-500/10 text-cyan-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('CURL to Code'),
@@ -319,6 +373,7 @@ export const allTools = [
     url: '/curl-to-code',
     icon: FileCode,
     color: 'bg-teal-500/10 text-teal-500',
+    category: 'development',
   },
   {
     id: slugify('Text Diff Checker'),
@@ -327,6 +382,7 @@ export const allTools = [
     url: '/text-diff',
     icon: GitCompare,
     color: 'bg-stone-500/10 text-stone-500',
+    category: 'text-string',
   },
   {
     id: slugify('String Case Converter'),
@@ -335,6 +391,7 @@ export const allTools = [
     url: '/string-case-converter',
     icon: TextCursor,
     color: 'bg-rose-500/10 text-rose-500',
+    category: 'text-string',
   },
   {
     id: slugify('Random String Generator'),
@@ -343,6 +400,7 @@ export const allTools = [
     url: '/random-string-generator',
     icon: Text,
     color: 'bg-fuchsia-500/10 text-fuchsia-500',
+    category: 'text-string',
   },
   {
     id: slugify('PHP Serializer'),
@@ -351,6 +409,7 @@ export const allTools = [
     url: '/php-serializer',
     icon: PhpIcon,
     color: 'bg-amber-500/10 text-amber-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('PHP Deserializer'),
@@ -359,6 +418,7 @@ export const allTools = [
     url: '/php-deserializer',
     icon: PhpIcon,
     color: 'bg-lime-500/10 text-lime-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('PHP to JSON'),
@@ -367,6 +427,7 @@ export const allTools = [
     url: '/php-to-json',
     icon: PhpIcon,
     color: 'bg-lime-500/10 text-lime-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('JSON to PHP'),
@@ -375,6 +436,7 @@ export const allTools = [
     url: '/json-to-php',
     icon: PhpIcon,
     color: 'bg-lime-500/10 text-lime-500',
+    category: 'data-conversion',
   },
   {
     id: slugify('Certificate Decoder (X.509)'),
@@ -383,6 +445,7 @@ export const allTools = [
     url: '/certificate-decoder',
     icon: FileKey2,
     color: 'bg-sky-500/10 text-sky-500',
+    category: 'security',
   },
   {
     id: slugify('Cron Job Parser'),
@@ -391,6 +454,7 @@ export const allTools = [
     url: '/cron-job-parser',
     icon: Timer,
     color: 'bg-blue-500/10 text-blue-500',
+    category: 'development',
   },
   {
     id: slugify('QR Code Reader/Generator'),
@@ -399,6 +463,7 @@ export const allTools = [
     url: '/qr-code',
     icon: QrCode,
     color: 'bg-green-500/10 text-green-500',
+    category: 'development',
   },
   {
     id: slugify('Image Optimizer/Converter'),
@@ -407,6 +472,7 @@ export const allTools = [
     url: '/image-optimizer',
     icon: ImageDown,
     color: 'bg-emerald-500/10 text-emerald-500',
+    category: 'development',
   },
   {
     id: slugify('Lorem Ipsum Generator'),
@@ -415,6 +481,7 @@ export const allTools = [
     url: '/lorem-ipsum',
     icon: Type,
     color: 'bg-yellow-500/10 text-yellow-500',
+    category: 'text-string',
   },
   {
     id: slugify('SVG to CSS'),
@@ -423,6 +490,7 @@ export const allTools = [
     url: '/svg-to-css',
     icon: FileImage,
     color: 'bg-purple-500/10 text-purple-500',
+    category: 'development',
   },
   {
     id: slugify('CSS to SVG'),
@@ -431,6 +499,7 @@ export const allTools = [
     url: '/css-to-svg',
     icon: FileImage,
     color: 'bg-purple-500/10 text-purple-500',
+    category: 'development',
   },
   {
     id: slugify('Number Base Converter'),
@@ -439,6 +508,7 @@ export const allTools = [
     url: '/number-base-converter',
     icon: Binary,
     color: 'bg-green-500/10 text-green-500',
+    category: 'development',
   },
   {
     id: slugify('Discord Timestamp Generator'),
@@ -447,6 +517,7 @@ export const allTools = [
     url: '/discord-timestamp',
     icon: Clock3,
     color: 'bg-indigo-500/10 text-indigo-500',
+    category: 'development',
   },
   {
     id: slugify('Pomodoro Timer'),
@@ -455,7 +526,26 @@ export const allTools = [
     url: '/pomodoro-timer',
     icon: Timer,
     color: 'bg-red-500/10 text-red-500',
+    category: 'utilities',
   },
+  // {
+  //   id: slugify('Screen Recorder'),
+  //   title: 'Screen Recorder',
+  //   description: 'Record your screen with cursor tracking and audio',
+  //   url: '/screen-recorder',
+  //   icon: Video,
+  //   color: 'bg-red-500/10 text-red-500',
+  //   category: 'media',
+  // },
+  // {
+  //   id: slugify('Video Editor'),
+  //   title: 'Video Editor',
+  //   description: 'Edit recordings with zoom, cursor effects and more',
+  //   url: '/video-editor',
+  //   icon: Scissors,
+  //   color: 'bg-purple-500/10 text-purple-500',
+  //   category: 'media',
+  // },
 ] as const;
 
 export const featuredTools = [

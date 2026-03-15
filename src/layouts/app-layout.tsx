@@ -1,14 +1,43 @@
-import { Home } from 'lucide-react';
+import { Home, PanelLeft, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AppSidebar } from '../components/app-sidebar';
 import { Button } from '../components/ui/button';
-import { SidebarInset, SidebarProvider } from '../components/ui/sidebar';
+import { SidebarInset, SidebarProvider, useSidebar } from '../components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { useAuth } from '../contexts/auth-context';
 
+function SidebarToggle() {
+  const { state, toggleSidebar } = useSidebar();
+  const isCollapsed = state === 'collapsed';
+
+  if (!isCollapsed) return null;
+
+  return (
+    <TooltipProvider delayDuration={50}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed top-4 left-4 z-50 h-10 w-10 rounded-md border-2 border-dashed border-muted-foreground/50 hover:border-primary hover:bg-accent"
+            onClick={toggleSidebar}
+          >
+            <PanelLeft className="h-5 w-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <p>Expand sidebar</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 export function AppLayout() {
   const { isAuthenticated, needsValidation } = useAuth();
+  const isStandalone = typeof window !== 'undefined' && 
+    new URLSearchParams(window.location.search).get('standalone') === 'true';
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -19,7 +48,8 @@ export function AppLayout() {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!isStandalone}>
+      <SidebarToggle />
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="flex flex-col flex-1">

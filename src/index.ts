@@ -14,6 +14,12 @@ import {
   createTray as createAppTray,
   registerCloseDialogIpc,
 } from './main/tray';
+// import { registerScreenRecorderIpc, setupDisplayMediaHandler } from './main/recorder/screen-capture';
+// import { registerCursorTrackerIpc } from './main/recorder/cursor-tracker';
+// import { registerShortcutIpc, registerGlobalShortcuts, unregisterGlobalShortcuts, setMainWindowRef } from './main/shortcuts/global-shortcuts';
+// import { registerExporterIpc } from './main/recorder/exporter';
+// import { registerFfmpegRecorderIpc } from './main/recorder/ffmpeg-recorder';
+// import { registerProjectManagerIpc } from './main/recorder/project-manager';
 import { getBaseApiUrl } from './utils/environment';
 import { getHardwareInfo } from './utils/hwid';
 import { getSimpleHwid } from './utils/mac';
@@ -105,10 +111,65 @@ const createWindow = (): void => {
           "img-src 'self' data: blob:;",
           `connect-src 'self' ${await getBaseApiUrl()};`,
           "worker-src 'self' blob:;",
-          "media-src 'self' static:;",
+          "media-src 'self' static: blob: data: mediastream:;",
         ].join(' '),
       },
     });
+  });
+
+  // Handle new windows (middle-click, ctrl+click, etc.)
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    console.log('Opening new window for URL:', url);
+
+    // Use the default session - this should share resources properly
+    const newWindow = new BrowserWindow({
+      width: 1440,
+      height: 900,
+      frame: true,
+      show: false,
+      webPreferences: {
+        preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: false,
+      },
+    });
+
+    // Add query param to indicate standalone window mode
+    const urlWithMode = url.includes('?') ? `${url}&standalone=true` : `${url}?standalone=true`;
+
+    // Log any errors in the new window
+    newWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      console.error('New window failed to load:', errorCode, errorDescription);
+    });
+
+    newWindow.webContents.on('render-process-gone', (event, details) => {
+      console.error('Render process gone in new window:', details);
+    });
+
+    // Show window when ready to prevent visual glitches
+    newWindow.once('ready-to-show', () => {
+      newWindow.show();
+    });
+
+    // Use same CSP as main window
+    // Skip custom CSP for new windows - let main window handle it
+
+    console.log('Loading URL in new window:', url);
+
+    // Extract hash route from URL and load base app URL with route
+    const urlObj = new URL(url);
+    const hashRoute = urlObj.hash;
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
+    const hashPart = hashRoute ? `#${hashRoute.replace('#', '')}` : '';
+    const fullUrl = `${baseUrl}${hashPart}?standalone=true`;
+
+    console.log('Loading processed URL in new window:', fullUrl);
+
+    // Load the app with the route
+    newWindow.loadURL(fullUrl);
+
+    return { action: 'deny' };
   });
 
   // and load the index.html of the app.
@@ -116,6 +177,7 @@ const createWindow = (): void => {
 
   // Keep a reference for later actions
   mainWindowRef = mainWindow;
+  // setMainWindowRef(mainWindow);
 
   attachCloseBehavior(
     mainWindow,
@@ -264,6 +326,14 @@ app.whenReady().then(async () => {
   registerLocalSoundProtocol();
   loadSettings();
   setupSecureStore();
+  // registerScreenRecorderIpc();
+  // setupDisplayMediaHandler();
+  // registerCursorTrackerIpc();
+  // registerShortcutIpc();
+  // registerGlobalShortcuts();
+  // registerExporterIpc();
+  // registerFfmpegRecorderIpc();
+  // registerProjectManagerIpc();
   createTray();
   createWindow();
 
@@ -289,6 +359,10 @@ app.whenReady().then(async () => {
       createWindow();
     }
   });
+
+  // app.on('will-quit', () => {
+  //   unregisterGlobalShortcuts();
+  // });
 
   // In this file you can include the rest of your app's specific main process
   // code. You can also put them in separate files and import them here.
