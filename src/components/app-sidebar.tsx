@@ -22,7 +22,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "./ui/sidebar";
-import { ThemeToggle } from "./ui/theme-toggle";
 import { useProfileModal } from "../layouts/app-layout";
 
 interface ToolItemProps {
@@ -236,7 +235,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <MessageCircle className="w-4 h-4" />
             Community
           </Button>
-          <ThemeToggle />
         </div>
         <div className="flex items-center justify-center">
           <Button

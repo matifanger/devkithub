@@ -5,18 +5,23 @@ import {
   Lightbulb,
   Maximize2,
   Minus,
+  Monitor,
+  Moon,
   PanelLeft,
   Search,
   Settings,
   Square,
+  Sun,
   X,
-} from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import logo from '../assets/icons/icon.png';
-import { useClipboardRecommendations } from '../hooks/use-clipboard-recommendations';
-import { useProfileModal } from '../layouts/app-layout';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+} from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import logo from "../assets/icons/icon.png";
+import { useClipboardRecommendations } from "../hooks/use-clipboard-recommendations";
+import { useProfileModal } from "../layouts/app-layout";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { useTheme } from "next-themes";
+import { UPDATE_THEME_KEY } from "../constants/settings-keys";
 
 interface NavigationControlsProps {
   onToggleSidebar?: () => void;
@@ -28,16 +33,21 @@ function NavigationControls({ onToggleSidebar }: NavigationControlsProps) {
   const { setIsProfileOpen } = useProfileModal();
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
-  const historyStack = useRef<string[]>(['/']);
+  const historyStack = useRef<string[]>(["/"]);
   const currentIndex = useRef(0);
 
   useEffect(() => {
     const path = location.pathname;
     if (path !== historyStack.current[currentIndex.current]) {
-      if (historyStack.current.slice(0, currentIndex.current + 1).includes(path)) {
+      if (
+        historyStack.current.slice(0, currentIndex.current + 1).includes(path)
+      ) {
         currentIndex.current = historyStack.current.indexOf(path);
       } else {
-        historyStack.current = historyStack.current.slice(0, currentIndex.current + 1);
+        historyStack.current = historyStack.current.slice(
+          0,
+          currentIndex.current + 1,
+        );
         historyStack.current.push(path);
         currentIndex.current = historyStack.current.length - 1;
       }
@@ -61,13 +71,16 @@ function NavigationControls({ onToggleSidebar }: NavigationControlsProps) {
   };
 
   const handleGoHome = () => {
-    if (location.pathname !== '/') {
+    if (location.pathname !== "/") {
       if (currentIndex.current < historyStack.current.length - 1) {
-        historyStack.current = historyStack.current.slice(0, currentIndex.current + 1);
+        historyStack.current = historyStack.current.slice(
+          0,
+          currentIndex.current + 1,
+        );
       }
-      historyStack.current.push('/');
+      historyStack.current.push("/");
       currentIndex.current = historyStack.current.length - 1;
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   };
 
@@ -75,12 +88,12 @@ function NavigationControls({ onToggleSidebar }: NavigationControlsProps) {
     setIsProfileOpen(true);
   };
 
-  const isHome = location.pathname === '/';
+  const isHome = location.pathname === "/";
 
   return (
     <div
       className="flex items-center"
-      style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+      style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
     >
       <button
         onClick={handleGoBack}
@@ -122,24 +135,29 @@ function NavigationControls({ onToggleSidebar }: NavigationControlsProps) {
       >
         <Settings className="w-4 h-4" />
       </button>
+      <div className="w-px h-4 bg-border mx-1" />
+      <ThemeToggleButton />
       <ClipboardRecommendations />
     </div>
   );
 }
 
 function ClipboardRecommendations() {
-  const { detectionResult, recommendedTools, isLoading, isEnabled } = useClipboardRecommendations();
+  const { detectionResult, recommendedTools, isLoading, isEnabled } =
+    useClipboardRecommendations();
   const [isOpen, setIsOpen] = useState(false);
-  const [platform, setPlatform] = useState<'mac' | 'windows' | 'linux'>('windows');
+  const [platform, setPlatform] = useState<"mac" | "windows" | "linux">(
+    "windows",
+  );
 
   useEffect(() => {
     const platformLower = navigator.platform.toLowerCase();
-    if (platformLower.includes('mac') || platformLower.includes('darwin')) {
-      setPlatform('mac');
-    } else if (platformLower.includes('win')) {
-      setPlatform('windows');
+    if (platformLower.includes("mac") || platformLower.includes("darwin")) {
+      setPlatform("mac");
+    } else if (platformLower.includes("win")) {
+      setPlatform("windows");
     } else {
-      setPlatform('linux');
+      setPlatform("linux");
     }
   }, []);
 
@@ -147,37 +165,38 @@ function ClipboardRecommendations() {
     return null;
   }
 
-  const hasRecommendations = !isLoading && detectionResult && recommendedTools.length > 0;
+  const hasRecommendations =
+    !isLoading && detectionResult && recommendedTools.length > 0;
 
   const contentTypeLabels: Record<string, string> = {
-    json: 'JSON',
-    yaml: 'YAML',
-    html: 'HTML',
-    css: 'CSS',
-    javascript: 'JavaScript',
-    xml: 'XML',
-    sql: 'SQL',
-    hex: 'Hexadecimal',
-    base64: 'Base64',
-    url: 'URL',
-    jwt: 'JWT Token',
-    'unix-timestamp': 'Unix Timestamp',
-    regex: 'Regular Expression',
-    cron: 'Cron Expression',
-    csv: 'CSV Data',
-    markdown: 'Markdown',
-    curl: 'cURL Command',
-    'php-serialized': 'PHP Serialized',
-    color: 'Color Code',
-    number: 'Number',
-    text: 'Text',
+    json: "JSON",
+    yaml: "YAML",
+    html: "HTML",
+    css: "CSS",
+    javascript: "JavaScript",
+    xml: "XML",
+    sql: "SQL",
+    hex: "Hexadecimal",
+    base64: "Base64",
+    url: "URL",
+    jwt: "JWT Token",
+    "unix-timestamp": "Unix Timestamp",
+    regex: "Regular Expression",
+    cron: "Cron Expression",
+    csv: "CSV Data",
+    markdown: "Markdown",
+    curl: "cURL Command",
+    "php-serialized": "PHP Serialized",
+    color: "Color Code",
+    number: "Number",
+    text: "Text",
   };
 
   const contentLabel = detectionResult
     ? contentTypeLabels[detectionResult.type] || detectionResult.type
-    : '';
+    : "";
 
-  const popoverAlign = platform === 'mac' ? 'end' : 'start';
+  const popoverAlign = platform === "mac" ? "end" : "start";
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -207,13 +226,14 @@ function ClipboardRecommendations() {
                   <span className="text-sm font-medium">Recommended</span>
                 </div>
                 <div className="text-xs text-muted-foreground ml-[1.60rem]">
-                  Detected:{' '}
+                  Detected:{" "}
                   <span className="text-amber-600 dark:text-amber-400 font-medium">
                     {contentLabel}
                   </span>
                   {detectionResult.confidence && (
                     <span className="ml-1">
-                      ({Math.round(detectionResult.confidence * 100)}% confidence)
+                      ({Math.round(detectionResult.confidence * 100)}%
+                      confidence)
                     </span>
                   )}
                 </div>
@@ -229,7 +249,9 @@ function ClipboardRecommendations() {
                 >
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <tool.icon className={`w-4 h-4 flex-shrink-0 ${tool.color}`} />
+                      <tool.icon
+                        className={`w-4 h-4 flex-shrink-0 ${tool.color}`}
+                      />
                       <span className="text-sm font-medium text-black dark:text-white">
                         {tool.title}
                       </span>
@@ -250,6 +272,59 @@ function ClipboardRecommendations() {
         )}
       </PopoverContent>
     </Popover>
+  );
+}
+
+function ThemeToggleButton() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const loadSavedTheme = async () => {
+      const savedTheme =
+        await window.electron.settingsStore.get(UPDATE_THEME_KEY);
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    };
+    loadSavedTheme();
+    setMounted(true);
+  }, [setTheme]);
+
+  const handleToggle = async () => {
+    const themes = ["light", "dark", "system"];
+    const currentIndex = themes.indexOf(theme || "system");
+    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    setTheme(nextTheme);
+    await window.electron.settingsStore.set(UPDATE_THEME_KEY, nextTheme);
+  };
+
+  if (!mounted) {
+    return (
+      <button className="flex items-center justify-center w-8 h-7">
+        <Sun className="w-4 h-4" />
+      </button>
+    );
+  }
+
+  const getIcon = () => {
+    if (theme === "dark") {
+      return <Moon className="w-4 h-4" />;
+    } else if (theme === "system") {
+      return <Monitor className="w-4 h-4" />;
+    }
+    return <Sun className="w-4 h-4" />;
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      className="flex items-center justify-center hover:bg-accent hover:text-foreground rounded transition-colors w-8 h-7"
+    >
+      <span key={theme} className="animate-theme-icon">
+        {getIcon()}
+      </span>
+    </button>
   );
 }
 
@@ -301,7 +376,11 @@ function WindowControls({ isMac }: { isMac: boolean }) {
       onClick={handleMaximize}
       className="flex items-center justify-center hover:bg-accent hover:text-foreground rounded transition-colors w-10 h-7"
     >
-      {isMaximized ? <Square className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+      {isMaximized ? (
+        <Square className="w-3.5 h-3.5" />
+      ) : (
+        <Maximize2 className="w-3.5 h-3.5" />
+      )}
     </button>
   );
 
@@ -326,30 +405,36 @@ function WindowControls({ isMac }: { isMac: boolean }) {
   return controls;
 }
 
-export function TopNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
-  const [platform, setPlatform] = useState<'mac' | 'windows' | 'linux'>('windows');
+export function TopNavbar({
+  onToggleSidebar,
+}: {
+  onToggleSidebar?: () => void;
+}) {
+  const [platform, setPlatform] = useState<"mac" | "windows" | "linux">(
+    "windows",
+  );
 
   useEffect(() => {
     const checkPlatform = async () => {
       const platformLower = navigator.platform.toLowerCase();
-      if (platformLower.includes('mac') || platformLower.includes('darwin')) {
-        setPlatform('mac');
-      } else if (platformLower.includes('win')) {
-        setPlatform('windows');
+      if (platformLower.includes("mac") || platformLower.includes("darwin")) {
+        setPlatform("mac");
+      } else if (platformLower.includes("win")) {
+        setPlatform("windows");
       } else {
-        setPlatform('linux');
+        setPlatform("linux");
       }
     };
     checkPlatform();
   }, []);
 
-  const showControlsOnLeft = platform === 'mac';
-  const showControlsOnRight = platform === 'windows' || platform === 'linux';
+  const showControlsOnLeft = platform === "mac";
+  const showControlsOnRight = platform === "windows" || platform === "linux";
 
   return (
     <header
       className="flex items-center justify-between h-10 px-1 bg-background border-b select-none"
-      style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+      style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
     >
       {showControlsOnLeft && (
         <>
@@ -357,7 +442,7 @@ export function TopNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void })
           {onToggleSidebar && (
             <div
               className="flex items-center"
-              style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
             >
               <div className="w-px h-4 bg-border mx-1" />
               <button
@@ -372,11 +457,13 @@ export function TopNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void })
         </>
       )}
 
-      {!showControlsOnLeft && <NavigationControls onToggleSidebar={onToggleSidebar} />}
+      {!showControlsOnLeft && (
+        <NavigationControls onToggleSidebar={onToggleSidebar} />
+      )}
 
       <div
         className="flex-1 flex items-center justify-center gap-2 h-full cursor-default"
-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
         onDoubleClick={async () => {
           await window.electron.window.maximize();
         }}
@@ -390,6 +477,14 @@ export function TopNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void })
       <style>{`
         button {
           -webkit-app-region: no-drag;
+        }
+        @keyframes theme-pop {
+          0% { transform: scale(0.5) rotate(-30deg); opacity: 0; }
+          50% { transform: scale(1.2) rotate(10deg); }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .animate-theme-icon {
+          animation: theme-pop 0.3s ease-out forwards;
         }
       `}</style>
     </header>
