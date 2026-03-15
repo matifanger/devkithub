@@ -45,6 +45,7 @@ import { HtmlEntityEncoderDecoderPage } from "./pages/html-entity-encoder-decode
 import { HtmlPreviewPage } from "./pages/html-preview";
 import { HtmlToJsxPage } from "./pages/html-to-jsx";
 import { ImageOptimizerPage } from "./pages/image-optimizer";
+import { CodeCommentsRemoverPage } from "./pages/code-comments-remover";
 import { MainPage } from "./pages/index";
 import { JsBeautifyPage } from "./pages/js-beautify";
 import { JsonFormatPage } from "./pages/json-format";
@@ -88,7 +89,6 @@ const App = () => {
   const { toast } = useToast();
   const [showCloseDialog, setShowCloseDialog] = React.useState(false);
   const [rememberChoice, setRememberChoice] = React.useState(false);
-  const [showAutostartDialog, setShowAutostartDialog] = React.useState(false);
   const [isElectronReady, setIsElectronReady] = React.useState(false);
 
   // Check if window.electron is available
@@ -115,37 +115,11 @@ const App = () => {
     window.electron.onShowCloseDialog(() => {
       setShowCloseDialog(true);
     });
-    // Listen for autostart question
-    window.electron.onShowAutostartDialog(() => {
-      setShowAutostartDialog(true);
-    });
-  }, []);
-
-  // Fallback: proactively check if we should show the autostart dialog
-  React.useEffect(() => {
-    const ensureAutostartPrompt = async () => {
-      try {
-        const pref = await window.electron.settingsStore.get(
-          LAUNCH_ON_STARTUP_KEY,
-        );
-        const shouldShow =
-          await window.electron.shouldShowAutostartDialog(pref);
-        if (shouldShow) setShowAutostartDialog(true);
-      } catch (err) {
-        console.error("Failed checking autostart dialog need:", err);
-      }
-    };
-    ensureAutostartPrompt();
   }, []);
 
   const handleCloseSelection = async (action: "quit" | "tray") => {
     await window.electron.sendCloseDialogSelection(action, rememberChoice);
     setShowCloseDialog(false);
-  };
-
-  const handleAutostartSelection = async (enable: boolean) => {
-    await window.electron.sendAutostartSelection(enable);
-    setShowAutostartDialog(false);
   };
 
   const checkForUpdates = async () => {
@@ -275,6 +249,10 @@ const App = () => {
                     path="/backslash-escape-unescape"
                     element={<BackslashEscapeUnescapePage />}
                   />
+                  <Route
+                    path="/code-comments-remover"
+                    element={<CodeCommentsRemoverPage />}
+                  />
                   <Route path="/html-beautify" element={<HtmlBeautifyPage />} />
                   <Route path="/css-beautify" element={<CssBeautifyPage />} />
                   <Route path="/js-beautify" element={<JsBeautifyPage />} />
@@ -383,38 +361,6 @@ const App = () => {
                         onClick={() => handleCloseSelection("quit")}
                       >
                         Exit
-                      </Button>
-                    </div>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              {/* Autostart prompt dialog */}
-              <Dialog
-                open={showAutostartDialog}
-                onOpenChange={setShowAutostartDialog}
-              >
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Launch at startup</DialogTitle>
-                    <DialogDescription>
-                      Would you like DevKitHub to start automatically when you
-                      sign in?
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <div className="flex w-full justify-end gap-2">
-                      <Button
-                        variant="secondary"
-                        onClick={() => handleAutostartSelection(false)}
-                      >
-                        No, thanks
-                      </Button>
-                      <Button
-                        variant="default"
-                        onClick={() => handleAutostartSelection(true)}
-                      >
-                        Enable
                       </Button>
                     </div>
                   </DialogFooter>

@@ -1,16 +1,54 @@
+import { useTheme } from 'next-themes';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../contexts/auth-context';
+import { loadThemePreferences } from '../utils/profile/settings-utils';
+import { getSelectedThemeObject } from '../utils/profile/theme-utils';
+import { applyTheme } from '../utils/themes';
 
 export function LoginPage() {
   const [key, setKey] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('purple-default');
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { setTheme, theme: themeMode } = useTheme();
+
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const { selectedTheme, customThemes, themeMode: savedMode } = await loadThemePreferences();
+
+        if (savedMode) {
+          setTheme(savedMode);
+        }
+
+        let themeObj = getSelectedThemeObject(selectedTheme, customThemes);
+
+        // Fallback to purple-default if theme not found
+        if (!themeObj) {
+          themeObj = getSelectedThemeObject('purple-default', customThemes);
+          setCurrentTheme('purple-default');
+        } else {
+          setCurrentTheme(selectedTheme);
+        }
+
+        if (themeObj) {
+          const mode = savedMode || 'light';
+          applyTheme(themeObj, mode);
+        }
+      } catch {
+        // Fallback to purple on any error
+        setTheme('light');
+        setCurrentTheme('purple-default');
+      }
+    };
+    loadTheme();
+  }, [setTheme]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -48,6 +86,7 @@ export function LoginPage() {
       <div className="w-full max-w-md space-y-6 rounded-lg border bg-card p-6 shadow-lg">
         <div className="space-y-2 text-center">
           <h1 className="text-2xl font-bold">Welcome to DevKitHub</h1>
+          {/* <p className="text-muted-foreground text-sm">Theme: {currentTheme}</p> */}
           <p className="text-muted-foreground">Enter your API key to continue</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">

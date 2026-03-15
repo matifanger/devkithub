@@ -30,6 +30,7 @@ import {
   FileCode as PhpIcon,
   QrCode,
   Regex,
+  Scissors,
   Slash,
   Text,
   TextCursor,
@@ -337,6 +338,16 @@ export const allTools = [
     url: "/markdown-preview",
     icon: FileEdit,
     color: "bg-indigo-500/10 text-indigo-500",
+    category: "code-formatting",
+  },
+  {
+    id: slugify("Code Comments Remover"),
+    title: "Code Comments Remover",
+    description:
+      "Remove comments from source code in 30+ programming languages",
+    url: "/code-comments-remover",
+    icon: Scissors,
+    color: "bg-orange-500/10 text-orange-500",
     category: "code-formatting",
   },
   {

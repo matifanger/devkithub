@@ -1,3 +1,27 @@
+/**
+ * JWT Builder
+ *
+ * Creates and signs JSON Web Tokens (JWT) for authentication and authorization.
+ *
+ * Features:
+ * - Support for HS256, HS384, and HS512 signing algorithms
+ * - Customizable payload claims with string, number, and boolean types
+ * - Pre-built buttons for standard JWT claims (exp, nbf, iat, jti)
+ * - Secret key visibility toggle for secure input
+ * - Real-time token generation with HMAC signature
+ * - Decoded header and payload preview in JSON format
+ * - Copy buttons for easy export of token and decoded parts
+ * - Input validation with security warnings
+ *
+ * How to use:
+ * 1. Select the signing algorithm (HS256 is recommended for most cases)
+ * 2. Enter a secret key (minimum 32 characters recommended for HS256)
+ * 3. Add or modify claims using the "Add Claim" button
+ * 4. Use quick buttons to add standard claims (exp, nbf, iat, jti)
+ * 5. Click "Generate Token" to create the JWT
+ * 6. Use copy buttons to export the token or view decoded header/payload
+ */
+
 import { json } from "@codemirror/lang-json";
 import { EditorView } from "@codemirror/view";
 import { Eye, EyeOff, RefreshCw, Plus, Trash2 } from "lucide-react";

@@ -57,7 +57,7 @@ function loadSettings() {
       try {
         settings = JSON.parse(data);
       } catch (error) {
-        console.error('Invalid JSON in settings file:', error);
+        console.warn('Invalid JSON in settings file:', error);
         return;
       }
       Object.assign(persistentStore, settings);

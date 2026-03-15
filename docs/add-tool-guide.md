@@ -221,6 +221,42 @@ describe("MiHerramientaPage", () => {
 - ✅ Funcionalidad principal (generación/output)
 - ✅ Botón Clear funciona correctamente
 
+## Documentación de Usuario (Obligatorio)
+
+Cada herramienta debe incluir un comentario de documentación en **INGLÉS** al inicio del archivo, explicando:
+
+- **Qué hace la herramienta** (descripción general)
+- **Todas sus funcionalidades** (lista completa de features)
+- **Cómo usarla** (guía de uso básica)
+
+Este comentario es para usuarios que quieren entender la herramienta sin ver código técnico.
+
+### Ejemplo de documentación
+
+```typescript
+/**
+ * JWT Builder
+ *
+ * Creates and signs JSON Web Tokens (JWT) for authentication and authorization.
+ *
+ * Features:
+ * - Support for HS256, HS384, and HS512 signing algorithms
+ * - Customizable payload claims with string, number, and boolean types
+ * - Pre-built buttons for standard JWT claims (exp, nbf, iat, jti)
+ * - Secret key visibility toggle
+ * - Real-time token generation
+ * - Decoded header and payload preview
+ * - Copy buttons for easy export
+ *
+ * How to use:
+ * 1. Select the signing algorithm (HS256 recommended)
+ * 2. Enter a secret key (minimum 32 characters for HS256)
+ * 3. Add or modify claims as needed
+ * 4. Click "Generate Token" to create the JWT
+ * 5. Use copy buttons to export the token or decoded parts
+ */
+```
+
 ## Ejemplo mínimo
 
 ```typescript
