@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/auth-context";
 import { TopNavbar } from "../components/top-navbar";
 import { ProfileModal } from "../components/profile-modal";
@@ -11,11 +11,15 @@ import { useTheme } from "next-themes";
 interface ProfileModalContextType {
   isProfileOpen: boolean;
   setIsProfileOpen: (open: boolean) => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
 const ProfileModalContext = createContext<ProfileModalContextType>({
   isProfileOpen: false,
   setIsProfileOpen: () => {},
+  activeTab: "general",
+  setActiveTab: () => {},
 });
 
 export function useProfileModal() {
@@ -65,17 +69,12 @@ function ThemeLoader({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const { isAuthenticated, needsValidation, userData } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
-  if (needsValidation) {
-    return <Navigate to="/validate-license" />;
-  }
+  const [activeTab, setActiveTab] = useState("general");
 
   return (
-    <ProfileModalContext.Provider value={{ isProfileOpen, setIsProfileOpen }}>
+    <ProfileModalContext.Provider
+      value={{ isProfileOpen, setIsProfileOpen, activeTab, setActiveTab }}
+    >
       <div className="flex flex-col h-screen">
         <TopNavbar />
         <main className="flex-1 overflow-auto">
@@ -86,6 +85,8 @@ function AppContent() {
         open={isProfileOpen}
         onOpenChange={setIsProfileOpen}
         userData={userData}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
     </ProfileModalContext.Provider>
   );

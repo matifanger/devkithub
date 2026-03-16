@@ -1,17 +1,27 @@
-import React from 'react';
-import { CLOSE_TO_TRAY_KEY, LAUNCH_ON_STARTUP_KEY } from '../../../constants/settings-keys';
-import { useClipboardSettings } from '../../../hooks/use-clipboard-settings';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
-import { Label } from '../../ui/label';
-import { ScrollArea } from '../../ui/scroll-area';
-import { Switch } from '../../ui/switch';
+import React from "react";
+import {
+  CLOSE_TO_TRAY_KEY,
+  LAUNCH_ON_STARTUP_KEY,
+} from "../../../constants/settings-keys";
+import { useClipboardSettings } from "../../../hooks/use-clipboard-settings";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../ui/card";
+import { Label } from "../../ui/label";
+import { ScrollArea } from "../../ui/scroll-area";
+import { Switch } from "../../ui/switch";
 
 export function GeneralTab() {
   const { isEnabled, isLoading, toggleEnabled } = useClipboardSettings();
   const [closeToTray, setCloseToTray] = React.useState<boolean>(false);
   const [loadingClosePref, setLoadingClosePref] = React.useState<boolean>(true);
   const [launchOnStartup, setLaunchOnStartup] = React.useState<boolean>(false);
-  const [loadingAutostartPref, setLoadingAutostartPref] = React.useState<boolean>(true);
+  const [loadingAutostartPref, setLoadingAutostartPref] =
+    React.useState<boolean>(true);
 
   React.useEffect(() => {
     const loadPref = async () => {
@@ -19,7 +29,7 @@ export function GeneralTab() {
       if (pref === null) {
         setCloseToTray(false);
       } else {
-        setCloseToTray(pref === 'true');
+        setCloseToTray(pref === "true");
       }
       setLoadingClosePref(false);
     };
@@ -28,16 +38,21 @@ export function GeneralTab() {
 
   const toggleCloseToTray = async (value: boolean) => {
     setCloseToTray(value);
-    await window.electron.settingsStore.set(CLOSE_TO_TRAY_KEY, value ? 'true' : 'false');
+    await window.electron.settingsStore.set(
+      CLOSE_TO_TRAY_KEY,
+      value ? "true" : "false",
+    );
   };
 
   React.useEffect(() => {
     const loadAutostartPref = async () => {
-      const pref = await window.electron.settingsStore.get(LAUNCH_ON_STARTUP_KEY);
+      const pref = await window.electron.settingsStore.get(
+        LAUNCH_ON_STARTUP_KEY,
+      );
       if (pref === null) {
         setLaunchOnStartup(false);
       } else {
-        setLaunchOnStartup(pref === 'true');
+        setLaunchOnStartup(pref === "true");
       }
       setLoadingAutostartPref(false);
     };
@@ -46,7 +61,10 @@ export function GeneralTab() {
 
   const toggleAutostart = async (value: boolean) => {
     setLaunchOnStartup(value);
-    await window.electron.settingsStore.set(LAUNCH_ON_STARTUP_KEY, value ? 'true' : 'false');
+    await window.electron.settingsStore.set(
+      LAUNCH_ON_STARTUP_KEY,
+      value ? "true" : "false",
+    );
   };
 
   return (
@@ -77,7 +95,9 @@ export function GeneralTab() {
                 <Label htmlFor="launch-on-startup" className="text-sm">
                   Launch DevKitHub at system startup
                   {loadingAutostartPref && (
-                    <span className="text-xs text-muted-foreground ml-1">(Loading...)</span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      (Loading...)
+                    </span>
                   )}
                 </Label>
               </div>
@@ -86,9 +106,12 @@ export function GeneralTab() {
             {/* Clipboard Recommendations Section */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium">Clipboard Recommendations</h3>
+                <h3 className="text-sm font-medium">
+                  Clipboard Recommendations
+                </h3>
                 <p className="text-xs text-muted-foreground">
-                  Automatically detect clipboard content and suggest relevant tools
+                  Automatically detect clipboard content and suggest relevant
+                  tools
                 </p>
               </div>
 
@@ -102,16 +125,24 @@ export function GeneralTab() {
                 <Label htmlFor="clipboard-recommendations" className="text-sm">
                   Enable smart tool recommendations based on clipboard content
                   {isLoading && (
-                    <span className="text-xs text-muted-foreground ml-1">(Loading...)</span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      (Loading...)
+                    </span>
                   )}
                 </Label>
               </div>
 
               {isEnabled && !isLoading && (
                 <div className="text-xs text-muted-foreground pl-6">
-                  <p>• Detects JSON, URLs, Base64, HTML, and 20+ other content types</p>
+                  <p>
+                    • Detects JSON, URLs, Base64, HTML, and 20+ other content
+                    types
+                  </p>
                   <p>• Updates when window gains focus or becomes visible</p>
-                  <p>• All processing happens locally - no data is sent externally</p>
+                  <p>
+                    • All processing happens locally - no data is sent
+                    externally
+                  </p>
                 </div>
               )}
             </div>
@@ -135,7 +166,9 @@ export function GeneralTab() {
                 <Label htmlFor="close-to-tray" className="text-sm">
                   Keep in tray when closing
                   {loadingClosePref && (
-                    <span className="text-xs text-muted-foreground ml-1">(Loading...)</span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      (Loading...)
+                    </span>
                   )}
                 </Label>
               </div>

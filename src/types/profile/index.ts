@@ -1,15 +1,17 @@
-import { Theme } from '../../utils/themes';
-import { ActivateLicenseResponse } from '../types';
+import { Theme } from "../../utils/themes";
+import { ActivateLicenseResponse } from "../types";
 
 export interface ProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userData: ActivateLicenseResponse | string | null;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 export interface NotificationDialog {
   open: boolean;
-  type: 'success' | 'error';
+  type: "success" | "error";
   title: string;
   message: string;
 }

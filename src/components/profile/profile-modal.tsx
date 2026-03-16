@@ -1,33 +1,55 @@
-import { Key, Palette, Puzzle, Settings, Terminal } from 'lucide-react';
-import React, { useState } from 'react';
-import { useThemeManagement } from '../../hooks/profile/use-theme-management';
-import { useUpdateManagement } from '../../hooks/profile/use-update-management';
+import { Key, Palette, Puzzle, Settings, Terminal, Wrench } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useThemeManagement } from "../../hooks/profile/use-theme-management";
+import { useUpdateManagement } from "../../hooks/profile/use-update-management";
 import {
   NotificationDialog as NotificationDialogType,
   ProfileModalProps,
-} from '../../types/profile';
-import { ActivateLicenseResponse } from '../../types/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { NotificationDialog } from './dialogs/notification-dialog';
-import { GeneralTab } from './tabs/general-tab';
-import { IntegrationsTab } from './tabs/integrations-tab';
-import { LicenseTab } from './tabs/license-tab';
-import { ThemesTab } from './tabs/themes-tab';
-import { UpdatesTab } from './tabs/updates-tab';
+} from "../../types/profile";
+import { ActivateLicenseResponse } from "../../types/types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { NotificationDialog } from "./dialogs/notification-dialog";
+import { DevTab } from "./tabs/dev-tab";
+import { GeneralTab } from "./tabs/general-tab";
+import { IntegrationsTab } from "./tabs/integrations-tab";
+import { LicenseTab } from "./tabs/license-tab";
+import { ThemesTab } from "./tabs/themes-tab";
+import { UpdatesTab } from "./tabs/updates-tab";
 
-export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps) {
+export function ProfileModal({
+  open,
+  onOpenChange,
+  userData,
+  activeTab = "general",
+  onTabChange,
+}: ProfileModalProps) {
   // Parse userData if it's a string
   const userDataJson: ActivateLicenseResponse | null =
-    typeof userData === 'string' ? JSON.parse(userData) : userData;
+    typeof userData === "string" ? JSON.parse(userData) : userData;
 
   // State for notifications
-  const [notificationDialog, setNotificationDialog] = useState<NotificationDialogType>({
-    open: false,
-    type: 'success',
-    title: '',
-    message: '',
-  });
+  const [notificationDialog, setNotificationDialog] =
+    useState<NotificationDialogType>({
+      open: false,
+      type: "success",
+      title: "",
+      message: "",
+    });
+
+  // Internal tab state
+  const [currentTab, setCurrentTab] = useState(activeTab);
+
+  // Sync internal tab when activeTab prop changes
+  useEffect(() => {
+    setCurrentTab(activeTab);
+  }, [activeTab]);
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    onTabChange?.(value);
+  };
 
   // Custom hooks for state management
   const {
@@ -49,18 +71,6 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
     handleViewChangelog,
   } = useUpdateManagement(open);
 
-  // Utility function to show notifications
-  const showNotification = (type: 'success' | 'error', title: string, message: string) => {
-    setNotificationDialog({
-      open: true,
-      type,
-      title,
-      message,
-    });
-  };
-
-  if (!userDataJson) return null;
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,8 +78,12 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
           <DialogHeader>
             <DialogTitle>Profile & Settings</DialogTitle>
           </DialogHeader>
-          <Tabs defaultValue="general" className="flex flex-col h-full overflow-hidden">
-            <TabsList className="grid w-full grid-cols-5">
+          <Tabs
+            value={currentTab}
+            onValueChange={handleTabChange}
+            className="flex flex-col h-full overflow-hidden"
+          >
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="general" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 General
@@ -78,7 +92,10 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
                 <Palette className="h-4 w-4" />
                 Themes
               </TabsTrigger>
-              <TabsTrigger value="integrations" className="flex items-center gap-2">
+              <TabsTrigger
+                value="integrations"
+                className="flex items-center gap-2"
+              >
                 <Puzzle className="h-4 w-4" />
                 Integrations
               </TabsTrigger>
@@ -90,13 +107,23 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
                 <Key className="h-4 w-4" />
                 License
               </TabsTrigger>
+              <TabsTrigger value="dev" className="flex items-center gap-2">
+                <Wrench className="h-4 w-4" />
+                Dev
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="general" className="mt-0 border-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="general"
+              className="mt-0 border-0 flex-1 overflow-hidden"
+            >
               <GeneralTab />
             </TabsContent>
 
-            <TabsContent value="themes" className="mt-0 border-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="themes"
+              className="mt-0 border-0 flex-1 overflow-hidden"
+            >
               <ThemesTab
                 selectedTheme={selectedTheme}
                 customThemes={customThemes}
@@ -109,11 +136,17 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
               />
             </TabsContent>
 
-            <TabsContent value="integrations" className="mt-0 border-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="integrations"
+              className="mt-0 border-0 flex-1 overflow-hidden"
+            >
               <IntegrationsTab />
             </TabsContent>
 
-            <TabsContent value="updates" className="mt-0 border-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="updates"
+              className="mt-0 border-0 flex-1 overflow-hidden"
+            >
               <UpdatesTab
                 updatesEnabled={updatesEnabled}
                 updateStatus={updateStatus}
@@ -123,8 +156,18 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
               />
             </TabsContent>
 
-            <TabsContent value="license" className="mt-0 border-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="license"
+              className="mt-0 border-0 flex-1 overflow-hidden"
+            >
               <LicenseTab userData={userDataJson} />
+            </TabsContent>
+
+            <TabsContent
+              value="dev"
+              className="mt-0 border-0 flex-1 overflow-hidden"
+            >
+              <DevTab />
             </TabsContent>
           </Tabs>
         </DialogContent>
@@ -133,7 +176,9 @@ export function ProfileModal({ open, onOpenChange, userData }: ProfileModalProps
       {/* Notification Dialog */}
       <NotificationDialog
         dialog={notificationDialog}
-        onOpenChange={(open) => setNotificationDialog((prev) => ({ ...prev, open }))}
+        onOpenChange={(open) =>
+          setNotificationDialog((prev) => ({ ...prev, open }))
+        }
       />
     </>
   );

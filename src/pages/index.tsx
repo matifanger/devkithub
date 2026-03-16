@@ -1,20 +1,35 @@
-import { Search, X } from "lucide-react";
+import { Search, X, Lock } from "lucide-react";
 import * as React from "react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
+import { useUpgradeModal } from "../contexts/upgrade-modal-context";
 import { allTools, Category, categoryLabels, Tool } from "../utils/tools-data";
 
 function ToolItem({ tool }: { tool: Tool }) {
+  const { openModal: openUpgradeModal, isPro } = useUpgradeModal();
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (tool.premium && !isPro) {
+      e.preventDefault();
+      openUpgradeModal();
+    }
+  };
+
   return (
-    <Link to={tool.url} className="flex justify-center w-full rounded-md group">
+    <Link
+      to={tool.premium && !isPro ? "#" : tool.url}
+      onClick={handleClick}
+      className="flex justify-center w-full rounded-md group"
+    >
       <span className="flex flex-col w-fit min-w-full py-2 px-3 rounded-md hover:bg-accent/50 transition-colors">
         <div className="flex items-center gap-3">
           <tool.icon className={`w-4 h-4 flex-shrink-0 ${tool.color}`} />
           <span className="text-sm font-medium text-black dark:text-white transition-colors">
             {tool.title}
           </span>
+          {tool.premium && <Lock className="w-3 h-3 text-amber-500 ml-auto" />}
         </div>
         <span className="text-xs text-black/70 dark:text-white/60 mt-1 ml-7">
           {tool.description}

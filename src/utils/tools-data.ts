@@ -47,6 +47,7 @@ export type Tool = {
   readonly icon: LucideIcon;
   readonly color: string;
   readonly category: Category;
+  readonly premium?: boolean;
 };
 
 export type Category =
@@ -186,6 +187,7 @@ export const allTools = [
     icon: Regex,
     color: "bg-emerald-500/10 text-emerald-500",
     category: "text-string",
+    premium: true,
   },
   {
     id: slugify("URL Encoder/Decoder"),
