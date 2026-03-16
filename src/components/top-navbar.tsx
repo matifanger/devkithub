@@ -1,9 +1,9 @@
 import {
+  AppWindow,
   ArrowLeft,
   ArrowRight,
   Home,
   Lightbulb,
-  Maximize2,
   Minus,
   Monitor,
   Moon,
@@ -363,13 +363,16 @@ function WindowControls({ isMac }: { isMac: boolean }) {
       {isMaximized ? (
         <Square className="w-3.5 h-3.5" />
       ) : (
-        <Maximize2 className="w-3.5 h-3.5" />
+        <AppWindow className="w-3.5 h-3.5" />
       )}
     </button>
   );
 
   const controls = (
-    <div className="flex items-center gap-1">
+    <div
+      className="flex items-center gap-1"
+      style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+    >
       {isMac ? (
         <>
           {closeButton}
@@ -413,7 +416,7 @@ export function TopNavbar() {
 
   return (
     <header
-      className="flex items-center justify-between h-10 px-1 bg-background border-b select-none"
+      className="relative flex items-center justify-between h-10 px-1 bg-background border-b select-none"
       style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
     >
       {showControlsOnLeft && (
@@ -426,8 +429,7 @@ export function TopNavbar() {
       {!showControlsOnLeft && <NavigationControls />}
 
       <div
-        className="flex-1 flex items-center justify-center gap-2 h-full cursor-default"
-        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+        className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 h-full cursor-default pointer-events-none"
         onDoubleClick={async () => {
           await window.electron.window.maximize();
         }}
@@ -437,20 +439,6 @@ export function TopNavbar() {
       </div>
 
       {showControlsOnRight && <WindowControls isMac={false} />}
-
-      <style>{`
-        button {
-          -webkit-app-region: no-drag;
-        }
-        @keyframes theme-pop {
-          0% { transform: scale(0.5) rotate(-30deg); opacity: 0; }
-          50% { transform: scale(1.2) rotate(10deg); }
-          100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        .animate-theme-icon {
-          animation: theme-pop 0.3s ease-out forwards;
-        }
-      `}</style>
     </header>
   );
 }

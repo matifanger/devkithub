@@ -90,6 +90,8 @@ const createWindow = (): void => {
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
+    minWidth: 650,
+    minHeight: 650,
     frame: false,
     titleBarStyle: "hidden",
     show: !startHidden,
