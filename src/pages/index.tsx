@@ -1,9 +1,10 @@
-import { Search, X } from 'lucide-react';
-import * as React from 'react';
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Input } from '../components/ui/input';
-import { allTools, Category, categoryLabels, Tool } from '../utils/tools-data';
+import { Search, X } from "lucide-react";
+import * as React from "react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Input } from "../components/ui/input";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { allTools, Category, categoryLabels, Tool } from "../utils/tools-data";
 
 function ToolItem({ tool }: { tool: Tool }) {
   return (
@@ -23,7 +24,13 @@ function ToolItem({ tool }: { tool: Tool }) {
   );
 }
 
-function CategorySection({ category, tools }: { category: Category; tools: Tool[] }) {
+function CategorySection({
+  category,
+  tools,
+}: {
+  category: Category;
+  tools: Tool[];
+}) {
   if (tools.length === 0) return null;
 
   return (
@@ -41,7 +48,7 @@ function CategorySection({ category, tools }: { category: Category; tools: Tool[
 }
 
 export function MainPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTools = useMemo(() => {
     if (!searchQuery) return allTools;
@@ -49,16 +56,17 @@ export function MainPage() {
     const query = searchQuery.toLowerCase();
     return allTools.filter(
       (tool) =>
-        tool.title.toLowerCase().includes(query) || tool.description.toLowerCase().includes(query)
+        tool.title.toLowerCase().includes(query) ||
+        tool.description.toLowerCase().includes(query),
     );
   }, [searchQuery]);
 
   const toolsByCategory = useMemo(() => {
     const grouped: Record<Category, Tool[]> = {
-      'encode-decode': [],
-      'data-conversion': [],
-      'text-string': [],
-      'code-formatting': [],
+      "encode-decode": [],
+      "data-conversion": [],
+      "text-string": [],
+      "code-formatting": [],
       development: [],
       security: [],
       media: [],
@@ -72,23 +80,27 @@ export function MainPage() {
     return grouped;
   }, [filteredTools]);
 
-  const column1Categories: Category[] = ['encode-decode', 'data-conversion'];
-  const column2Categories: Category[] = ['text-string', 'code-formatting'];
-  const column3Categories: Category[] = ['development', 'security'];
-  const column4Categories: Category[] = ['media', 'utilities'];
+  const column1Categories: Category[] = ["encode-decode", "data-conversion"];
+  const column2Categories: Category[] = ["text-string", "code-formatting"];
+  const column3Categories: Category[] = ["development", "security"];
+  const column4Categories: Category[] = ["media", "utilities"];
 
   const renderColumn = (cats: Category[]) => (
     <div>
       {cats.map((category) => (
-        <CategorySection key={category} category={category} tools={toolsByCategory[category]} />
+        <CategorySection
+          key={category}
+          category={category}
+          tools={toolsByCategory[category]}
+        />
       ))}
     </div>
   );
 
   return (
-    <div className="min-h-full">
-      <div>
-        <div className="container pt-6 pb-4 px-4">
+    <ScrollArea className="h-full">
+      <div className="min-h-full flex flex-col items-center">
+        <div className="w-full max-w-4xl px-4 pt-6 pb-4">
           <div className="flex flex-col items-center justify-center gap-2">
             <div className="relative w-full max-w-2xl">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -103,7 +115,7 @@ export function MainPage() {
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => setSearchQuery("")}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
@@ -115,28 +127,38 @@ export function MainPage() {
           {searchQuery && (
             <p className="mt-3 text-sm text-muted-foreground text-center">
               Found {filteredTools.length} tool
-              {filteredTools.length !== 1 ? 's' : ''}
+              {filteredTools.length !== 1 ? "s" : ""}
             </p>
           )}
         </div>
-      </div>
 
-      <div className="container mx-auto pb-6 px-4">
-        {filteredTools.length === 0 ? (
-          <div className="text-center py-12">
-            <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No tools found</h3>
-            <p className="mt-1 text-muted-foreground">Try adjusting your search</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <div className="rounded-lg p-4 w-full">{renderColumn(column1Categories)}</div>
-            <div className="rounded-lg p-4 w-full">{renderColumn(column2Categories)}</div>
-            <div className="rounded-lg p-4 w-full">{renderColumn(column3Categories)}</div>
-            <div className="rounded-lg p-4 w-full">{renderColumn(column4Categories)}</div>
-          </div>
-        )}
+        <div className="w-full max-w-6xl pb-6 px-4">
+          {filteredTools.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">No tools found</h3>
+              <p className="mt-1 text-muted-foreground">
+                Try adjusting your search
+              </p>
+            </div>
+          ) : (
+            <div className="flex justify-center gap-6 flex-wrap">
+              <div className="rounded-lg p-4 w-full max-w-xs">
+                {renderColumn(column1Categories)}
+              </div>
+              <div className="rounded-lg p-4 w-full max-w-xs">
+                {renderColumn(column2Categories)}
+              </div>
+              <div className="rounded-lg p-4 w-full max-w-xs">
+                {renderColumn(column3Categories)}
+              </div>
+              <div className="rounded-lg p-4 w-full max-w-xs">
+                {renderColumn(column4Categories)}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 }
