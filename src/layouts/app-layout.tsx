@@ -1,22 +1,12 @@
-import { PanelLeft, User } from "lucide-react";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { AppSidebar } from "../components/app-sidebar";
-import { Button } from "../components/ui/button";
-import {
-  SidebarInset,
-  SidebarProvider,
-  useSidebar,
-} from "../components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../components/ui/tooltip";
 import { useAuth } from "../contexts/auth-context";
-import { USE_CUSTOM_NAVBAR } from "../constants/navbar-config";
 import { TopNavbar } from "../components/top-navbar";
+import { ProfileModal } from "../components/profile-modal";
+import { loadThemePreferences } from "../utils/profile/settings-utils";
+import { getSelectedThemeObject } from "../utils/profile/theme-utils";
+import { applyTheme } from "../utils/themes";
+import { useTheme } from "next-themes";
 
 interface ProfileModalContextType {
   isProfileOpen: boolean;
@@ -32,40 +22,49 @@ export function useProfileModal() {
   return useContext(ProfileModalContext);
 }
 
-function SidebarToggle() {
-  const { state, toggleSidebar } = useSidebar();
-  const isCollapsed = state === "collapsed";
+function ThemeLoader({ children }: { children: React.ReactNode }) {
+  const { setTheme } = useTheme();
 
-  if (!isCollapsed) return null;
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const {
+          selectedTheme,
+          customThemes,
+          themeMode: savedMode,
+        } = await loadThemePreferences();
 
-  return (
-    <TooltipProvider delayDuration={50}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="fixed top-14 left-4 z-50 h-10 w-10 rounded-md border-2 border-dashed border-muted-foreground/50 hover:border-primary hover:bg-accent"
-            onClick={toggleSidebar}
-          >
-            <PanelLeft className="h-5 w-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          <p>Expand sidebar</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+        if (savedMode) {
+          setTheme(savedMode);
+        }
+
+        let themeObj = getSelectedThemeObject(selectedTheme, customThemes);
+
+        if (!themeObj) {
+          themeObj = getSelectedThemeObject("purple-default", customThemes);
+        }
+
+        if (themeObj) {
+          const mode = savedMode || "light";
+          applyTheme(themeObj, mode);
+        }
+      } catch {
+        setTheme("light");
+        const defaultTheme = getSelectedThemeObject("purple-default", []);
+        if (defaultTheme) {
+          applyTheme(defaultTheme, "light");
+        }
+      }
+    };
+    loadTheme();
+  }, [setTheme]);
+
+  return <>{children}</>;
 }
 
 function AppContent() {
-  const { toggleSidebar } = useSidebar();
-  const { isAuthenticated, needsValidation } = useAuth();
+  const { isAuthenticated, needsValidation, userData } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const isStandalone =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("standalone") === "true";
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -77,39 +76,25 @@ function AppContent() {
 
   return (
     <ProfileModalContext.Provider value={{ isProfileOpen, setIsProfileOpen }}>
-      <SidebarToggle />
-      {USE_CUSTOM_NAVBAR && (
-        <div className="fixed top-0 left-0 right-0 z-[100]">
-          <TopNavbar onToggleSidebar={toggleSidebar} />
-        </div>
-      )}
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <div className="flex flex-col flex-1 h-screen">
-          {USE_CUSTOM_NAVBAR && (
-            <div className="flex-shrink-0">
-              <TopNavbar onToggleSidebar={toggleSidebar} />
-            </div>
-          )}
-          <main className="flex-1 overflow-auto">
-            <div className="relative w-full">
-              <Outlet />
-            </div>
-          </main>
-        </div>
+      <div className="flex flex-col h-screen">
+        <TopNavbar />
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
       </div>
+      <ProfileModal
+        open={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
+        userData={userData}
+      />
     </ProfileModalContext.Provider>
   );
 }
 
 export function AppLayout() {
-  const isStandalone =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("standalone") === "true";
-
   return (
-    <SidebarProvider defaultOpen={!isStandalone}>
+    <ThemeLoader>
       <AppContent />
-    </SidebarProvider>
+    </ThemeLoader>
   );
 }

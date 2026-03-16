@@ -7,7 +7,6 @@ import {
   Minus,
   Monitor,
   Moon,
-  PanelLeft,
   Search,
   Settings,
   Square,
@@ -23,11 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useTheme } from "next-themes";
 import { UPDATE_THEME_KEY } from "../constants/settings-keys";
 
-interface NavigationControlsProps {
-  onToggleSidebar?: () => void;
-}
-
-function NavigationControls({ onToggleSidebar }: NavigationControlsProps) {
+function NavigationControls() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setIsProfileOpen } = useProfileModal();
@@ -117,17 +112,6 @@ function NavigationControls({ onToggleSidebar }: NavigationControlsProps) {
       >
         <Home className="w-4 h-4" />
       </button>
-      {onToggleSidebar && (
-        <>
-          <div className="w-px h-4 bg-border mx-1" />
-          <button
-            onClick={onToggleSidebar}
-            className="flex items-center justify-center hover:bg-accent hover:text-foreground rounded transition-colors w-8 h-7"
-          >
-            <PanelLeft className="w-4 h-4" />
-          </button>
-        </>
-      )}
       <div className="w-px h-4 bg-border mx-1" />
       <button
         onClick={handleOpenSettings}
@@ -405,11 +389,7 @@ function WindowControls({ isMac }: { isMac: boolean }) {
   return controls;
 }
 
-export function TopNavbar({
-  onToggleSidebar,
-}: {
-  onToggleSidebar?: () => void;
-}) {
+export function TopNavbar() {
   const [platform, setPlatform] = useState<"mac" | "windows" | "linux">(
     "windows",
   );
@@ -439,27 +419,11 @@ export function TopNavbar({
       {showControlsOnLeft && (
         <>
           <WindowControls isMac={true} />
-          {onToggleSidebar && (
-            <div
-              className="flex items-center"
-              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-            >
-              <div className="w-px h-4 bg-border mx-1" />
-              <button
-                onClick={onToggleSidebar}
-                className="flex items-center justify-center hover:bg-accent hover:text-foreground rounded transition-colors w-8 h-7"
-              >
-                <PanelLeft className="w-4 h-4" />
-              </button>
-            </div>
-          )}
           <NavigationControls />
         </>
       )}
 
-      {!showControlsOnLeft && (
-        <NavigationControls onToggleSidebar={onToggleSidebar} />
-      )}
+      {!showControlsOnLeft && <NavigationControls />}
 
       <div
         className="flex-1 flex items-center justify-center gap-2 h-full cursor-default"
