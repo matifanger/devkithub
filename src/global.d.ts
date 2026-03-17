@@ -194,6 +194,9 @@ interface Window {
     list: () => Promise<any[]>;
     getPath: () => Promise<string>;
   };
+  figlet: {
+    text: (text: string, font: string) => Promise<string>;
+  };
 }
 
 declare module "*.png" {

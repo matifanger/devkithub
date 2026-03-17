@@ -81,6 +81,11 @@ import { UrlParserPage } from "./pages/url-parser";
 import { ValidateLicensePage } from "./pages/validate-license";
 import { XmlBeautifyPage } from "./pages/xml-beautify";
 import { YamlToJsonPage } from "./pages/yaml-to-json";
+import { BMICalculatorPage } from "./pages/bmi-calculator";
+import { StopwatchPage } from "./pages/stopwatch";
+import { UnitConverterPage } from "./pages/unit-converter";
+import { WorldClockPage } from "./pages/world-clock";
+import { TextStatisticsAnalyzerPage } from "./pages/text-statistics-analyzer";
 import { ThemeProvider } from "./providers/theme-provider";
 import { getBaseApiUrl } from "./utils/environment";
 
@@ -333,6 +338,20 @@ const App = () => {
                     <Route
                       path="/pomodoro-timer"
                       element={<PomodoroTimerPage />}
+                    />
+                    <Route
+                      path="/text-statistics-analyzer"
+                      element={<TextStatisticsAnalyzerPage />}
+                    />
+                    <Route
+                      path="/unit-converter"
+                      element={<UnitConverterPage />}
+                    />
+                    <Route path="/world-clock" element={<WorldClockPage />} />
+                    <Route path="/stopwatch" element={<StopwatchPage />} />
+                    <Route
+                      path="/bmi-calculator"
+                      element={<BMICalculatorPage />}
                     />
                     {/* <Route path="/screen-recorder" element={<ScreenRecorderPage />} /> */}
                     {/* <Route path="/video-editor" element={<VideoEditorPage />} /> */}

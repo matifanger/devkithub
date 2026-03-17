@@ -29,7 +29,9 @@ function ToolItem({ tool }: { tool: Tool }) {
           <span className="text-sm font-medium text-black dark:text-white transition-colors">
             {tool.title}
           </span>
-          {tool.premium && <Lock className="w-3 h-3 text-amber-500 ml-auto" />}
+          {tool.premium && !isPro && (
+            <Lock className="w-3 h-3 text-amber-500 ml-auto" />
+          )}
         </div>
         <span className="text-xs text-black/70 dark:text-white/60 mt-1 ml-7">
           {tool.description}

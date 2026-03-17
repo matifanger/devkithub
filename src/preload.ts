@@ -487,3 +487,8 @@ contextBridge.exposeInMainWorld("project", {
   list: () => ipcRenderer.invoke("project:list"),
   getPath: () => ipcRenderer.invoke("project:get-path"),
 });
+
+contextBridge.exposeInMainWorld("figlet", {
+  text: (text: string, font: string) =>
+    ipcRenderer.invoke("figlet", text, font),
+});

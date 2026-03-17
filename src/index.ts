@@ -24,6 +24,7 @@ import {
 // import { registerExporterIpc } from './main/recorder/exporter';
 // import { registerFfmpegRecorderIpc } from './main/recorder/ffmpeg-recorder';
 // import { registerProjectManagerIpc } from './main/recorder/project-manager';
+import figlet from "figlet";
 import { getBaseApiUrl } from "./utils/environment";
 import { getHardwareInfo } from "./utils/hwid";
 import { getSimpleHwid } from "./utils/mac";
@@ -323,6 +324,20 @@ function setupSecureStore() {
   ipcMain.handle("window-is-maximized", (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return win?.isMaximized() ?? false;
+  });
+
+  ipcMain.handle("figlet", async (_, text: string, font: string) => {
+    try {
+      const result = await figlet.text(text, {
+        font: font || "Standard",
+        horizontalLayout: "default",
+        verticalLayout: "default",
+      });
+      return result;
+    } catch (err) {
+      console.error("Figlet error:", err);
+      return text;
+    }
   });
 
   registerCloseDialogIpc(

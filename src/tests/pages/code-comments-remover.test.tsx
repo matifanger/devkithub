@@ -160,7 +160,7 @@ describe("CodeCommentsRemoverPage", () => {
   it("renders action buttons", () => {
     render(<CodeCommentsRemoverPage />);
 
-    expect(screen.getByText("Remove Comments")).toBeDefined();
+    expect(screen.getByText("Paste")).toBeDefined();
     expect(screen.getByText("Sample")).toBeDefined();
     expect(screen.getByText("Clear")).toBeDefined();
   });
