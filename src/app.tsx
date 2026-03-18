@@ -31,15 +31,18 @@ import { BackslashEscapeUnescapePage } from "./pages/backslash-escape-unescape";
 import { Base64ImageEncoderDecoderPage } from "./pages/base64-image-encoder-decoder";
 import { Base64StringEncoderDecoderPage } from "./pages/base64-string-encoder-decoder";
 import { CertificateDecoderPage } from "./pages/certificate-decoder";
+import { CharacterWordCounterPage } from "./pages/character-word-counter";
 import { ColorConverterPage } from "./pages/color-converter";
 import { CronJobParserPage } from "./pages/cron-job-parser";
 import { CssBeautifyPage } from "./pages/css-beautify";
 import { CssToSvgPage } from "./pages/css-to-svg";
 import { CsvToJsonPage } from "./pages/csv-to-json";
+import { CsvTsvConverterPage } from "./pages/csv-tsv-converter";
 import { CurlToCodePage } from "./pages/curl-to-code";
 import { DiscordTimestampPage } from "./pages/discord-timestamp";
 import { DummyDataGeneratorPage } from "./pages/dummy-data-generator";
 import { EncodeDecodePage } from "./pages/encode-decode";
+import { ExcelConverterPage } from "./pages/excel-converter";
 import { ErbBeautifyPage } from "./pages/erb-beautify";
 import { HexToAsciiPage } from "./pages/hex-to-ascii";
 import { HtmlBeautifyPage } from "./pages/html-beautify";
@@ -47,14 +50,21 @@ import { HtmlEntityEncoderDecoderPage } from "./pages/html-entity-encoder-decode
 import { HtmlPreviewPage } from "./pages/html-preview";
 import { HtmlToJsxPage } from "./pages/html-to-jsx";
 import { ImageOptimizerPage } from "./pages/image-optimizer";
+import { IniParserPage } from "./pages/ini-parser";
 import { CodeCommentsRemoverPage } from "./pages/code-comments-remover";
 import { MainPage } from "./pages/index";
 import { JsBeautifyPage } from "./pages/js-beautify";
+import { JsObfuscatorPage } from "./pages/js-obfuscator";
+import { IpValidatorPage } from "./pages/ip-validator";
+import { HttpStatusCodesPage } from "./pages/http-status-codes";
+import { MimeTypesReferencePage } from "./pages/mime-types-reference";
+import { RestApiTesterPage } from "./pages/rest-api-tester";
 import { JsonFormatPage } from "./pages/json-format";
 import { JsonToCodePage } from "./pages/json-to-code";
 import { JsonToCsvPage } from "./pages/json-to-csv";
 import { JsonToPhpPage } from "./pages/json-to-php";
 import { JsonToYamlPage } from "./pages/json-to-yaml";
+import { JsonSchemaValidatorPage } from "./pages/json-schema-validator";
 import { JwtDebuggerPage } from "./pages/jwt-debug";
 import { JwtBuilderPage } from "./pages/jwt-builder";
 import { LessBeautifyPage } from "./pages/less-beautify";
@@ -72,6 +82,8 @@ import { RegexTesterPage } from "./pages/regex-tester";
 // import { ScreenRecorderPage } from './pages/screen-recorder';
 import { ScssBeautifyPage } from "./pages/scss-beautify";
 import { SqlFormatterPage } from "./pages/sql-formatter";
+import { SqlJsonConverterPage } from "./pages/sql-json-converter";
+import { TypescriptToJsPage } from "./pages/typescript-to-js";
 import { StringCaseConverterPage } from "./pages/string-case-converter";
 import { SvgToCssPage } from "./pages/svg-to-css";
 import { TextDiffCheckerPage } from "./pages/text-diff-checker";
@@ -80,12 +92,14 @@ import { UrlEncoderDecoderPage } from "./pages/url-encoder-decoder";
 import { UrlParserPage } from "./pages/url-parser";
 import { ValidateLicensePage } from "./pages/validate-license";
 import { XmlBeautifyPage } from "./pages/xml-beautify";
+import { XmlJsonConverterPage } from "./pages/xml-json-converter";
 import { YamlToJsonPage } from "./pages/yaml-to-json";
 import { BMICalculatorPage } from "./pages/bmi-calculator";
 import { StopwatchPage } from "./pages/stopwatch";
 import { UnitConverterPage } from "./pages/unit-converter";
 import { WorldClockPage } from "./pages/world-clock";
 import { TextStatisticsAnalyzerPage } from "./pages/text-statistics-analyzer";
+import { TomlParserPage } from "./pages/toml-parser";
 import { ThemeProvider } from "./providers/theme-provider";
 import { getBaseApiUrl } from "./utils/environment";
 
@@ -207,6 +221,10 @@ const App = () => {
                       element={<EncodeDecodePage />}
                     />
                     <Route
+                      path="/excel-converter"
+                      element={<ExcelConverterPage />}
+                    />
+                    <Route
                       path="/hash-generator"
                       element={<EncodeDecodePage />}
                     />
@@ -217,6 +235,10 @@ const App = () => {
                     <Route path="/yaml-to-json" element={<YamlToJsonPage />} />
                     <Route path="/json-to-yaml" element={<JsonToYamlPage />} />
                     <Route path="/json-format" element={<JsonFormatPage />} />
+                    <Route
+                      path="/json-schema-validator"
+                      element={<JsonSchemaValidatorPage />}
+                    />
                     <Route path="/json-to-code" element={<JsonToCodePage />} />
                     <Route path="/curl-to-code" element={<CurlToCodePage />} />
                     <Route path="/unix-time" element={<UnixTimePage />} />
@@ -261,7 +283,28 @@ const App = () => {
                     />
                     <Route path="/css-beautify" element={<CssBeautifyPage />} />
                     <Route path="/js-beautify" element={<JsBeautifyPage />} />
+                    <Route
+                      path="/js-obfuscator"
+                      element={<JsObfuscatorPage />}
+                    />
+                    <Route path="/ip-validator" element={<IpValidatorPage />} />
+                    <Route
+                      path="/http-status-codes"
+                      element={<HttpStatusCodesPage />}
+                    />
+                    <Route
+                      path="/mime-types-reference"
+                      element={<MimeTypesReferencePage />}
+                    />
+                    <Route
+                      path="/rest-api-tester"
+                      element={<RestApiTesterPage />}
+                    />
                     <Route path="/xml-beautify" element={<XmlBeautifyPage />} />
+                    <Route
+                      path="/xml-json-converter"
+                      element={<XmlJsonConverterPage />}
+                    />
                     <Route
                       path="/less-beautify"
                       element={<LessBeautifyPage />}
@@ -274,6 +317,14 @@ const App = () => {
                     <Route
                       path="/sql-formatter"
                       element={<SqlFormatterPage />}
+                    />
+                    <Route
+                      path="/sql-json-converter"
+                      element={<SqlJsonConverterPage />}
+                    />
+                    <Route
+                      path="/typescript-to-js"
+                      element={<TypescriptToJsPage />}
                     />
                     <Route
                       path="/line-sort-dedupe"
@@ -289,6 +340,10 @@ const App = () => {
                     <Route path="/html-to-jsx" element={<HtmlToJsxPage />} />
                     <Route path="/json-to-csv" element={<JsonToCsvPage />} />
                     <Route path="/csv-to-json" element={<CsvToJsonPage />} />
+                    <Route
+                      path="/csv-tsv-converter"
+                      element={<CsvTsvConverterPage />}
+                    />
                     <Route
                       path="/string-case-converter"
                       element={<StringCaseConverterPage />}
@@ -316,6 +371,10 @@ const App = () => {
                       path="/certificate-decoder"
                       element={<CertificateDecoderPage />}
                     />
+                    <Route
+                      path="/character-word-counter"
+                      element={<CharacterWordCounterPage />}
+                    />
                     <Route path="/url-parser" element={<UrlParserPage />} />
                     <Route
                       path="/lorem-ipsum"
@@ -334,6 +393,7 @@ const App = () => {
                       path="/image-optimizer"
                       element={<ImageOptimizerPage />}
                     />
+                    <Route path="/ini-parser" element={<IniParserPage />} />
                     <Route path="/css-to-svg" element={<CssToSvgPage />} />
                     <Route
                       path="/pomodoro-timer"
@@ -343,6 +403,7 @@ const App = () => {
                       path="/text-statistics-analyzer"
                       element={<TextStatisticsAnalyzerPage />}
                     />
+                    <Route path="/toml-parser" element={<TomlParserPage />} />
                     <Route
                       path="/unit-converter"
                       element={<UnitConverterPage />}
