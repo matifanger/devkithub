@@ -41,9 +41,15 @@ export function UpgradeModal() {
                 Pro
               </span>
             </h2>
-            <p className="text-slate-400 mb-6">
+            <p className="text-slate-400 mb-2">
               Unlock all premium features and take your workflow to the next level
             </p>
+            <div className="mb-6">
+              <span className="text-slate-500 line-through text-lg mr-2">$39</span>
+              <span className="text-3xl font-bold text-white">$27.30</span>
+              <span className="text-slate-400 text-sm ml-1">one-time</span>
+              <span className="ml-2 text-xs font-medium bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">30% OFF</span>
+            </div>
 
             <ul className="space-y-3 mb-8 text-left">
               {features.map((feature, index) => (
