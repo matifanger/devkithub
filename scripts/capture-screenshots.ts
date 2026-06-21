@@ -32,23 +32,32 @@ function extractTools(): ToolInfo[] {
   const content = fs.readFileSync(TOOLS_DATA_PATH, "utf-8");
 
   const tools: ToolInfo[] = [];
-  const toolRegex =
-    /\{\s*id:\s*slugify\(["'](.+?)["']\),\s*title:\s*["'](.+?)["'],\s*description:\s*["'](.+?)["'],\s*url:\s*["'](.+?)["']/g;
 
-  let match;
-  while ((match = toolRegex.exec(content)) !== null) {
-    const url = match[4];
-    tools.push({
-      title: match[2],
-      url,
-      slug: url.replace(/^\//, "") || "index",
-    });
+  // Match multi-line tool objects: look for title and url fields within each object block
+  const objectBlocks = content.split(/\n\s*\{/).slice(1); // split by opening braces
+  for (const block of objectBlocks) {
+    const titleMatch = block.match(/title:\s*["'](.+?)["']/);
+    const urlMatch = block.match(/url:\s*["'](.+?)["']/);
+    if (titleMatch && urlMatch) {
+      const url = urlMatch[1];
+      tools.push({
+        title: titleMatch[1],
+        url,
+        slug: url.replace(/^\//, "") || "index",
+      });
+    }
   }
 
   return tools;
 }
 
 async function main() {
+  // Optional CLI args: --start=N --end=N to capture a batch
+  const startArg = process.argv.find((a) => a.startsWith("--start="));
+  const endArg = process.argv.find((a) => a.startsWith("--end="));
+  const batchStart = startArg ? parseInt(startArg.split("=")[1], 10) : 0;
+  const batchEnd = endArg ? parseInt(endArg.split("=")[1], 10) : Infinity;
+
   let puppeteer;
   try {
     puppeteer = await import("puppeteer");
@@ -63,8 +72,9 @@ async function main() {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  const tools = extractTools();
-  console.log(`Found ${tools.length} tools to screenshot`);
+  const allToolsList = extractTools();
+  const tools = allToolsList.slice(batchStart, batchEnd);
+  console.log(`Found ${allToolsList.length} tools total, capturing ${tools.length} (index ${batchStart} to ${Math.min(batchEnd, allToolsList.length) - 1})`);
   console.log(`Renderer URL: ${DEV_SERVER_URL}`);
   console.log(`Output: ${OUTPUT_DIR}`);
   console.log(`Viewport: ${VIEWPORT.width}x${VIEWPORT.height}\n`);
@@ -115,14 +125,19 @@ async function main() {
     const progress = `[${i + 1}/${tools.length}]`;
 
     try {
+      // Navigate to about:blank first to force a full reload on next goto
+      await page.goto("about:blank", { waitUntil: "load" });
+
+      // Navigate to the tool with the hash
       await page.goto(`${DEV_SERVER_URL}#${tool.url}`, {
         waitUntil: "networkidle2",
-        timeout: 15000,
+        timeout: 20000,
       });
 
-      await new Promise((r) => setTimeout(r, WAIT_MS));
+      // Wait for React to mount and render the tool page
+      await new Promise((r) => setTimeout(r, 3500));
 
-      // Click "Sample" button if it exists (check all buttons for text containing "sample")
+      // Click "Sample" button if it exists
       try {
         const buttons = await page.$$("button");
         for (const btn of buttons) {
@@ -134,19 +149,6 @@ async function main() {
           }
         }
       } catch { /* no sample button, that's fine */ }
-
-      // If tool has Settings tab/button, click it for a more complete view
-      try {
-        const tabButtons = await page.$$('[role="tab"], button');
-        for (const tab of tabButtons) {
-          const text = await page.evaluate((el: Element) => (el.textContent || "").trim().toLowerCase(), tab);
-          if (text === "settings" || text === "options") {
-            await tab.click();
-            await new Promise((r) => setTimeout(r, 800));
-            break;
-          }
-        }
-      } catch {}
 
       await page.screenshot({ path: outPath, type: "png", fullPage: false });
       console.log(`  ${progress} ✓ ${tool.slug}.png`);

@@ -107,10 +107,12 @@ export function ProfileModal({
                 <Key className="h-4 w-4" />
                 License
               </TabsTrigger>
-              <TabsTrigger value="dev" className="flex items-center gap-2">
-                <Wrench className="h-4 w-4" />
-                Dev
-              </TabsTrigger>
+              {process.env.NODE_ENV !== "production" && (
+                <TabsTrigger value="dev" className="flex items-center gap-2">
+                  <Wrench className="h-4 w-4" />
+                  Dev
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent
@@ -163,12 +165,14 @@ export function ProfileModal({
               <LicenseTab userData={userDataJson} />
             </TabsContent>
 
-            <TabsContent
-              value="dev"
-              className="mt-0 border-0 flex-1 overflow-hidden"
-            >
-              <DevTab />
-            </TabsContent>
+            {process.env.NODE_ENV !== "production" && (
+              <TabsContent
+                value="dev"
+                className="mt-0 border-0 flex-1 overflow-hidden"
+              >
+                <DevTab />
+              </TabsContent>
+            )}
           </Tabs>
         </DialogContent>
       </Dialog>
