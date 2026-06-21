@@ -37,6 +37,12 @@ export function ProfileModal({
       message: "",
     });
 
+  // Dev mode detection
+  const [isDev, setIsDev] = useState(false);
+  useEffect(() => {
+    window.electron?.isPackaged?.().then((packaged) => setIsDev(!packaged));
+  }, []);
+
   // Internal tab state
   const [currentTab, setCurrentTab] = useState(activeTab);
 
@@ -107,7 +113,7 @@ export function ProfileModal({
                 <Key className="h-4 w-4" />
                 License
               </TabsTrigger>
-              {process.env.NODE_ENV !== "production" && (
+              {isDev && (
                 <TabsTrigger value="dev" className="flex items-center gap-2">
                   <Wrench className="h-4 w-4" />
                   Dev
@@ -165,7 +171,7 @@ export function ProfileModal({
               <LicenseTab userData={userDataJson} />
             </TabsContent>
 
-            {process.env.NODE_ENV !== "production" && (
+            {isDev && (
               <TabsContent
                 value="dev"
                 className="mt-0 border-0 flex-1 overflow-hidden"
