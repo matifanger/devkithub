@@ -16,8 +16,10 @@ O crea uno desde cero. La página debe:
 
 - Ser un componente de React
 - Exportarse como función nombrada (ej: `export function NuevaHerramientaPage()`)
-- Usar los componentes UI de `src/components/ui/`
-- Incluir el layout básico con `<div className="container mx-auto p-6 space-y-6">`
+- Usar los componentes compartidos de layout (ver sección "Layout compartido")
+- Usar `ToolPageContainer` como wrapper raíz (provee `ScrollArea`)
+- Usar `ToolPageHeader` para título y descripción
+- Usar `ToolCopyButton` y `ToolClearButton` para acciones unificadas
 
 ### 2. Registrar la herramienta en tools-data.ts
 
@@ -89,6 +91,60 @@ export const featuredTools = [
 ];
 ```
 
+## Layout compartido (Obligatorio)
+
+Todas las herramientas DEBEN usar los componentes de layout compartidos de `src/components/tool-page-layout.tsx` y acciones de `src/components/tool-actions.tsx`.
+
+### Componentes de layout
+
+```typescript
+import { ToolPageContainer, ToolPageHeader, ToolEditorPanel, ToolEditorGrid, ToolToolbar, ToolErrorBanner } from '../components/tool-page-layout';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+```
+
+- **`ToolPageContainer`** - Wrapper raíz. Provee `ScrollArea`, container, padding y spacing.
+- **`ToolPageHeader`** - Título (`text-2xl font-bold`) y descripción (`text-muted-foreground`).
+- **`ToolEditorGrid`** - Grid de 2 columnas para editors (`grid-cols-1 md:grid-cols-2 gap-6`).
+- **`ToolEditorPanel`** - Panel con label, actions y area de contenido. Props: `label`, `actions`, `heightClass`.
+- **`ToolToolbar`** - Fila de controles global (`flex flex-wrap gap-4 items-center`).
+- **`ToolErrorBanner`** - Banner de error. Devuelve `null` si el string está vacío.
+- **`ToolCopyButton`** - Botón de copiar con animación. Props: `value` (string a copiar).
+- **`ToolClearButton`** - Botón de limpiar con animación. Props: `onClear` (callback).
+
+### Editor heights estándar
+
+- Default: `h-[calc(100vh-17rem)]`
+- Con toolbar extra (como js-obfuscator): `h-[calc(100vh-28rem)]`
+
+### Ejemplo de estructura
+
+```tsx
+<ToolPageContainer>
+  <ToolPageHeader title="Mi Herramienta" description="Descripción breve" />
+
+  <ToolEditorGrid>
+    <ToolEditorPanel
+      label="Input"
+      actions={
+        <>
+          <Button variant="outline" size="sm" onClick={handleSample}>Sample</Button>
+          <ToolClearButton onClear={clearState} />
+        </>
+      }
+    >
+      <AppCodeMirror ... className="h-[calc(100vh-17rem)]" />
+    </ToolEditorPanel>
+
+    <ToolEditorPanel
+      label="Output"
+      actions={<ToolCopyButton value={output} />}
+    >
+      <AppCodeMirror ... className="h-[calc(100vh-17rem)]" />
+    </ToolEditorPanel>
+  </ToolEditorGrid>
+</ToolPageContainer>
+```
+
 ## Componentes UI disponibles
 
 Ver `src/components/ui/`:
@@ -99,9 +155,12 @@ Ver `src/components/ui/`:
 - `Label` - Etiquetas
 - `Textarea` - Áreas de texto
 - `Select/SelectContent/SelectItem/SelectTrigger/SelectValue` - Selectores
-- `CopyButton` - Botón de copiar
+- `ToolCopyButton` - Botón de copiar unificado (en `src/components/tool-actions.tsx`)
+- `ToolClearButton` - Botón de limpiar unificado (en `src/components/tool-actions.tsx`)
 - `AppCodeMirror` - Editor de código
 - `Checkbox`, `Switch`, `Slider` - Controles de formulario
+- `Progress` - Barra de progreso
+- `ScrollArea` - Área de scroll personalizada (obligatorio via `ToolPageContainer`)
 
 ## Persistencia de estado (Obligatorio)
 
@@ -137,12 +196,37 @@ export function MiHerramientaPage() {
 }
 ```
 
+### Valor de retorno expandido
+
+El hook devuelve 4 valores:
+
+```typescript
+const [state, setState, clearState, meta] = useToolState('mi-herramienta', initialState);
+
+// meta contiene:
+// meta.isSaving - boolean, true durante el guardado
+// meta.lastSavedAt - timestamp del último guardado
+// meta.autoSaveEnabled - boolean, estado actual del autosave local
+// meta.setLocalAutoSave - función para activar/desactivar autosave local
+```
+
+### Opciones del hook
+
+```typescript
+const [state, setState, clearState, meta] = useToolState('mi-herramienta', initialState, {
+  debounceMs: 500,    // Delay antes de guardar (default: 500)
+  autoSave: true,     // Activar autosave (default: true)
+});
+```
+
 ### Características del hook:
 
 - **Auto-guardado**: Guarda automáticamente con debounce de 500ms
 - **Persistencia**: Guarda en `settings.json` (disponible en Electron)
-- **Clear**: El botón Clear es **obligatorio** en todas las tools
+- **Clear**: El botón Clear es **obligatorio** en todas las tools (usar `ToolClearButton`)
 - **Test-friendly**: Funciona sin Electron en tests (no guarda nada)
+- **Save status**: Expone `isSaving` y `lastSavedAt` para indicador de estado
+- **Auto-save control**: Controles global (`AutosaveSettingsContext`) y local por tool
 
 ### Cómo actualizar el estado
 
@@ -257,13 +341,54 @@ Este comentario es para usuarios que quieren entender la herramienta sin ver có
  */
 ```
 
+## Metadata unificada de tools
+
+Cada herramienta tiene metadata extendida en `src/utils/tools-metadata.ts`. Este registro unifica descripciones, features y usage para:
+
+- Mostrar descripciones en la UI
+- Generación de screenshots con contexto
+- API de consulta unificada
+
+### Agregar metadata de tu nueva tool
+
+Edita `src/utils/tools-metadata.ts` y agrega una entrada en `metadataMap`:
+
+```typescript
+"mi-herramienta": {
+  longDescription: "Descripción larga de lo que hace la herramienta...",
+  features: ["Feature 1", "Feature 2", "Feature 3"],
+  usage: ["Paso 1", "Paso 2", "Paso 3", "Paso 4"],
+},
+```
+
+### Hook de acceso
+
+```typescript
+import { useToolMetadata, useAllToolsMetadata, useAllToolsWithMetadata } from '../hooks/useToolMetadata';
+
+// Una tool específica
+const metadata = useToolMetadata('mi-herramienta');
+// metadata.title, metadata.shortDescription, metadata.longDescription, metadata.features, metadata.usage
+
+// Todas las tools
+const allMeta = useAllToolsMetadata();
+
+// Tools con metadata enriquecida
+const toolsWithMeta = useAllToolsWithMetadata();
+```
+
 ## Ejemplo mínimo
 
 ```typescript
+import { AppCodeMirror } from '../components/app-code-mirror';
 import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+} from '../components/tool-page-layout';
 import { useToolState } from '../hooks/useToolState';
 
 interface MiHerramientaState {
@@ -276,39 +401,64 @@ const initialState: MiHerramientaState = {
 
 export function MiHerramientaPage() {
   const [state, setState, clearState] = useToolState('mi-herramienta', initialState);
+  const [output, setOutput] = React.useState('');
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Mi Herramienta</h1>
-        <p className="text-muted-foreground">Descripción</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Mi Herramienta"
+        description="Descripción breve de la herramienta"
+      />
 
-      <Card className="p-4 space-y-4">
-        <div className="space-y-1">
-          <Label>Input</Label>
-          <Input
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input"
+          actions={
+            <>
+              <Button variant="outline" size="sm" onClick={handleSample}>Sample</Button>
+              <ToolClearButton onClear={clearState} />
+            </>
+          }
+        >
+          <AppCodeMirror
             value={state.input}
-            onChange={(e) => setState(prev => ({ ...prev, input: e.target.value }))}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            width="100%"
+            onChange={(value) => setState(prev => ({ ...prev, input: value }))}
             placeholder="Ingrese algo"
           />
-        </div>
-        <div className="flex gap-2">
-          <Button>Accionar</Button>
-          <Button variant="outline" onClick={clearState}>Clear</Button>
-        </div>
-      </Card>
-    </div>
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label="Output"
+          actions={<ToolCopyButton value={output} />}
+        >
+          <AppCodeMirror
+            value={output}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            width="100%"
+            editable={false}
+          />
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }
 ```
 
 ## Checklist antes de commit
 
-- [ ] Página creada en `src/pages/`
+- [ ] Página creada en `src/pages/` con componentes de layout compartidos
 - [ ] Ruta agregada en `app.tsx`
 - [ ] Tool registrada en `tools-data.ts`
-- [ ] Hook `useToolState` implementado
-- [ ] Botón Clear implementado
+- [ ] Metadata agregada en `tools-metadata.ts`
+- [ ] `ToolPageContainer` usado como wrapper raíz (provee ScrollArea)
+- [ ] `ToolPageHeader` con título y descripción
+- [ ] `ToolCopyButton` para botones de copiar (con toast de Windows)
+- [ ] `ToolClearButton` para botón de limpiar
+- [ ] Hook `useToolState` implementado con persistencia
+- [ ] Documentación JSDoc en inglés al inicio del archivo
 - [ ] Tests creados en `src/tests/pages/`
 - [ ] Tests pasan (`npm run test:run`)

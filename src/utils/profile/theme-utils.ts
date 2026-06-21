@@ -66,8 +66,8 @@ export async function handleThemeDeleted(
   let newSelectedTheme = selectedTheme;
   // If currently selected theme was deleted, switch to default
   if (selectedTheme === themeId) {
-    newSelectedTheme = 'purple-default';
-    await saveThemeSelection('purple-default');
+    newSelectedTheme = 'elegant-luxury';
+    await saveThemeSelection('elegant-luxury');
   }
 
   return { newCustomThemes, newSelectedTheme };

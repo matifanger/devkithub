@@ -1,6 +1,14 @@
 import { javascript } from '@codemirror/lang-javascript';
 import React, { useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Label } from '../components/ui/label';
@@ -56,44 +64,41 @@ export function UrlEncoderDecoderPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">URL Encoder/Decoder</h1>
-        <p className="text-muted-foreground">Convert text to and from URL encoding</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="URL Encoder/Decoder"
+        description="Convert text to and from URL encoding"
+      />
 
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Label className="mr-4">Input:</Label>
-              <div className="space-x-2">
-                <Button variant="outline" onClick={handleClipboardPaste}>
-                  Clipboard
-                </Button>
-                <Button variant="outline" onClick={handleSample}>
-                  Sample
-                </Button>
-                <Button variant="outline" onClick={() => setInput('')}>
-                  Clear
-                </Button>
-              </div>
-            </div>
-            <Select value={mode} onValueChange={handleModeChange}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="encode">Encode</SelectItem>
-                <SelectItem value="decode">Decode</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Card className="relative p-4">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input:"
+          actions={
+            <ToolToolbar>
+              <Button variant="outline" size="sm" onClick={handleClipboardPaste}>
+                Clipboard
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleSample}>
+                Sample
+              </Button>
+              <ToolClearButton onClear={() => setInput('')} />
+              <Select value={mode} onValueChange={handleModeChange}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="encode">Encode</SelectItem>
+                  <SelectItem value="decode">Decode</SelectItem>
+                </SelectContent>
+              </Select>
+            </ToolToolbar>
+          }
+          heightClass="h-[200px]"
+        >
+          <Card className="relative p-4 h-full">
             <AppCodeMirror
               value={input}
-              height="200px"
+              height="100%"
               width="100%"
               onChange={(value) => {
                 setInput(value);
@@ -110,25 +115,24 @@ export function UrlEncoderDecoderPage() {
               }}
             />
           </Card>
-        </div>
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Output:</Label>
-            <div className="space-x-2">
-              <Button variant="outline" onClick={() => navigator.clipboard.writeText(output)}>
-                Copy
-              </Button>
-              <Button variant="outline" onClick={handleUseAsInput}>
+        <ToolEditorPanel
+          label="Output:"
+          actions={
+            <ToolToolbar>
+              <ToolCopyButton value={output} />
+              <Button variant="outline" size="sm" onClick={handleUseAsInput}>
                 Use as Input
               </Button>
-            </div>
-          </div>
-
-          <Card className="relative p-4">
+            </ToolToolbar>
+          }
+          heightClass="h-[200px]"
+        >
+          <Card className="relative p-4 h-full">
             <AppCodeMirror
               value={output}
-              height="200px"
+              height="100%"
               width="100%"
               extensions={[javascript()]}
               editable={false}
@@ -139,8 +143,8 @@ export function UrlEncoderDecoderPage() {
               }}
             />
           </Card>
-        </div>
-      </div>
-    </div>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

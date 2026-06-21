@@ -25,8 +25,20 @@ export function useClipboardRecommendations() {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
 
-      // Read clipboard content
-      const clipboardText = await navigator.clipboard.readText();
+      let clipboardText = '';
+      try {
+        if (window.electron?.clipboardReadText) {
+          clipboardText = await window.electron.clipboardReadText();
+        } else {
+          clipboardText = await navigator.clipboard.readText();
+        }
+      } catch {
+        try {
+          clipboardText = await navigator.clipboard.readText();
+        } catch (fallbackErr) {
+          console.warn('Failed to access clipboard:', fallbackErr);
+        }
+      }
 
       if (!clipboardText || clipboardText.trim().length === 0) {
         setState({
@@ -38,10 +50,8 @@ export function useClipboardRecommendations() {
         return;
       }
 
-      // Detect content type
       const detectionResult = ClipboardDetector.detectContentType(clipboardText);
 
-      // Get tool recommendations
       const recommendedTools = ToolRecommender.getRecommendedTools(
         detectionResult.type,
         detectionResult.confidence

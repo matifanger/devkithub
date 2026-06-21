@@ -2,8 +2,15 @@ import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
 import React, { useCallback, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 
 export function HtmlToJsxPage() {
   const [input, setInput] = useState('');
@@ -84,88 +91,74 @@ export function HtmlToJsxPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleClear = () => {
+    setInput('');
+    setOutput('');
+    setError('');
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">HTML to JSX Converter</h1>
-        <p className="text-muted-foreground">Convert HTML code to JSX format</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="HTML to JSX Converter"
+        description="Convert HTML code to JSX format"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Input HTML</Label>
-            <div className="space-x-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input HTML"
+          actions={
+            <>
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setInput('');
-                  setOutput('');
-                  setError('');
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+              <ToolClearButton onClear={handleClear} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            extensions={[html()]}
+            onChange={(value) => {
+              setInput(value);
+              convertHtmlToJsx(value);
+            }}
+            placeholder="Paste your HTML here"
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label="Output JSX"
+          actions={<ToolCopyButton value={output} />}
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
-              value={input}
+              value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              extensions={[html()]}
-              onChange={(value) => {
-                setInput(value);
-                convertHtmlToJsx(value);
-              }}
-              placeholder="Paste your HTML here"
+              extensions={[javascript({ jsx: true })]}
+              editable={false}
               basicSetup={{
                 lineNumbers: true,
                 foldGutter: true,
-                highlightActiveLine: true,
+                highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Output JSX</Label>
-            <Button variant="outline" onClick={() => copyToClipboard(output)}>
-              Copy
-            </Button>
-          </div>
-
-          {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          ) : (
-            <div className="h-[calc(100vh-17rem)]">
-              <AppCodeMirror
-                value={output}
-                className="h-[calc(100vh-17rem)]"
-                height="100%"
-                extensions={[javascript({ jsx: true })]}
-                editable={false}
-                basicSetup={{
-                  lineNumbers: true,
-                  foldGutter: true,
-                  highlightActiveLine: false,
-                }}
-              />
-            </div>
           )}
-        </div>
-      </div>
-    </div>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

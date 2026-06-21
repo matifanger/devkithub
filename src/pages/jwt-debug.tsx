@@ -3,9 +3,14 @@ import { EditorView } from '@codemirror/view';
 import { Eye, EyeOff } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 
@@ -169,11 +174,11 @@ export function JwtDebuggerPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">JWT Debugger</h1>
-        <p className="text-muted-foreground">Decode, verify, and inspect JSON Web Tokens</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="JWT Debugger"
+        description="Decode, verify, and inspect JSON Web Tokens"
+      />
 
       <div className="space-y-4">
         <div className="space-y-2">
@@ -186,15 +191,7 @@ export function JwtDebuggerPage() {
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setJwt('');
-                  setSecret('');
-                }}
-              >
-                Clear
-              </Button>
+              <ToolClearButton onClear={() => { setJwt(''); setSecret(''); }} />
             </div>
           </div>
           <AppCodeMirror
@@ -252,7 +249,7 @@ export function JwtDebuggerPage() {
           </div>
         </Card>
 
-        {error && <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>}
+        <ToolErrorBanner error={error} />
 
         {decoded && (
           <div className="w-full space-y-6">
@@ -260,7 +257,7 @@ export function JwtDebuggerPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Header</Label>
-                  <CopyButton value={decoded.header} src="header" />
+                  <ToolCopyButton value={decoded.header} />
                 </div>
                 <AppCodeMirror
                   value={headerText}
@@ -275,7 +272,7 @@ export function JwtDebuggerPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Payload</Label>
-                  <CopyButton value={decoded.payload} src="payload" />
+                  <ToolCopyButton value={decoded.payload} />
                 </div>
                 <AppCodeMirror
                   value={payloadText}
@@ -302,9 +299,8 @@ export function JwtDebuggerPage() {
                         <span className="font-mono text-sm break-all">
                           {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                         </span>
-                        <CopyButton
+                        <ToolCopyButton
                           value={typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                          src={`claim-${key}`}
                         />
                       </div>
                     </div>
@@ -339,10 +335,10 @@ export function JwtDebuggerPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Signature (base64url)</Label>
-                <CopyButton value={decoded.signature} src="signature" />
-              </div>
+                <div className="flex items-center justify-between">
+                  <Label>Signature (base64url)</Label>
+                  <ToolCopyButton value={decoded.signature} />
+                </div>
               <AppCodeMirror
                 value={decoded.signature}
                 height="50px"
@@ -355,6 +351,6 @@ export function JwtDebuggerPage() {
           </div>
         )}
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

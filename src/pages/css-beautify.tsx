@@ -2,8 +2,15 @@ import { css } from '@codemirror/lang-css';
 import { css as beautifyCss } from 'js-beautify';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
@@ -78,55 +85,48 @@ export function CssBeautifyPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">CSS Beautify/Minify</h1>
-        <p className="text-muted-foreground">Format or minify your CSS code</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="CSS Beautify/Minify"
+        description="Format or minify your CSS code"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Input</Label>
-            <div className="space-x-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input"
+          actions={
+            <>
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => setInput('')}>
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={(value) => setInput(value)}
-              extensions={[css()]}
-              placeholder="Paste your CSS here"
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
+              <ToolClearButton onClear={() => setInput('')} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            width="100%"
+            onChange={(value) => setInput(value)}
+            extensions={[css()]}
+            placeholder="Paste your CSS here"
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Output</Label>
-            <div className="flex items-center space-x-2">
+        <ToolEditorPanel
+          label="Output"
+          actions={
+            <>
               <Select value={mode} onValueChange={setMode}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="Mode" />
@@ -148,33 +148,29 @@ export function CssBeautifyPage() {
                   </SelectContent>
                 </Select>
               )}
-              <Button variant="outline" onClick={() => copyToClipboard(output)}>
-                Copy
-              </Button>
-            </div>
-          </div>
-
+              <ToolCopyButton value={output} />
+            </>
+          }
+        >
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
+            <ToolErrorBanner error={error} />
           ) : (
-            <div className="h-[calc(100vh-17rem)]">
-              <AppCodeMirror
-                value={output}
-                className="h-[calc(100vh-17rem)]"
-                height="100%"
-                width="100%"
-                extensions={[css()]}
-                editable={false}
-                basicSetup={{
-                  lineNumbers: true,
-                  foldGutter: true,
-                  highlightActiveLine: false,
-                }}
-              />
-            </div>
+            <AppCodeMirror
+              value={output}
+              className="h-[calc(100vh-17rem)]"
+              height="100%"
+              width="100%"
+              extensions={[css()]}
+              editable={false}
+              basicSetup={{
+                lineNumbers: true,
+                foldGutter: true,
+                highlightActiveLine: false,
+              }}
+            />
           )}
-        </div>
-      </div>
-    </div>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

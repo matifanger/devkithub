@@ -1,4 +1,14 @@
-import { app, BrowserWindow, ipcMain, Menu, protocol, Tray } from "electron";
+import {
+  app,
+  BrowserWindow,
+  clipboard,
+  globalShortcut,
+  ipcMain,
+  Menu,
+  Notification,
+  protocol,
+  Tray,
+} from "electron";
 import * as fs from "fs";
 import * as keytar from "keytar";
 import * as path from "path";
@@ -6,7 +16,13 @@ import {
   ACCOUNT_NAME,
   LAUNCH_ON_STARTUP_KEY,
   SERVICE_NAME,
+  VOICE_GOOGLE_API_KEY,
+  VOICE_TRANSCRIPTION_ENABLED_KEY,
+  VOICE_TRANSCRIPTION_MODE_KEY,
+  VOICE_TRANSCRIPTION_SHORTCUT_KEY,
+  VOICE_WHISPER_MODEL_KEY,
 } from "./constants/settings-keys";
+import * as whisperManager from "./main/voice/whisper-manager";
 import {
   applyAutostart,
   attachAutostartPrompt,
@@ -120,7 +136,7 @@ const createWindow = (): void => {
             "script-src 'self' 'unsafe-inline' 'unsafe-eval';", // unsafe-eval needed for CodeMirror
             "style-src 'self' 'unsafe-inline';",
             "img-src 'self' data: blob:;",
-            `connect-src 'self' ${await getBaseApiUrl()};`,
+            `connect-src 'self' ${await getBaseApiUrl()} https://www.google.com https://speech.googleapis.com https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.hf.co https://github.com https://objects.githubusercontent.com;`,
             "worker-src 'self' blob:;",
             "media-src 'self' static: blob: data: mediastream:;",
           ].join(" "),
@@ -263,6 +279,19 @@ function setupSecureStore() {
       if (key === LAUNCH_ON_STARTUP_KEY) {
         applyAutostart(value === "true");
       }
+      if (
+        key === VOICE_TRANSCRIPTION_ENABLED_KEY ||
+        key === VOICE_TRANSCRIPTION_SHORTCUT_KEY
+      ) {
+        registerVoiceShortcut();
+      }
+      if (key === VOICE_GOOGLE_API_KEY) {
+        if (value) {
+          process.env.GOOGLE_API_KEY = value;
+        } else {
+          delete process.env.GOOGLE_API_KEY;
+        }
+      }
       return true;
     } catch (error) {
       console.error(`Failed to set ${key} in store:`, error);
@@ -340,6 +369,14 @@ function setupSecureStore() {
     }
   });
 
+  ipcMain.handle("clipboard-read-text", () => {
+    try {
+      return clipboard.readText();
+    } catch {
+      return "";
+    }
+  });
+
   registerCloseDialogIpc(
     (value) => {
       persistentStore["close-to-tray"] = value;
@@ -358,6 +395,432 @@ function setupSecureStore() {
     },
     (openAtLogin) => applyAutostart(openAtLogin),
   );
+}
+
+let currentVoiceShortcut: string | null = null;
+let voiceWindow: BrowserWindow | null = null;
+
+function openVoiceWindow() {
+  if (voiceWindow && !voiceWindow.isDestroyed()) {
+    voiceWindow.show();
+    voiceWindow.focus();
+    return;
+  }
+
+  voiceWindow = new BrowserWindow({
+    width: 600,
+    height: 700,
+    minWidth: 400,
+    minHeight: 400,
+    frame: true,
+    title: "Voice Transcription",
+    webPreferences: {
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      nodeIntegration: true,
+      contextIsolation: true,
+      sandbox: false,
+    },
+  });
+
+  const baseUrl = MAIN_WINDOW_WEBPACK_ENTRY;
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  voiceWindow.loadURL(`${baseUrl}${separator}standalone=true#/voice-transcription`);
+
+  voiceWindow.on("closed", () => {
+    voiceWindow = null;
+  });
+}
+
+function registerVoiceShortcut(): { success: boolean; error?: string } {
+  if (currentVoiceShortcut) {
+    try {
+      globalShortcut.unregister(currentVoiceShortcut);
+    } catch {}
+    currentVoiceShortcut = null;
+  }
+
+  const enabled = persistentStore[VOICE_TRANSCRIPTION_ENABLED_KEY];
+  if (enabled !== "true") return { success: true };
+
+  const shortcut =
+    persistentStore[VOICE_TRANSCRIPTION_SHORTCUT_KEY] ||
+    "CommandOrControl+Shift+V";
+
+  try {
+    const registered = globalShortcut.register(shortcut, () => {
+      openVoiceWindow();
+    });
+    if (registered) {
+      currentVoiceShortcut = shortcut;
+      return { success: true };
+    }
+    return { success: false, error: `Shortcut "${shortcut}" is already in use by another application.` };
+  } catch (err) {
+    console.error("Failed to register voice shortcut:", err);
+    return { success: false, error: err instanceof Error ? err.message : "Invalid shortcut format." };
+  }
+}
+
+function setupVoiceShortcutIpc() {
+  ipcMain.handle("register-voice-shortcut", () => {
+    return registerVoiceShortcut();
+  });
+
+  ipcMain.handle("unregister-voice-shortcut", () => {
+    if (currentVoiceShortcut) {
+      try {
+        globalShortcut.unregister(currentVoiceShortcut);
+      } catch {}
+      currentVoiceShortcut = null;
+    }
+    return { success: true };
+  });
+
+  ipcMain.handle("voice:get-config", () => {
+    return {
+      mode: persistentStore[VOICE_TRANSCRIPTION_MODE_KEY] || "google",
+      model: persistentStore[VOICE_WHISPER_MODEL_KEY] || "ggml-tiny",
+      googleApiKey: persistentStore[VOICE_GOOGLE_API_KEY] || "",
+    };
+  });
+
+  ipcMain.handle("voice:get-status", (_, modelName: string) => {
+    return whisperManager.getStatus(modelName);
+  });
+
+  ipcMain.handle("voice:download-model", async (event, modelName: string) => {
+    try {
+      await whisperManager.downloadModel(modelName, (progress) => {
+        event.sender.send("voice:model-progress", progress);
+      });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || "Download failed" };
+    }
+  });
+
+  ipcMain.handle("voice:start-local-session", (_, sessionId: string, modelName: string, language?: string, translate?: boolean) => {
+    return whisperManager.startSession(sessionId, modelName, language, translate);
+  });
+
+  ipcMain.handle("voice:push-audio-chunk", async (event, sessionId: string, audioData: ArrayBuffer) => {
+    const result = await whisperManager.pushChunk(sessionId, Buffer.from(audioData));
+    if (result) {
+      event.sender.send("voice:transcript", {
+        sessionId,
+        text: result.text,
+        error: result.error,
+      });
+    }
+    return result;
+  });
+
+  ipcMain.handle("voice:stop-local-session", (_, sessionId: string) => {
+    whisperManager.stopSession(sessionId);
+    return { success: true };
+  });
+}
+
+function setupInAppUpdaterIpc() {
+  ipcMain.handle(
+    "download-and-install-update",
+    async (_, downloadUrl: string) => {
+      try {
+        const tempDir = path.join(app.getPath("temp"), "devkithub-update");
+        if (!fs.existsSync(tempDir)) {
+          fs.mkdirSync(tempDir, { recursive: true });
+        }
+
+        const fileName = path.basename(new URL(downloadUrl).pathname) || "update-installer.exe";
+        const filePath = path.join(tempDir, fileName);
+
+        if (mainWindowRef) {
+          mainWindowRef.webContents.send("update-download-progress", {
+            status: "downloading",
+            percent: 0,
+          });
+        }
+
+        const https = require("https");
+        const http = require("http");
+        const client = downloadUrl.startsWith("https") ? https : http;
+
+        await new Promise<void>((resolve, reject) => {
+          const file = fs.createWriteStream(filePath);
+          client
+            .get(downloadUrl, (response: any) => {
+              if (response.statusCode === 302 || response.statusCode === 301) {
+                client
+                  .get(response.headers.location, (redirected: any) => {
+                    const totalBytes = parseInt(
+                      redirected.headers["content-length"] || "0",
+                      10,
+                    );
+                    let downloaded = 0;
+
+                    redirected.on("data", (chunk: Buffer) => {
+                      downloaded += chunk.length;
+                      if (totalBytes > 0 && mainWindowRef) {
+                        mainWindowRef.webContents.send(
+                          "update-download-progress",
+                          {
+                            status: "downloading",
+                            percent: Math.round(
+                              (downloaded / totalBytes) * 100,
+                            ),
+                          },
+                        );
+                      }
+                    });
+                    redirected.pipe(file);
+                    file.on("finish", () => {
+                      file.close();
+                      resolve();
+                    });
+                  })
+                  .on("error", reject);
+                return;
+              }
+
+              const totalBytes = parseInt(
+                response.headers["content-length"] || "0",
+                10,
+              );
+              let downloaded = 0;
+
+              response.on("data", (chunk: Buffer) => {
+                downloaded += chunk.length;
+                if (totalBytes > 0 && mainWindowRef) {
+                  mainWindowRef.webContents.send(
+                    "update-download-progress",
+                    {
+                      status: "downloading",
+                      percent: Math.round((downloaded / totalBytes) * 100),
+                    },
+                  );
+                }
+              });
+              response.pipe(file);
+              file.on("finish", () => {
+                file.close();
+                resolve();
+              });
+            })
+            .on("error", reject);
+        });
+
+        if (mainWindowRef) {
+          mainWindowRef.webContents.send("update-download-progress", {
+            status: "installing",
+            percent: 100,
+          });
+        }
+
+        const { exec } = require("child_process");
+        exec(`"${filePath}"`, (err: any) => {
+          if (!err) {
+            app.quit();
+          }
+        });
+
+        return { success: true, filePath };
+      } catch (err: any) {
+        console.error("Update download failed:", err);
+        return { success: false, error: err.message };
+      }
+    },
+  );
+}
+
+function setupCopyToastIpc() {
+  ipcMain.handle("show-copy-toast", (_, content: string) => {
+    if (!Notification.isSupported()) return false;
+    const truncated =
+      content.length > 100 ? content.substring(0, 100) + "..." : content;
+    const notification = new Notification({
+      title: "Copied to clipboard",
+      body: truncated,
+      silent: true,
+    });
+    notification.show();
+    return true;
+  });
+}
+
+function setupPortKillIpc() {
+  ipcMain.handle("port-kill:scan", async () => {
+    const { exec } = require("child_process");
+    const platform = process.platform;
+
+    return new Promise((resolve) => {
+      let cmd: string;
+      if (platform === "win32") {
+        cmd = "netstat -ano -p TCP";
+      } else {
+        cmd = "lsof -iTCP -sTCP:LISTEN -n -P";
+      }
+
+      exec(
+        cmd,
+        { maxBuffer: 1024 * 1024 * 5 },
+        (err: Error | null, stdout: string) => {
+          if (err) {
+            resolve([]);
+            return;
+          }
+
+          const results: Array<{
+            port: number;
+            pid: number;
+            protocol: string;
+            process: string;
+            address: string;
+          }> = [];
+
+          if (platform === "win32") {
+            const lines = stdout.split("\n").slice(4);
+            const pidNames: Record<number, string> = {};
+
+            for (const line of lines) {
+              const parts = line.trim().split(/\s+/);
+              if (parts.length < 5) continue;
+              const proto = parts[0];
+              const local = parts[1];
+              const state = parts[3];
+              const pid = parseInt(parts[4], 10);
+
+              if (state !== "LISTENING") continue;
+              if (isNaN(pid) || pid === 0) continue;
+
+              const portMatch = local.match(/:(\d+)$/);
+              if (!portMatch) continue;
+              const port = parseInt(portMatch[1], 10);
+
+              results.push({
+                port,
+                pid,
+                protocol: proto,
+                process: pidNames[pid] || "",
+                address: local.replace(/:(\d+)$/, ""),
+              });
+            }
+
+            // Enrich with process names via tasklist
+            const pids = [...new Set(results.map((r) => r.pid))];
+            if (pids.length > 0) {
+              try {
+                const { execSync } = require("child_process");
+                const taskOutput = execSync(
+                  `tasklist /FO CSV /NH /FI "PID eq ${pids.join('" /FI "PID eq ')}"`,
+                  { encoding: "utf-8", maxBuffer: 1024 * 1024 },
+                );
+                for (const tLine of taskOutput.split("\n")) {
+                  const match = tLine.match(/"([^"]+)","(\d+)"/);
+                  if (match) {
+                    const name = match[1];
+                    const p = parseInt(match[2], 10);
+                    pidNames[p] = name;
+                  }
+                }
+                for (const r of results) {
+                  if (!r.process && pidNames[r.pid]) {
+                    r.process = pidNames[r.pid];
+                  }
+                }
+              } catch {}
+            }
+          } else {
+            const lines = stdout.split("\n").slice(1);
+            for (const line of lines) {
+              const parts = line.trim().split(/\s+/);
+              if (parts.length < 9) continue;
+              const processName = parts[0];
+              const pid = parseInt(parts[1], 10);
+              const nameCol = parts[8];
+              const portMatch = nameCol.match(/:(\d+)$/);
+              if (!portMatch) continue;
+              const port = parseInt(portMatch[1], 10);
+              const address = nameCol.replace(/:(\d+)$/, "");
+
+              results.push({
+                port,
+                pid,
+                protocol: "TCP",
+                process: processName,
+                address,
+              });
+            }
+          }
+
+          // Deduplicate by port+pid
+          const seen = new Set<string>();
+          const deduped = results.filter((r) => {
+            const key = `${r.port}:${r.pid}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+
+          resolve(deduped.sort((a, b) => a.port - b.port));
+        },
+      );
+    });
+  });
+
+  ipcMain.handle("port-kill:kill", async (_, pid: number) => {
+    const { exec } = require("child_process");
+    const platform = process.platform;
+
+    return new Promise((resolve) => {
+      const cmd =
+        platform === "win32" ? `taskkill /PID ${pid} /F` : `kill -9 ${pid}`;
+
+      exec(cmd, (err: Error | null) => {
+        if (err) {
+          resolve({ success: false, error: err.message });
+        } else {
+          resolve({ success: true });
+        }
+      });
+    });
+  });
+}
+
+function setupScreenshotIpc() {
+  ipcMain.handle(
+    "capture-tool-screenshot",
+    async (_, route: string, slug: string) => {
+      if (!mainWindowRef) return null;
+
+      const originalSize = mainWindowRef.getSize();
+      const originalPos = mainWindowRef.getPosition();
+
+      mainWindowRef.setSize(1920, 1080);
+      mainWindowRef.webContents.send("navigate-to", route);
+
+      await new Promise((r) => setTimeout(r, 2000));
+
+      const image = await mainWindowRef.webContents.capturePage();
+      const pngBuffer = image.toPNG();
+
+      const screenshotsDir = path.join(app.getPath("userData"), "screenshots");
+      if (!fs.existsSync(screenshotsDir)) {
+        fs.mkdirSync(screenshotsDir, { recursive: true });
+      }
+
+      const filePath = path.join(screenshotsDir, `${slug}.png`);
+      fs.writeFileSync(filePath, pngBuffer);
+
+      mainWindowRef.setSize(originalSize[0], originalSize[1]);
+      mainWindowRef.setPosition(originalPos[0], originalPos[1]);
+
+      return filePath;
+    },
+  );
+
+  ipcMain.handle("get-screenshots-dir", () => {
+    return path.join(app.getPath("userData"), "screenshots");
+  });
 }
 
 function registerLocalSoundProtocol() {
@@ -385,17 +848,22 @@ function createTray() {
 app.whenReady().then(async () => {
   registerLocalSoundProtocol();
   loadSettings();
+
+  // Apply Google API key from settings so Chromium's Web Speech API can authenticate
+  const savedGoogleKey = persistentStore[VOICE_GOOGLE_API_KEY];
+  if (savedGoogleKey) {
+    process.env.GOOGLE_API_KEY = savedGoogleKey;
+  }
+
   setupSecureStore();
-  // registerScreenRecorderIpc();
-  // setupDisplayMediaHandler();
-  // registerCursorTrackerIpc();
-  // registerShortcutIpc();
-  // registerGlobalShortcuts();
-  // registerExporterIpc();
-  // registerFfmpegRecorderIpc();
-  // registerProjectManagerIpc();
+  setupVoiceShortcutIpc();
+  setupCopyToastIpc();
+  setupScreenshotIpc();
+  setupPortKillIpc();
+  setupInAppUpdaterIpc();
   createTray();
   createWindow();
+  registerVoiceShortcut();
 
   // Attach autostart prompt after window load; applies if already decided
   attachAutostartPrompt(
@@ -407,6 +875,7 @@ app.whenReady().then(async () => {
   // for applications and their menu bar to stay active until the user quits
   // explicitly with Cmd + Q.
   app.on("window-all-closed", () => {
+    globalShortcut.unregisterAll();
     if (process.platform !== "darwin") {
       app.quit();
     }

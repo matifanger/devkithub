@@ -38,9 +38,17 @@ import { php } from "@codemirror/lang-php";
 import React, { useCallback, useState, useEffect } from "react";
 import { useToolState } from "../hooks/useToolState";
 import { AppCodeMirror } from "../components/app-code-mirror";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorGrid,
+  ToolEditorPanel,
+  ToolToolbar,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
-import { CopyButton } from "../components/ui/copy-button";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import {
@@ -858,13 +866,11 @@ export function CodeCommentsRemoverPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Code Comments Remover</h1>
-        <p className="text-muted-foreground">
-          Remove comments from source code in 30+ programming languages
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Code Comments Remover"
+        description="Remove comments from source code in 30+ programming languages"
+      />
 
       <Card className="p-4 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -925,11 +931,11 @@ export function CodeCommentsRemoverPage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Input Code</Label>
-            <div className="flex gap-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input Code"
+          actions={
+            <ToolToolbar>
               <Button
                 variant="outline"
                 size="sm"
@@ -940,48 +946,46 @@ export function CodeCommentsRemoverPage() {
               <Button variant="outline" size="sm" onClick={handleSample}>
                 Sample
               </Button>
-            </div>
-          </div>
+            </ToolToolbar>
+          }
+          heightClass="h-[calc(100vh-20rem)]"
+        >
           <AppCodeMirror
             value={input}
             onChange={handleInputChange}
-            height="calc(100vh - 20rem)"
+            height="100%"
             extensions={[
               getLanguageExtension(language),
               EditorView.lineWrapping,
             ]}
-            className="border rounded-md"
+            className="border rounded-md h-full"
           />
-        </div>
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Output Code</Label>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleClear}>
-                Clear
-              </Button>
-              <CopyButton value={output} src="comments-removed" />
-            </div>
-          </div>
+        <ToolEditorPanel
+          label="Output Code"
+          actions={
+            <ToolToolbar>
+              <ToolClearButton onClear={handleClear} />
+              <ToolCopyButton value={output} />
+            </ToolToolbar>
+          }
+          heightClass="h-[calc(100vh-20rem)]"
+        >
           <AppCodeMirror
             value={output}
-            height="calc(100vh - 20rem)"
+            height="100%"
             extensions={[
               getLanguageExtension(language),
               EditorView.lineWrapping,
             ]}
             editable={false}
-            className="border rounded-md"
+            className="border rounded-md h-full"
           />
-        </div>
-      </div>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
 
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {error}
-        </div>
-      )}
-    </div>
+      <ToolErrorBanner error={error} />
+    </ToolPageContainer>
   );
 }

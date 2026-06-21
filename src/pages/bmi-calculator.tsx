@@ -18,7 +18,11 @@
  */
 
 import React, { useMemo } from "react";
-import { Button } from "../components/ui/button";
+import { ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+} from "../components/tool-page-layout";
 import {
   Card,
   CardContent,
@@ -200,18 +204,12 @@ export function BMICalculatorPage() {
     return null;
   }, [unitSystem, heightCm, heightFt, heightIn]);
 
-  const handleClear = () => {
-    clearState();
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">BMI Calculator</h1>
-        <p className="text-muted-foreground">
-          Calculate your Body Mass Index and check your health category
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="BMI Calculator"
+        description="Calculate your Body Mass Index and check your health category"
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -323,9 +321,7 @@ export function BMICalculatorPage() {
               </>
             )}
 
-            <Button variant="outline" onClick={handleClear}>
-              Clear
-            </Button>
+            <ToolClearButton onClear={clearState} />
           </CardContent>
         </Card>
 
@@ -398,6 +394,6 @@ export function BMICalculatorPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

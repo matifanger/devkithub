@@ -1,9 +1,14 @@
 import { javascript } from '@codemirror/lang-javascript';
 import React, { useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -121,13 +126,11 @@ cron.schedule('${cronExpression}', () => {
 ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Cron Job Parser</h1>
-        <p className="text-muted-foreground">
-          Parse and understand cron expressions with a clear breakdown and the next execution times
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Cron Job Parser"
+        description="Parse and understand cron expressions with a clear breakdown and the next execution times"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
@@ -140,15 +143,8 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
               >
                 Paste
               </Button>
-              <Button variant="outline" onClick={() => setCronExpression('* * * * *')}>
-                Reset
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigator.clipboard.writeText(cronExpression)}
-              >
-                Copy
-              </Button>
+              <ToolClearButton onClear={() => setCronExpression('* * * * *')} label="Reset" />
+              <ToolCopyButton value={cronExpression} />
             </div>
           </div>
 
@@ -159,12 +155,13 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
             className="font-mono"
           />
 
-          {cronExpression.trim().split(' ').length !== 5 && (
-            <div className="text-sm text-destructive">
-              Invalid cron expression: expected 5 fields (minute hour day-of-month month
-              day-of-week)
-            </div>
-          )}
+          <ToolErrorBanner
+            error={
+              cronExpression.trim().split(' ').length !== 5
+                ? 'Invalid cron expression: expected 5 fields (minute hour day-of-month month day-of-week)'
+                : ''
+            }
+          />
 
           <div className="space-y-4">
             <div className="space-y-2">
@@ -175,7 +172,7 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
                   readOnly
                   className="font-mono bg-muted flex-1"
                 />
-                <CopyButton value={fields.minute} src="minute" />
+                <ToolCopyButton value={fields.minute} />
               </div>
             </div>
 
@@ -187,7 +184,7 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
                   readOnly
                   className="font-mono bg-muted flex-1"
                 />
-                <CopyButton value={fields.hour} src="hour" />
+                <ToolCopyButton value={fields.hour} />
               </div>
             </div>
 
@@ -199,7 +196,7 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
                   readOnly
                   className="font-mono bg-muted flex-1"
                 />
-                <CopyButton value={fields.dayOfMonth} src="day-of-month" />
+                <ToolCopyButton value={fields.dayOfMonth} />
               </div>
             </div>
 
@@ -211,7 +208,7 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
                   readOnly
                   className="font-mono bg-muted flex-1"
                 />
-                <CopyButton value={fields.month} src="month" />
+                <ToolCopyButton value={fields.month} />
               </div>
             </div>
 
@@ -223,7 +220,7 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
                   readOnly
                   className="font-mono bg-muted flex-1"
                 />
-                <CopyButton value={fields.dayOfWeek} src="day-of-week" />
+                <ToolCopyButton value={fields.dayOfWeek} />
               </div>
             </div>
           </div>
@@ -292,6 +289,6 @@ ${nextExecutions.map((exec) => `// ${exec}`).join('\n')}`;
           </Tabs>
         </div>
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

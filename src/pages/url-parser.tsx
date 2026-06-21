@@ -1,7 +1,13 @@
 import { javascript } from '@codemirror/lang-javascript';
-import { Copy, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -121,14 +127,6 @@ export function UrlParserPage() {
     [settings]
   );
 
-  const handleCopy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (error) {
-      console.error('Failed to copy:', error);
-    }
-  };
-
   const handleSample = () => {
     const sample =
       'https://user:pass@api.example.com:8080/path/to/resource?key1=value1&key2=value2&complex=%7B%22nested%22%3A%22value%22%7D#section-1';
@@ -145,14 +143,11 @@ export function UrlParserPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">URL Parser</h1>
-        <p className="text-muted-foreground">
-          Parse, analyze, and format URLs. Supports complex URLs with authentication, query
-          parameters, and fragments.
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="URL Parser"
+        description="Parse, analyze, and format URLs. Supports complex URLs with authentication, query parameters, and fragments."
+      />
 
       <div className="space-y-6">
         <Card>
@@ -228,9 +223,7 @@ export function UrlParserPage() {
                 <Button variant="outline" onClick={handleSample}>
                   Sample
                 </Button>
-                <Button variant="outline" onClick={() => setUrl('')}>
-                  Clear
-                </Button>
+                <ToolClearButton onClear={() => setUrl('')} />
               </div>
             </div>
             <div className="space-y-4">
@@ -243,11 +236,7 @@ export function UrlParserPage() {
                 placeholder="Enter URL (e.g., https://user:pass@example.com:8080/path?query=123#hash)"
                 className="font-mono"
               />
-              {error && (
-                <div className="p-3 text-sm text-red-500 bg-red-100 dark:bg-red-900/30 rounded-md">
-                  {error}
-                </div>
-              )}
+              <ToolErrorBanner error={error} />
             </div>
           </CardContent>
         </Card>
@@ -280,14 +269,7 @@ export function UrlParserPage() {
                               {value || '(empty)'}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleCopy(value)}
-                                className="h-8 w-8 p-0 hover:bg-muted"
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
+                              <ToolCopyButton value={value} size="icon" variant="ghost" className="h-8 w-8 p-0 hover:bg-muted" />
                             </TableCell>
                           </TableRow>
                         );
@@ -319,14 +301,7 @@ export function UrlParserPage() {
                               {value}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleCopy(value)}
-                                className="h-8 w-8 p-0 hover:bg-muted"
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
+                              <ToolCopyButton value={value} size="icon" variant="ghost" className="h-8 w-8 p-0 hover:bg-muted" />
                             </TableCell>
                           </TableRow>
                         ))}
@@ -346,15 +321,7 @@ export function UrlParserPage() {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle>JSON Format</CardTitle>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCopy(JSON.stringify(parsedUrl, null, 2))}
-                          className="gap-2"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Copy
-                        </Button>
+                        <ToolCopyButton value={JSON.stringify(parsedUrl, null, 2)} />
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -376,15 +343,7 @@ export function UrlParserPage() {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle>cURL Command</CardTitle>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCopy(generateCurl(parsedUrl))}
-                          className="gap-2"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Copy
-                        </Button>
+                        <ToolCopyButton value={generateCurl(parsedUrl)} />
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -405,15 +364,7 @@ export function UrlParserPage() {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle>Fetch API</CardTitle>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCopy(generateFetch(parsedUrl))}
-                          className="gap-2"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Copy
-                        </Button>
+                        <ToolCopyButton value={generateFetch(parsedUrl)} />
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -436,6 +387,6 @@ export function UrlParserPage() {
           )}
         </div>
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

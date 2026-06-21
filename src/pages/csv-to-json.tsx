@@ -55,7 +55,7 @@ export function CsvToJsonPage() {
         setOutput('');
       }
     },
-    []
+    [delimiter, header]
   );
 
   const handleSample = () => {

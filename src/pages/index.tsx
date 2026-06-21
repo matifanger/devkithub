@@ -2,6 +2,7 @@ import { Search, X, Lock } from "lucide-react";
 import * as React from "react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { NewsCarousel, useNewsItems } from "../components/news-carousel";
 import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { useUpgradeModal } from "../contexts/upgrade-modal-context";
@@ -65,7 +66,19 @@ function CategorySection({
 }
 
 export function MainPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(
+    () => sessionStorage.getItem("devkithub-search") || "",
+  );
+
+  const updateSearch = (value: string) => {
+    setSearchQuery(value);
+    if (value) {
+      sessionStorage.setItem("devkithub-search", value);
+    } else {
+      sessionStorage.removeItem("devkithub-search");
+    }
+  };
+  const { items: newsItems, dismissed, dismiss } = useNewsItems();
 
   const filteredTools = useMemo(() => {
     if (!searchQuery) return allTools;
@@ -125,14 +138,14 @@ export function MainPage() {
               </div>
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => updateSearch(e.target.value)}
                 type="text"
                 placeholder={`Search among ${allTools.length} tools...`}
                 className="block w-full pl-12 pr-10 py-2.5 border-2 border-input rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => updateSearch("")}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
@@ -147,9 +160,18 @@ export function MainPage() {
               {filteredTools.length !== 1 ? "s" : ""}
             </p>
           )}
+
+          {newsItems.length > 0 && !dismissed && (
+            <div className="mt-4 w-full max-w-2xl mx-auto">
+              <NewsCarousel
+                items={newsItems}
+                onDismiss={dismiss}
+              />
+            </div>
+          )}
         </div>
 
-        <div className="w-full max-w-6xl pb-6 px-4">
+        <div className="w-full max-w-8xl pb-6 px-4">
           {filteredTools.length === 0 ? (
             <div className="text-center py-12">
               <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

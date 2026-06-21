@@ -13,7 +13,7 @@ export function LoginPage() {
   const [key, setKey] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('purple-default');
+  const [currentTheme, setCurrentTheme] = useState('elegant-luxury');
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { setTheme, theme: themeMode } = useTheme();
@@ -29,10 +29,10 @@ export function LoginPage() {
 
         let themeObj = getSelectedThemeObject(selectedTheme, customThemes);
 
-        // Fallback to purple-default if theme not found
+        // Fallback to elegant-luxury if theme not found
         if (!themeObj) {
-          themeObj = getSelectedThemeObject('purple-default', customThemes);
-          setCurrentTheme('purple-default');
+          themeObj = getSelectedThemeObject('elegant-luxury', customThemes);
+          setCurrentTheme('elegant-luxury');
         } else {
           setCurrentTheme(selectedTheme);
         }
@@ -44,7 +44,7 @@ export function LoginPage() {
       } catch {
         // Fallback to purple on any error
         setTheme('light');
-        setCurrentTheme('purple-default');
+        setCurrentTheme('elegant-luxury');
       }
     };
     loadTheme();

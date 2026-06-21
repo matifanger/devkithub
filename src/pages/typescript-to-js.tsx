@@ -19,7 +19,15 @@ import sucrase from "sucrase";
 import React, { useCallback, useEffect, useState } from "react";
 import { AppCodeMirror } from "../components/app-code-mirror";
 import { Button } from "../components/ui/button";
-import { Label } from "../components/ui/label";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 
 export function TypescriptToJsPage() {
   const [input, setInput] = useState("");
@@ -67,82 +75,48 @@ const users: User[] = [
 ];`);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">TypeScript to JavaScript</h1>
-        <p className="text-muted-foreground">
-          Convert TypeScript code to JavaScript
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="TypeScript to JavaScript"
+        description="Convert TypeScript code to JavaScript"
+      />
 
-      <div className="flex gap-4">
+      <ToolToolbar>
         <Button variant="outline" onClick={handleSample}>
           Sample
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setInput("");
-            setOutput("");
-          }}
+        <ToolClearButton onClear={() => { setInput(""); setOutput(""); }} />
+      </ToolToolbar>
+
+      <ToolEditorGrid>
+        <ToolEditorPanel label="Input TypeScript">
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setInput}
+            placeholder="Paste your TypeScript here..."
+            extensions={[javascript({ typescript: true })]}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label="Output JavaScript"
+          actions={<ToolCopyButton value={output} />}
         >
-          Clear
-        </Button>
-      </div>
-
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">Input TypeScript</Label>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={setInput}
-              placeholder="Paste your TypeScript here..."
-              extensions={[javascript({ typescript: true })]}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="output">Output JavaScript</Label>
-            {output && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(output)}
-              >
-                Copy
-              </Button>
-            )}
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              width="100%"
               extensions={[javascript()]}
               editable={false}
               basicSetup={{
@@ -151,9 +125,9 @@ const users: User[] = [
                 highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-      </div>
-    </div>
+          )}
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

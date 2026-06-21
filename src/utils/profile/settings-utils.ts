@@ -9,14 +9,14 @@ export async function loadThemePreferences() {
     const savedThemeMode = await window.electron.settingsStore.get(UPDATE_THEME_KEY);
 
     return {
-      selectedTheme: savedTheme || 'purple-default',
+      selectedTheme: savedTheme || 'elegant-luxury',
       customThemes: savedCustomThemes ? JSON.parse(savedCustomThemes) : [],
       themeMode: savedThemeMode,
     };
   } catch (error) {
     console.error('Failed to load theme preferences:', error);
     return {
-      selectedTheme: 'purple-default',
+      selectedTheme: 'elegant-luxury',
       customThemes: [],
       themeMode: null,
     };

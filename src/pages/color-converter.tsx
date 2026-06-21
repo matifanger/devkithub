@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -197,14 +201,11 @@ text-[${formats.hex}]
 border-[${formats.hex}]`;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Color Converter</h1>
-        <p className="text-muted-foreground">
-          Professional color format converter with support for HEX, RGB(A), HSL(A), HSB/HSV, HWB,
-          and CMYK
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Color Converter"
+        description="Professional color format converter with support for HEX, RGB(A), HSL(A), HSB/HSV, HWB, and CMYK"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
@@ -217,9 +218,7 @@ border-[${formats.hex}]`;
               >
                 Clipboard
               </Button>
-              <Button variant="outline" onClick={() => setColor('#000000')}>
-                Clear
-              </Button>
+              <ToolClearButton onClear={() => setColor('#000000')} />
             </div>
           </div>
 
@@ -243,7 +242,7 @@ border-[${formats.hex}]`;
               <Label>HEX</Label>
               <div className="flex gap-2">
                 <Input value={formats.hex} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.hex} src="hex" />
+                <ToolCopyButton value={formats.hex} />
               </div>
             </div>
 
@@ -251,7 +250,7 @@ border-[${formats.hex}]`;
               <Label>HEX (with alpha)</Label>
               <div className="flex gap-2">
                 <Input value={formats.hexAlpha} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.hexAlpha} src="hex-alpha" />
+                <ToolCopyButton value={formats.hexAlpha} />
               </div>
             </div>
 
@@ -259,7 +258,7 @@ border-[${formats.hex}]`;
               <Label>RGB</Label>
               <div className="flex gap-2">
                 <Input value={formats.rgb} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.rgb} src="rgb" />
+                <ToolCopyButton value={formats.rgb} />
               </div>
             </div>
 
@@ -267,7 +266,7 @@ border-[${formats.hex}]`;
               <Label>RGBA</Label>
               <div className="flex gap-2">
                 <Input value={formats.rgba} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.rgba} src="rgba" />
+                <ToolCopyButton value={formats.rgba} />
               </div>
             </div>
 
@@ -275,7 +274,7 @@ border-[${formats.hex}]`;
               <Label>HSL</Label>
               <div className="flex gap-2">
                 <Input value={formats.hsl} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.hsl} src="hsl" />
+                <ToolCopyButton value={formats.hsl} />
               </div>
             </div>
 
@@ -283,7 +282,7 @@ border-[${formats.hex}]`;
               <Label>HSLA</Label>
               <div className="flex gap-2">
                 <Input value={formats.hsla} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.hsla} src="hsla" />
+                <ToolCopyButton value={formats.hsla} />
               </div>
             </div>
 
@@ -291,7 +290,7 @@ border-[${formats.hex}]`;
               <Label>HSB/HSV</Label>
               <div className="flex gap-2">
                 <Input value={formats.hsb} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.hsb} src="hsb" />
+                <ToolCopyButton value={formats.hsb} />
               </div>
             </div>
 
@@ -299,7 +298,7 @@ border-[${formats.hex}]`;
               <Label>HWB</Label>
               <div className="flex gap-2">
                 <Input value={formats.hwb} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.hwb} src="hwb" />
+                <ToolCopyButton value={formats.hwb} />
               </div>
             </div>
 
@@ -307,7 +306,7 @@ border-[${formats.hex}]`;
               <Label>CMYK</Label>
               <div className="flex gap-2">
                 <Input value={formats.cmyk} readOnly className="font-mono bg-muted flex-1" />
-                <CopyButton value={formats.cmyk} src="cmyk" />
+                <ToolCopyButton value={formats.cmyk} />
               </div>
             </div>
           </div>
@@ -404,6 +403,6 @@ border-[${formats.hex}]`;
           </Tabs>
         </div>
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

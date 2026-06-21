@@ -4,6 +4,14 @@ import { Settings } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { format } from 'sql-formatter';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
@@ -114,8 +122,10 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleClear = () => {
+    setInput('');
+    setOutput('');
+    setError('');
   };
 
   const updateConfig = <K extends keyof FormatterConfig>(key: K, value: ConfigValue<K>) => {
@@ -125,19 +135,17 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">SQL Formatter</h1>
-        <p className="text-muted-foreground">
-          Format and beautify SQL queries with customizable options
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="SQL Formatter"
+        description="Format and beautify SQL queries with customizable options"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Label>Input SQL</Label>
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input SQL"
+          actions={
+            <>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
@@ -347,74 +355,56 @@ GROUP BY u.id, u.name, u.email HAVING total_orders > 0 ORDER BY total_amount DES
                   </div>
                 </PopoverContent>
               </Popover>
-            </div>
-            <div className="space-x-2">
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setInput('');
-                  setOutput('');
-                  setError('');
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+              <ToolClearButton onClear={handleClear} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            extensions={[sql(), EditorView.lineWrapping]}
+            onChange={(value) => {
+              setInput(value);
+              formatSql(value);
+            }}
+            placeholder="Paste your SQL query here"
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label="Formatted SQL"
+          actions={<ToolCopyButton value={output} />}
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
+              value={output}
               height="100%"
+              className="h-[calc(100vh-17rem)]"
               extensions={[sql(), EditorView.lineWrapping]}
-              onChange={(value) => {
-                setInput(value);
-                formatSql(value);
-              }}
-              placeholder="Paste your SQL query here"
+              editable={false}
               basicSetup={{
                 lineNumbers: true,
                 foldGutter: true,
-                highlightActiveLine: true,
+                highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Formatted SQL</Label>
-            <Button variant="outline" onClick={() => copyToClipboard(output)}>
-              Copy
-            </Button>
-          </div>
-
-          {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          ) : (
-            <div className="h-[calc(100vh-17rem)]">
-              <AppCodeMirror
-                value={output}
-                height="100%"
-                className="h-[calc(100vh-17rem)]"
-                extensions={[sql(), EditorView.lineWrapping]}
-                editable={false}
-                basicSetup={{
-                  lineNumbers: true,
-                  foldGutter: true,
-                  highlightActiveLine: false,
-                }}
-              />
-            </div>
           )}
-        </div>
-      </div>
-    </div>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

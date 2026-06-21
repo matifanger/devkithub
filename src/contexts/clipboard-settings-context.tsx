@@ -19,15 +19,21 @@ export function ClipboardSettingsProvider({ children }: { children: React.ReactN
         const storedValue = await window.electron.settingsStore.get(
           CLIPBOARD_RECOMMENDATIONS_ENABLED_KEY
         );
-        if (storedValue !== null) {
-          setIsEnabled(JSON.parse(storedValue));
-        } else {
-          // If no stored value, default to enabled
+        if (storedValue === null || storedValue === undefined) {
           setIsEnabled(true);
+        } else if (typeof storedValue === 'boolean') {
+          setIsEnabled(storedValue);
+        } else if (storedValue === 'true' || storedValue === 'false') {
+          setIsEnabled(storedValue === 'true');
+        } else {
+          try {
+            setIsEnabled(JSON.parse(storedValue));
+          } catch {
+            setIsEnabled(true);
+          }
         }
       } catch (error) {
         console.warn('Failed to load clipboard settings:', error);
-        // On error, default to enabled
         setIsEnabled(true);
       } finally {
         setIsLoading(false); // Settings loaded, stop loading

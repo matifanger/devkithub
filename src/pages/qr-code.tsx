@@ -3,6 +3,12 @@ import jsQR from 'jsqr';
 import { QRCodeCanvas } from 'qrcode.react';
 import React, { Component, useCallback, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import {
@@ -338,11 +344,11 @@ export function QRCodePage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">QR Code Reader/Generator</h1>
-        <p className="text-muted-foreground">Generate and read QR codes with advanced options</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="QR Code Reader/Generator"
+        description="Generate and read QR codes with advanced options"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
@@ -374,9 +380,7 @@ export function QRCodePage() {
               <Button variant="outline" onClick={handlePaste}>
                 Clipboard
               </Button>
-              <Button variant="outline" onClick={handleClear}>
-                Clear
-              </Button>
+              <ToolClearButton onClear={handleClear} />
             </div>
           </div>
 
@@ -412,7 +416,7 @@ export function QRCodePage() {
                 %
               </div>
             </div>
-            {error && <div className="text-sm text-red-500 whitespace-pre-line">{error}</div>}
+            <ToolErrorBanner error={error ?? ''} />
             {info && <div className="text-sm text-green-500">{info}</div>}
           </div>
         </div>
@@ -548,6 +552,6 @@ export function QRCodePage() {
       <p className="text-sm text-muted-foreground text-center">
         Make sure to test your QR code before using it in production.
       </p>
-    </div>
+    </ToolPageContainer>
   );
 }

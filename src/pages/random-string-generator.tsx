@@ -2,6 +2,14 @@ import { EditorView } from '@codemirror/view';
 import { RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -13,6 +21,7 @@ import {
   SelectValue,
 } from '../components/ui/select';
 
+import { ScrollArea } from '../components/ui/scroll-area';
 import { Slider } from '../components/ui/slider';
 import { Switch } from '../components/ui/switch';
 
@@ -323,16 +332,15 @@ export function RandomStringGeneratorPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Random String Generator</h1>
-        <p className="text-muted-foreground">
-          Generate random strings with customizable options and presets
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Random String Generator"
+        description="Generate random strings with customizable options and presets"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-4 overflow-y-auto h-[calc(100vh-12rem)] pr-2">
+      <ToolEditorGrid>
+        <ScrollArea className="h-[calc(100vh-12rem)] pr-2">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>Configuration</Label>
             <Button variant="outline" onClick={generateString}>
@@ -618,35 +626,32 @@ export function RandomStringGeneratorPage() {
             )}
           </div>
         </div>
+        </ScrollArea>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label>Output</Label>
-            <Button variant="outline" onClick={() => navigator.clipboard.writeText(output)}>
-              Copy
-            </Button>
-          </div>
-
-          {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          )}
-
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={output}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              extensions={[EditorView.lineWrapping]}
-              editable={false}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: false,
-              }}
-            />
-          </div>
+          <ToolEditorPanel
+            label="Output"
+            actions={<ToolCopyButton value={output} />}
+            heightClass="h-[calc(100vh-17rem)]"
+          >
+            <>
+              <ToolErrorBanner error={error} />
+              <AppCodeMirror
+                value={output}
+                className="h-[calc(100vh-17rem)]"
+                height="100%"
+                extensions={[EditorView.lineWrapping]}
+                editable={false}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: false,
+                }}
+              />
+            </>
+          </ToolEditorPanel>
         </div>
-      </div>
-    </div>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/auth-context";
 import { TopNavbar } from "../components/top-navbar";
 import { ProfileModal } from "../components/profile-modal";
@@ -45,7 +45,7 @@ function ThemeLoader({ children }: { children: React.ReactNode }) {
         let themeObj = getSelectedThemeObject(selectedTheme, customThemes);
 
         if (!themeObj) {
-          themeObj = getSelectedThemeObject("purple-default", customThemes);
+          themeObj = getSelectedThemeObject("elegant-luxury", customThemes);
         }
 
         if (themeObj) {
@@ -54,7 +54,7 @@ function ThemeLoader({ children }: { children: React.ReactNode }) {
         }
       } catch {
         setTheme("light");
-        const defaultTheme = getSelectedThemeObject("purple-default", []);
+        const defaultTheme = getSelectedThemeObject("elegant-luxury", []);
         if (defaultTheme) {
           applyTheme(defaultTheme, "light");
         }
@@ -70,6 +70,17 @@ function AppContent() {
   const { isAuthenticated, needsValidation, userData } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
+  useEffect(() => {
+    if (window.electron?.onNavigateTo) {
+      window.electron.onNavigateTo((route: string) => {
+        navigateRef.current(route);
+      });
+    }
+  }, []);
 
   return (
     <ProfileModalContext.Provider
@@ -77,7 +88,7 @@ function AppContent() {
     >
       <div className="flex flex-col h-screen">
         <TopNavbar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-hidden">
           <Outlet />
         </main>
       </div>

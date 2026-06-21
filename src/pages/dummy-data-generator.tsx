@@ -6,6 +6,13 @@ import { faker } from '@faker-js/faker';
 import { RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -402,10 +409,6 @@ export function DummyDataGeneratorPage() {
     }
   }, [config]);
 
-  const copyOutput = () => {
-    navigator.clipboard.writeText(output);
-  };
-
   // Auto-generate on config changes
   useEffect(() => {
     generateData();
@@ -429,15 +432,13 @@ export function DummyDataGeneratorPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Dummy Data Generator</h1>
-        <p className="text-muted-foreground">
-          Generate realistic dummy data for testing and development
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Dummy Data Generator"
+        description="Generate realistic dummy data for testing and development"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <ToolEditorGrid>
         <div className="space-y-4 overflow-y-auto h-[calc(100vh-12rem)]">
           <div className="flex items-center justify-between">
             <Label>Configuration</Label>
@@ -649,14 +650,10 @@ export function DummyDataGeneratorPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>Output</Label>
-            <Button variant="outline" onClick={copyOutput}>
-              Copy
-            </Button>
+            <ToolCopyButton value={output} />
           </div>
 
-          {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          )}
+          <ToolErrorBanner error={error} />
 
           <div className="h-[calc(100vh-17rem)]">
             <AppCodeMirror
@@ -682,7 +679,7 @@ export function DummyDataGeneratorPage() {
             />
           </div>
         </div>
-      </div>
-    </div>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

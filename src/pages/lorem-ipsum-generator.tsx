@@ -2,6 +2,7 @@ import { EditorView } from '@codemirror/view';
 import { RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton } from '../components/tool-actions';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import {
@@ -166,9 +167,6 @@ export function LoremIpsumGeneratorPage() {
     generateLoremIpsum();
   }, [config, generateLoremIpsum]);
 
-  const copyOutput = () => {
-    navigator.clipboard.writeText(output);
-  };
 
   const updateConfig = <K extends keyof GeneratorConfig>(key: K, value: GeneratorConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -346,9 +344,7 @@ export function LoremIpsumGeneratorPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>Output</Label>
-            <Button variant="outline" onClick={copyOutput}>
-              Copy
-            </Button>
+            <ToolCopyButton value={output} />
           </div>
 
           <div className="h-[calc(100vh-17rem)]">

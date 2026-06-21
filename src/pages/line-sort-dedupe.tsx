@@ -73,7 +73,7 @@ export function LineSortDedupePage() {
         setOutput('');
       }
     },
-    []
+    [sortOrder, caseSensitive, dedupe, trim]
   );
 
   const handleSample = () => {

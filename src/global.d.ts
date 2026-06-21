@@ -63,6 +63,48 @@ interface Window {
     onShowAutostartDialog: (callback: () => void) => void;
     sendAutostartSelection: (enable: boolean) => Promise<void>;
     shouldShowAutostartDialog: (currentPref: string | null) => Promise<boolean>;
+    voice: {
+      registerShortcut: () => Promise<{ success: boolean; error?: string }>;
+      unregisterShortcut: () => Promise<{ success: boolean }>;
+      getConfig: () => Promise<{ mode: string; model: string; googleApiKey: string }>;
+      getStatus: (modelName: string) => Promise<{
+        binaryInstalled: boolean;
+        modelInstalled: boolean;
+        platform: string;
+        arch: string;
+        supported: boolean;
+      }>;
+      downloadModel: (modelName: string) => Promise<{ success: boolean; error?: string }>;
+      startLocalSession: (sessionId: string, modelName: string, language?: string, translate?: boolean) => Promise<{ success: boolean; error?: string }>;
+      pushAudioChunk: (sessionId: string, audioData: ArrayBuffer) => Promise<{ text: string; error?: string } | null>;
+      stopLocalSession: (sessionId: string) => Promise<{ success: boolean }>;
+      onModelProgress: (callback: (progress: { status: string; percent: number; detail?: string }) => void) => void;
+      onTranscript: (callback: (data: { sessionId: string; text: string; error?: string }) => void) => void;
+      removeAllListeners: () => void;
+    };
+    clipboardReadText: () => Promise<string>;
+    showCopyToast: (content: string) => Promise<boolean>;
+    screenshot: {
+      captureToolScreenshot: (route: string, slug: string) => Promise<string | null>;
+      getScreenshotsDir: () => Promise<string>;
+    };
+    portKill: {
+      scanPorts: () => Promise<
+        Array<{
+          port: number;
+          pid: number;
+          protocol: string;
+          process: string;
+          address: string;
+        }>
+      >;
+      killProcess: (pid: number) => Promise<{ success: boolean; error?: string }>;
+    };
+    onNavigateTo: (callback: (route: string) => void) => void;
+    updater: {
+      downloadAndInstall: (downloadUrl: string) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+      onProgress: (callback: (progress: { status: string; percent: number }) => void) => void;
+    };
   };
   recorder: {
     setSelectedSource: (

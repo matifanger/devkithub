@@ -104,19 +104,9 @@ describe("JsObfuscatorPage", () => {
     expect(screen.getByText("Clear")).toBeDefined();
   });
 
-  it("renders Basic Options section", () => {
+  it("renders settings icon button for options popover", () => {
     render(<JsObfuscatorPage />);
-    expect(screen.getByText("Basic Options")).toBeDefined();
-  });
-
-  it("renders Advanced Options section", () => {
-    render(<JsObfuscatorPage />);
-    expect(screen.getByText("Advanced Options")).toBeDefined();
-  });
-
-  it("renders Protection Options section", () => {
-    render(<JsObfuscatorPage />);
-    expect(screen.getByText("Protection Options")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Options" })).toBeDefined();
   });
 
   it("renders input label", () => {

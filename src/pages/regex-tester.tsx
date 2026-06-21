@@ -1,7 +1,14 @@
 import { EditorView } from '@codemirror/view';
-import { Book, Copy, Settings } from 'lucide-react';
+import { Book, Settings } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolToolbar,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import {
   Dialog,
@@ -203,15 +210,13 @@ export function RegexTesterPage() {
   }, [matches, error, matchFilter]);
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Regular Expression Tester</h1>
-        <p className="text-muted-foreground">
-          Test and debug regular expressions with real-time matching
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Regular Expression Tester"
+        description="Test and debug regular expressions with real-time matching"
+      />
 
-      <div className="flex items-end gap-4">
+      <ToolToolbar>
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between">
             <Label>Pattern</Label>
@@ -335,7 +340,7 @@ export function RegexTesterPage() {
             className="font-mono"
           />
         </div>
-      </div>
+      </ToolToolbar>
 
       <div className="space-y-2">
         <Label>Test Text</Label>
@@ -362,14 +367,7 @@ export function RegexTesterPage() {
               placeholder="Filter matches (e.g. $0)"
               className="w-[200px]"
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigator.clipboard.writeText(getMatchesOutput())}
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Copy
-            </Button>
+            <ToolCopyButton value={getMatchesOutput()} />
           </div>
         </div>
         <AppCodeMirror
@@ -384,6 +382,8 @@ export function RegexTesterPage() {
           }}
         />
       </div>
-    </div>
+
+      <ToolErrorBanner error={error} />
+    </ToolPageContainer>
   );
 }

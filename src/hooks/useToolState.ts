@@ -2,19 +2,36 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface UseToolStateOptions {
   debounceMs?: number;
+  autoSave?: boolean;
+}
+
+export interface ToolStateMeta {
+  isSaving: boolean;
+  lastSavedAt: number | null;
+  autoSaveEnabled: boolean;
+  setLocalAutoSave: (enabled: boolean) => void;
 }
 
 export function useToolState<T>(
   toolId: string,
   initialState: T,
   options: UseToolStateOptions = {},
-): readonly [T, React.Dispatch<React.SetStateAction<T>>, () => Promise<void>] {
-  const { debounceMs = 500 } = options;
+): readonly [
+  T,
+  React.Dispatch<React.SetStateAction<T>>,
+  () => Promise<void>,
+  ToolStateMeta,
+] {
+  const { debounceMs = 500, autoSave = true } = options;
 
   const [state, setState] = useState<T>(initialState);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [localAutoSave, setLocalAutoSave] = useState(autoSave);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isTestEnvironment = !window.electron?.store;
+  const isTestEnvironment =
+    typeof window === "undefined" || !window.electron?.settingsStore;
 
   useEffect(() => {
     const loadState = async () => {
@@ -24,7 +41,9 @@ export function useToolState<T>(
       }
 
       try {
-        const stored = await window.electron.store.get(`tool-${toolId}`);
+        const stored = await window.electron.settingsStore.get(
+          `tool-${toolId}`,
+        );
         if (stored) {
           const parsed = JSON.parse(stored);
           const merged = { ...initialState, ...parsed };
@@ -46,21 +65,24 @@ export function useToolState<T>(
   }, [toolId, isTestEnvironment]);
 
   useEffect(() => {
-    if (!isLoaded || isTestEnvironment) return;
+    if (!isLoaded || isTestEnvironment || !localAutoSave) return;
 
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
+    setIsSaving(true);
     timeoutRef.current = setTimeout(async () => {
       try {
-        await window.electron.store.set(
+        await window.electron.settingsStore.set(
           `tool-${toolId}`,
           JSON.stringify(state),
         );
+        setLastSavedAt(Date.now());
       } catch {
-        // Ignore save errors in tests
+        // Ignore save errors
       }
+      setIsSaving(false);
     }, debounceMs);
 
     return () => {
@@ -68,14 +90,22 @@ export function useToolState<T>(
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [state, isLoaded, debounceMs, toolId, isTestEnvironment]);
+  }, [state, isLoaded, debounceMs, toolId, isTestEnvironment, localAutoSave]);
 
   const clearState = useCallback(async () => {
     if (!isTestEnvironment) {
-      await window.electron.store.delete(`tool-${toolId}`);
+      await window.electron.settingsStore.delete(`tool-${toolId}`);
     }
     setState(initialState);
+    setLastSavedAt(null);
   }, [toolId, initialState, isTestEnvironment]);
 
-  return [state, setState, clearState] as const;
+  const meta: ToolStateMeta = {
+    isSaving,
+    lastSavedAt,
+    autoSaveEnabled: localAutoSave,
+    setLocalAutoSave,
+  };
+
+  return [state, setState, clearState, meta] as const;
 }

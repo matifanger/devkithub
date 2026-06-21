@@ -22,6 +22,7 @@ import {
 } from "./constants/settings-keys";
 import { AuthProvider } from "./contexts/auth-context";
 import { UpgradeModalProvider } from "./contexts/upgrade-modal-context";
+import { AutosaveSettingsProvider } from "./contexts/autosave-settings-context";
 import { ClipboardSettingsProvider } from "./contexts/clipboard-settings-context";
 import { EditorSettingsProvider } from "./contexts/editor-settings-context";
 import { useToast } from "./hooks/use-toast";
@@ -100,6 +101,10 @@ import { UnitConverterPage } from "./pages/unit-converter";
 import { WorldClockPage } from "./pages/world-clock";
 import { TextStatisticsAnalyzerPage } from "./pages/text-statistics-analyzer";
 import { TomlParserPage } from "./pages/toml-parser";
+import { VoiceTranscriptionPage } from "./pages/voice-transcription";
+import { CodeComparisonPage } from "./pages/code-comparison";
+import { KanbanPage } from "./pages/kanban";
+import { PortKillPage } from "./pages/port-kill";
 import { ThemeProvider } from "./providers/theme-provider";
 import { getBaseApiUrl } from "./utils/environment";
 
@@ -206,8 +211,9 @@ const App = () => {
       <AuthProvider>
         <UpgradeModalProvider>
           <ClipboardSettingsProvider>
-            <EditorSettingsProvider>
-              <HashRouter>
+            <AutosaveSettingsProvider>
+              <EditorSettingsProvider>
+                <HashRouter>
                 <UpgradeModal />
                 <Routes>
                   <Route
@@ -405,6 +411,10 @@ const App = () => {
                     />
                     <Route path="/toml-parser" element={<TomlParserPage />} />
                     <Route
+                      path="/voice-transcription"
+                      element={<VoiceTranscriptionPage />}
+                    />
+                    <Route
                       path="/unit-converter"
                       element={<UnitConverterPage />}
                     />
@@ -414,6 +424,12 @@ const App = () => {
                       path="/bmi-calculator"
                       element={<BMICalculatorPage />}
                     />
+                    <Route
+                      path="/code-comparison"
+                      element={<CodeComparisonPage />}
+                    />
+                    <Route path="/kanban" element={<KanbanPage />} />
+                    <Route path="/port-kill" element={<PortKillPage />} />
                     {/* <Route path="/screen-recorder" element={<ScreenRecorderPage />} /> */}
                     {/* <Route path="/video-editor" element={<VideoEditorPage />} /> */}
                   </Route>
@@ -461,8 +477,9 @@ const App = () => {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-              </HashRouter>
-            </EditorSettingsProvider>
+                </HashRouter>
+              </EditorSettingsProvider>
+            </AutosaveSettingsProvider>
           </ClipboardSettingsProvider>
         </UpgradeModalProvider>
       </AuthProvider>

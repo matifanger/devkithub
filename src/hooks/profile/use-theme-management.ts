@@ -12,7 +12,7 @@ import { Theme, applyTheme } from '../../utils/themes';
 
 export function useThemeManagement() {
   const { theme: currentThemeMode, setTheme } = useTheme();
-  const [selectedTheme, setSelectedTheme] = useState('purple-default');
+  const [selectedTheme, setSelectedTheme] = useState('elegant-luxury');
   const [customThemes, setCustomThemes] = useState<Theme[]>([]);
 
   // Load theme preferences on mount

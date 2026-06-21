@@ -3,8 +3,15 @@ import { xml } from '@codemirror/lang-xml';
 import { EditorView } from '@uiw/react-codemirror';
 import React, { useCallback, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 
 export function SvgToCssPage() {
   const [input, setInput] = useState('');
@@ -49,90 +56,77 @@ export function SvgToCssPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleClear = () => {
+    setInput('');
+    setOutput('');
+    setError('');
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">SVG to CSS Converter</h1>
-        <p className="text-muted-foreground">
-          Convert SVG code to CSS background-image with data URI
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="SVG to CSS Converter"
+        description="Convert SVG code to CSS background-image with data URI"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">Input SVG</Label>
-            <div className="space-x-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input SVG"
+          actions={
+            <>
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setInput('');
-                  setOutput('');
-                  setError('');
+              <ToolClearButton onClear={handleClear} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            width="100%"
+            onChange={(value) => {
+              setInput(value);
+              convertToCss(value);
+            }}
+            extensions={[xml(), EditorView.lineWrapping]}
+            placeholder="Paste your SVG code here"
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label="CSS Output"
+          actions={<ToolCopyButton value={output} />}
+        >
+          <>
+            <ToolErrorBanner error={error} />
+            {!error && (
+              <AppCodeMirror
+                value={output}
+                className="h-[calc(100vh-17rem)]"
+                height="100%"
+                width="100%"
+                extensions={[css(), EditorView.lineWrapping]}
+                editable={false}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: false,
                 }}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={(value) => {
-                setInput(value);
-                convertToCss(value);
-              }}
-              extensions={[xml(), EditorView.lineWrapping]}
-              placeholder="Paste your SVG code here"
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>CSS Output</Label>
-            <Button variant="outline" onClick={() => copyToClipboard(output)}>
-              Copy
-            </Button>
-          </div>
-
-          {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          ) : (
-            <AppCodeMirror
-              value={output}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              extensions={[css(), EditorView.lineWrapping]}
-              editable={false}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: false,
-              }}
-            />
-          )}
-        </div>
-      </div>
-    </div>
+              />
+            )}
+          </>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

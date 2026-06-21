@@ -3,6 +3,37 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
+vi.mock("@uiw/react-codemirror", () => ({
+  __esModule: true,
+  default: vi.fn(({ value, onChange, placeholder, "data-testid": testId }) => {
+    return (
+      <textarea
+        data-testid={testId || "codemirror"}
+        value={value || ""}
+        onChange={(e) => onChange?.(e.target.value)}
+        placeholder={placeholder}
+      />
+    );
+  }),
+}));
+
+vi.mock("@uiw/codemirror-themes-all", () => ({}));
+
+vi.mock("../../components/app-code-mirror", () => ({
+  AppCodeMirror: vi.fn(
+    ({ value, onChange, placeholder, "data-testid": testId }) => {
+      return (
+        <textarea
+          data-testid={testId || "codemirror"}
+          value={value || ""}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder}
+        />
+      );
+    },
+  ),
+}));
+
 vi.mock("../../hooks/useToolState", () => ({
   useToolState: vi.fn(() => {
     const [state, setState] = React.useState({

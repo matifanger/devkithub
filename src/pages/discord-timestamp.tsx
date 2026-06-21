@@ -1,367 +1,328 @@
-import * as Popover from '@radix-ui/react-popover';
-import { format as formatDate } from 'date-fns';
-import { getTimezoneOffset, toZonedTime } from 'date-fns-tz';
-import { CalendarIcon, Clock } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
+/**
+ * Discord Timestamp Generator
+ *
+ * Generate Discord-compatible dynamic timestamps with timezone support.
+ *
+ * Features:
+ * - All Discord timestamp formats (t, T, d, D, f, F, R)
+ * - Timezone-aware conversion
+ * - Quick date presets (1h, 1d, 1w, 1m from now)
+ * - Live preview of all format variants
+ * - Copy individual timestamps or all at once
+ * - Current time display with auto-update
+ * - Persistent state
+ *
+ * How to use:
+ * 1. Select a date and time using the inputs
+ * 2. Choose your timezone
+ * 3. Copy the generated timestamp
+ * 4. Paste it in Discord - it renders dynamically for each user
+ */
+import { format as formatDate } from "date-fns";
+import { getTimezoneOffset, toZonedTime } from "date-fns-tz";
+import { Calendar, Clock, Copy, Check } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+} from "../components/tool-page-layout";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/ui/select';
+} from "../components/ui/select";
+import { useToolState } from "../hooks/useToolState";
 
-const TIMESTAMP_FORMATS = {
-  t: 'Short Time (1:23 PM)',
-  T: 'Long Time (1:23:00 PM)',
-  d: 'Short Date (01/01/2024)',
-  D: 'Long Date (January 1, 2024)',
-  f: 'Short Date/Time (January 1, 2024 1:23 PM)',
-  F: 'Long Date/Time (Monday, January 1, 2024 1:23 PM)',
-  R: 'Relative Time (2 hours ago)',
-} as const;
+const TIMESTAMP_FORMATS: Record<string, string> = {
+  t: "Short Time",
+  T: "Long Time",
+  d: "Short Date",
+  D: "Long Date",
+  f: "Short Date/Time",
+  F: "Long Date/Time",
+  R: "Relative",
+};
+
+const ALL_TIMEZONES = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires",
+  "Europe/London",
+  "Europe/Berlin",
+  "Europe/Moscow",
+  "Africa/Cairo",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Shanghai",
+  "Asia/Tokyo",
+  "Australia/Sydney",
+  "Pacific/Auckland",
+] as const;
 
 type TimezoneType = (typeof ALL_TIMEZONES)[number];
 
-// Get all available timezones
-const ALL_TIMEZONES = [
-  'UTC',
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Anchorage',
-  'America/Sao_Paulo',
-  'Europe/London',
-  'Europe/Berlin',
-  'Europe/Moscow',
-  'Africa/Cairo',
-  'Asia/Dubai',
-  'Asia/Shanghai',
-  'Asia/Tokyo',
-  'Australia/Sydney',
-  'Pacific/Auckland',
-] as const;
+interface DiscordTimestampState {
+  dateStr: string;
+  timeStr: string;
+  format: string;
+  timezone: string;
+}
 
-const EXAMPLE_DATES = [
-  { label: '1 Hour From Now', date: new Date(Date.now() + 3600000) },
-  { label: '1 Day From Now', date: new Date(Date.now() + 86400000) },
-  { label: '1 Week From Now', date: new Date(Date.now() + 604800000) },
-  { label: '1 Month From Now', date: new Date(Date.now() + 2592000000) },
-];
-
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const MINUTES = Array.from({ length: 60 }, (_, i) => i);
-
-const formatTimezoneDisplay = (tz: string) => {
-  const now = new Date();
-  const offsetMinutes = getTimezoneOffset(tz) / (60 * 1000); // Convert ms to minutes
-  const hours = Math.abs(Math.floor(offsetMinutes / 60));
-  const sign = offsetMinutes >= 0 ? '+' : '-';
-  return `${tz.replace('_', ' ')} (UTC${sign}${hours})`;
+const now = new Date();
+const initialState: DiscordTimestampState = {
+  dateStr: formatDate(now, "yyyy-MM-dd"),
+  timeStr: formatDate(now, "HH:mm"),
+  format: "f",
+  timezone: (() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return ALL_TIMEZONES.includes(tz as TimezoneType) ? tz : "UTC";
+    } catch {
+      return "UTC";
+    }
+  })(),
 };
 
-export function DiscordTimestampPage() {
-  const [date, setDate] = useState<Date>(new Date());
-  const [timestampFormat, setTimestampFormat] = useState<keyof typeof TIMESTAMP_FORMATS>('f');
-  const [timezone, setTimezone] = useState<TimezoneType>(() => {
-    try {
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return ALL_TIMEZONES.includes(userTimezone as TimezoneType)
-        ? (userTimezone as TimezoneType)
-        : 'UTC';
-    } catch {
-      return 'UTC';
-    }
-  });
+function formatTzDisplay(tz: string) {
+  const offsetMs = getTimezoneOffset(tz);
+  const hours = Math.floor(Math.abs(offsetMs) / 3600000);
+  const mins = Math.floor((Math.abs(offsetMs) % 3600000) / 60000);
+  const sign = offsetMs >= 0 ? "+" : "-";
+  const offset = mins > 0 ? `${hours}:${String(mins).padStart(2, "0")}` : `${hours}`;
+  return `${tz.replace(/_/g, " ")} (UTC${sign}${offset})`;
+}
+
+function InlineCopy({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (copied) {
+      const t = setTimeout(() => setCopied(false), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [copied]);
+
+  return (
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        if (window.electron?.showCopyToast) void window.electron.showCopyToast(value);
+      }}
+      className="p-1.5 rounded hover:bg-muted transition-colors"
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-green-500" />
+      ) : (
+        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+      )}
+    </button>
+  );
+}
+
+export function DiscordTimestampPage() {
+  const [state, setState, clearState] = useToolState("discord-timestamp", initialState);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [timePopoverOpen, setTimePopoverOpen] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
+    const id = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(id);
   }, []);
 
-  const generateTimestamp = (inputDate: Date = date) => {
-    const tzOffset = getTimezoneOffset(timezone);
-    const timestamp = Math.floor((inputDate.getTime() - tzOffset) / 1000);
-    return `<t:${timestamp}:${timestampFormat}>`;
+  const selectedDate = useMemo(() => {
+    const [y, m, d] = state.dateStr.split("-").map(Number);
+    const [h, min] = state.timeStr.split(":").map(Number);
+    return new Date(y, m - 1, d, h, min);
+  }, [state.dateStr, state.timeStr]);
+
+  const unixTimestamp = useMemo(() => {
+    const tzOffset = getTimezoneOffset(state.timezone);
+    return Math.floor((selectedDate.getTime() - tzOffset) / 1000);
+  }, [selectedDate, state.timezone]);
+
+  const allFormats = useMemo(
+    () =>
+      Object.entries(TIMESTAMP_FORMATS).map(([key, label]) => ({
+        key,
+        label,
+        code: `<t:${unixTimestamp}:${key}>`,
+      })),
+    [unixTimestamp],
+  );
+
+  const currentFormatCode = `<t:${unixTimestamp}:${state.format}>`;
+
+  const formatInTimezone = (d: Date) => {
+    const zonedDate = toZonedTime(d, state.timezone);
+    return formatDate(zonedDate, "PPp");
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generateTimestamp());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const setNow = () => {
+    const n = new Date();
+    setState((prev) => ({
+      ...prev,
+      dateStr: formatDate(n, "yyyy-MM-dd"),
+      timeStr: formatDate(n, "HH:mm"),
+    }));
   };
 
-  const setCurrentDateTime = () => {
-    setDate(new Date());
-  };
-
-  const formatInTimezone = (dateToFormat: Date) => {
-    const zonedDate = toZonedTime(dateToFormat, timezone);
-    return formatDate(zonedDate, 'PPp');
+  const setPreset = (offsetMs: number) => {
+    const d = new Date(Date.now() + offsetMs);
+    setState((prev) => ({
+      ...prev,
+      dateStr: formatDate(d, "yyyy-MM-dd"),
+      timeStr: formatDate(d, "HH:mm"),
+    }));
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Discord Timestamp Generator</h1>
-        <p className="text-muted-foreground">
-          Generate timestamps for Discord messages with timezone support
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Discord Timestamp Generator"
+        description="Generate dynamic timestamps for Discord messages with timezone support"
+      />
 
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8">
-        <Card>
-          <CardContent className="space-y-6 pt-6">
-            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-              <Button
-                variant="outline"
-                onClick={setCurrentDateTime}
-                className="flex items-center gap-2"
-              >
-                <Clock className="w-4 h-4" />
-                Use Current Time
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardContent className="pt-6 space-y-5">
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary animate-pulse shrink-0" />
+                <span className="text-sm text-muted-foreground leading-tight">Now:</span>
+                <span className="text-sm font-mono font-medium leading-tight">
+                  {formatInTimezone(currentTime)}
+                </span>
+              </div>
+              <Button variant="outline" size="sm" onClick={setNow} className="shrink-0 ml-2">
+                Use Now
               </Button>
-              <div className="text-sm">
-                <span className="text-muted-foreground">Current:</span>{' '}
-                <span className="font-medium">{formatInTimezone(currentTime)}</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Date</Label>
+                <Input
+                  type="date"
+                  value={state.dateStr}
+                  onChange={(e) => setState((p) => ({ ...p, dateStr: e.target.value }))}
+                  className="font-mono h-9"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Time</Label>
+                <Input
+                  type="time"
+                  value={state.timeStr}
+                  onChange={(e) => setState((p) => ({ ...p, timeStr: e.target.value }))}
+                  className="font-mono h-9"
+                />
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-lg">Date Selection</Label>
-                <Popover.Root>
-                  <Popover.Trigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left h-12">
-                      <CalendarIcon className="mr-2 h-5 w-5" />
-                      <span className="font-medium">{formatDate(date, 'PPP')}</span>
-                    </Button>
-                  </Popover.Trigger>
-                  <Popover.Portal>
-                    <Popover.Content className="bg-popover p-6 rounded-xl shadow-xl" sideOffset={4}>
-                      <div className="grid grid-cols-7 gap-3">
-                        {Array.from({ length: 31 }, (_, i) => {
-                          const day = new Date(date.getFullYear(), date.getMonth(), i + 1);
-                          return (
-                            <Button
-                              key={i}
-                              variant={day.getDate() === date.getDate() ? 'default' : 'ghost'}
-                              className={`h-10 w-10 p-0 font-medium ${
-                                day.getDate() === date.getDate()
-                                  ? 'hover:bg-primary hover:text-primary-foreground'
-                                  : ''
-                              }`}
-                              onClick={() => {
-                                const newDate = new Date(date);
-                                newDate.setDate(i + 1);
-                                setDate(newDate);
-                              }}
-                            >
-                              {i + 1}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </Popover.Content>
-                  </Popover.Portal>
-                </Popover.Root>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-lg">Time Selection</Label>
-                <Popover.Root open={timePopoverOpen} onOpenChange={setTimePopoverOpen}>
-                  <Popover.Trigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left h-12">
-                      <Clock className="mr-2 h-5 w-5" />
-                      <span className="font-medium">{formatDate(date, 'HH:mm')}</span>
-                    </Button>
-                  </Popover.Trigger>
-                  <Popover.Portal>
-                    <Popover.Content
-                      className="bg-popover p-4 rounded-xl shadow-xl w-[300px]"
-                      sideOffset={4}
-                    >
-                      <div className="flex gap-4">
-                        <div className="flex-1 space-y-2">
-                          <Label>Hours</Label>
-                          <div className="h-[200px] overflow-auto rounded-md bg-background">
-                            {HOURS.map((hour) => (
-                              <button
-                                key={hour}
-                                className={`w-full px-4 py-2 text-left hover:bg-accent ${
-                                  hour === date.getHours()
-                                    ? 'bg-primary text-primary-foreground'
-                                    : ''
-                                }`}
-                                onClick={() => {
-                                  const newDate = new Date(date);
-                                  newDate.setHours(hour);
-                                  setDate(newDate);
-                                }}
-                              >
-                                {hour.toString().padStart(2, '0')}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <Label>Minutes</Label>
-                          <div className="h-[200px] overflow-auto rounded-md bg-background">
-                            {MINUTES.map((minute) => (
-                              <button
-                                key={minute}
-                                className={`w-full px-4 py-2 text-left hover:bg-accent ${
-                                  minute === date.getMinutes()
-                                    ? 'bg-primary text-primary-foreground'
-                                    : ''
-                                }`}
-                                onClick={() => {
-                                  const newDate = new Date(date);
-                                  newDate.setMinutes(minute);
-                                  setDate(newDate);
-                                  setTimePopoverOpen(false);
-                                }}
-                              >
-                                {minute.toString().padStart(2, '0')}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </Popover.Content>
-                  </Popover.Portal>
-                </Popover.Root>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-lg">Timezone</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Timezone</Label>
                 <Select
-                  value={timezone}
-                  onValueChange={(value) => setTimezone(value as TimezoneType)}
+                  value={state.timezone}
+                  onValueChange={(v) => setState((p) => ({ ...p, timezone: v }))}
                 >
-                  <SelectTrigger className="w-full h-12 inline-flex items-center justify-between rounded-md bg-background px-4 py-2 text-base focus:outline-none">
-                    <SelectValue>{formatTimezoneDisplay(timezone)}</SelectValue>
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {ALL_TIMEZONES.map((tz) => (
-                      <SelectItem
-                        key={tz}
-                        value={tz}
-                        className="relative flex cursor-pointer select-none items-center rounded-lg py-3 px-6 text-base outline-none hover:bg-accent data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
-                      >
-                        {formatTimezoneDisplay(tz)}
+                      <SelectItem key={tz} value={tz} className="text-xs">
+                        {formatTzDisplay(tz)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-lg">Format Style</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Format</Label>
                 <Select
-                  value={timestampFormat}
-                  onValueChange={(value: keyof typeof TIMESTAMP_FORMATS) =>
-                    setTimestampFormat(value)
-                  }
+                  value={state.format}
+                  onValueChange={(v) => setState((p) => ({ ...p, format: v }))}
                 >
-                  <SelectTrigger className="w-full h-12 inline-flex items-center justify-between rounded-md bg-background px-4 py-2 text-base focus:outline-none">
-                    <SelectValue>{TIMESTAMP_FORMATS[timestampFormat]}</SelectValue>
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-popover rounded-xl shadow-xl overflow-hidden">
-                    {Object.entries(TIMESTAMP_FORMATS).map(([key, description]) => (
-                      <SelectItem
-                        key={key}
-                        value={key}
-                        className="relative flex cursor-pointer select-none items-center rounded-lg py-3 px-6 text-base outline-none hover:bg-accent data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
-                      >
-                        {description}
+                  <SelectContent>
+                    {Object.entries(TIMESTAMP_FORMATS).map(([key, label]) => (
+                      <SelectItem key={key} value={key} className="text-xs">
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label className="text-lg">Generated Timestamp</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={generateTimestamp()}
-                    readOnly
-                    className="font-mono text-base h-12"
-                  />
-                  <Button onClick={copyToClipboard} className="h-12 px-6">
-                    {copied ? 'Copied!' : 'Copy'}
-                  </Button>
-                </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPreset(3600000)}>
+                +1h
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPreset(86400000)}>
+                +1d
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPreset(604800000)}>
+                +1w
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPreset(2592000000)}>
+                +1mo
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPreset(31536000000)}>
+                +1y
+              </Button>
+              <ToolClearButton onClear={() => clearState()} />
+            </div>
+
+            <div className="p-4 rounded-lg bg-[#36393f] border border-[#40444b]">
+              <p className="text-sm text-[#dcddde] font-mono break-all">
+                {currentFormatCode}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <ToolCopyButton value={currentFormatCode} label="Copy" />
+                <span className="text-xs text-[#72767d]">
+                  Paste this in Discord
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Timestamps</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              {EXAMPLE_DATES.map((example, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className="w-full justify-between h-12 px-4"
-                  onClick={() => setDate(example.date)}
-                >
-                  <span className="font-medium">{example.label}</span>
-                  <span className="text-muted-foreground">{formatInTimezone(example.date)}</span>
-                </Button>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="font-mono break-all text-base">{generateTimestamp()}</p>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-semibold mb-4">All Formats</h3>
-                <div className="space-y-3">
-                  {Object.entries(TIMESTAMP_FORMATS).map(([key, description]) => (
-                    <div
-                      key={key}
-                      className="grid grid-cols-2 gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="text-muted-foreground">{description}</div>
-                      <div className="font-mono">{`<t:${Math.floor((date.getTime() - getTimezoneOffset(timezone)) / 1000)}:${key}>`}</div>
-                    </div>
-                  ))}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">All Formats</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {allFormats.map(({ key, label, code }) => (
+              <div
+                key={key}
+                className={`flex items-center justify-between p-2.5 rounded-md transition-colors ${
+                  key === state.format ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/50"
+                }`}
+              >
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p className="text-xs font-mono truncate">{code}</p>
                 </div>
+                <InlineCopy value={code} />
               </div>
-
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  Note: The actual timestamp will be rendered by Discord when you paste it in a
-                  message. Times are converted to UTC before generating the timestamp.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

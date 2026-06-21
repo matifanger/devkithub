@@ -1,10 +1,11 @@
-import { Download, ExternalLink } from 'lucide-react';
+import { Download, ExternalLink, Loader2 } from 'lucide-react';
 import React from 'react';
 import { UpdateStatus } from '../../../types/profile';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import { Label } from '../../ui/label';
+import { Progress } from '../../ui/progress';
 import { ScrollArea } from '../../ui/scroll-area';
 import { Switch } from '../../ui/switch';
 
@@ -23,6 +24,37 @@ export function UpdatesTab({
   onDownloadUpdate,
   onViewChangelog,
 }: UpdatesTabProps) {
+  const [downloadProgress, setDownloadProgress] = React.useState<{
+    status: string;
+    percent: number;
+  } | null>(null);
+  const [downloadError, setDownloadError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (window.electron?.updater?.onProgress) {
+      window.electron.updater.onProgress((progress) => {
+        setDownloadProgress(progress);
+      });
+    }
+  }, []);
+
+  const handleInAppDownload = async () => {
+    setDownloadError(null);
+    setDownloadProgress({ status: 'downloading', percent: 0 });
+    try {
+      const result = await window.electron.updater.downloadAndInstall(
+        'https://devkithub.com/api/download/latest',
+      );
+      if (!result.success) {
+        setDownloadError(result.error || 'Download failed');
+        setDownloadProgress(null);
+      }
+    } catch (err: any) {
+      setDownloadError(err.message || 'Download failed');
+      setDownloadProgress(null);
+    }
+  };
+
   return (
     <ScrollArea className="h-full">
       <Card className="bg-transparent border-none">
@@ -74,14 +106,44 @@ export function UpdatesTab({
                   {updateStatus.releaseNotes && (
                     <p className="text-sm text-muted-foreground">{updateStatus.releaseNotes}</p>
                   )}
+                  {downloadProgress && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>
+                          {downloadProgress.status === 'installing'
+                            ? 'Installing...'
+                            : `Downloading... ${downloadProgress.percent}%`}
+                        </span>
+                      </div>
+                      <Progress value={downloadProgress.percent} className="h-2" />
+                    </div>
+                  )}
+                  {downloadError && (
+                    <p className="text-sm text-destructive">{downloadError}</p>
+                  )}
                   <div className="flex gap-2">
                     <Button
                       size="sm"
+                      onClick={handleInAppDownload}
+                      className="flex items-center gap-2"
+                      disabled={!!downloadProgress}
+                    >
+                      {downloadProgress ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                      {downloadProgress ? 'Downloading...' : 'Download & Install'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={onDownloadUpdate}
                       className="flex items-center gap-2"
                     >
-                      <Download className="h-4 w-4" />
-                      Download
+                      <ExternalLink className="h-4 w-4" />
+                      Manual Download
                     </Button>
                     <Button
                       size="sm"

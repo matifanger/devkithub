@@ -5,6 +5,15 @@ import { python } from '@codemirror/lang-python';
 import { EditorView } from '@uiw/react-codemirror';
 import React, { useCallback, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -256,10 +265,6 @@ ${gettersSetters.join('\n')}
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   const getLanguageExtension = (language: string) => {
     switch (language) {
       case 'typescript':
@@ -275,66 +280,68 @@ ${gettersSetters.join('\n')}
     }
   };
 
-  return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">JSON to Code</h1>
-        <p className="text-muted-foreground">Convert JSON to type definitions and classes</p>
-      </div>
+  const generatedCode = convertJsonToCode(input, activeTab, modelName);
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center">
-              <Label>Model Name:</Label>
-              <Input
-                type="text"
-                spellCheck={false}
-                value={modelName}
-                onChange={(e) => setModelName(e.target.value)}
-                placeholder="Enter model name"
-              />
-            </div>
-            <div className="space-x-2">
+  return (
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="JSON to Code"
+        description="Convert JSON to type definitions and classes"
+      />
+
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="JSON Input"
+          actions={
+            <ToolToolbar>
+              <div className="flex items-center gap-2">
+                <Label>Model Name:</Label>
+                <Input
+                  type="text"
+                  spellCheck={false}
+                  value={modelName}
+                  onChange={(e) => setModelName(e.target.value)}
+                  placeholder="Enter model name"
+                />
+              </div>
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => setInput('')}>
-                Clear
-              </Button>
+              <ToolClearButton onClear={() => setInput('')} />
+            </ToolToolbar>
+          }
+        >
+          <div className="flex flex-col h-full">
+            <div className="flex-1 min-h-0">
+              <AppCodeMirror
+                value={input}
+                className="h-full"
+                height="100%"
+                width="100%"
+                extensions={[json(), EditorView.lineWrapping]}
+                onChange={(value) => {
+                  setInput(value);
+                  setError('');
+                }}
+                placeholder="Enter your JSON here"
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: true,
+                }}
+              />
             </div>
+            <ToolErrorBanner error={error} />
           </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              extensions={[json(), EditorView.lineWrapping]}
-              onChange={(value) => {
-                setInput(value);
-                setError('');
-              }}
-              placeholder="Enter your JSON here"
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-          {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          )}
-        </div>
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Generated Code</Label>
-            <div className="flex items-center space-x-2">
+        <ToolEditorPanel
+          label="Generated Code"
+          actions={
+            <>
               <Select value={activeTab} onValueChange={setActiveTab}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="Language" />
@@ -346,31 +353,25 @@ ${gettersSetters.join('\n')}
                   <SelectItem value="java">Java</SelectItem>
                 </SelectContent>
               </Select>
-              <Button
-                variant="outline"
-                onClick={() => copyToClipboard(convertJsonToCode(input, activeTab, modelName))}
-              >
-                Copy
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={convertJsonToCode(input, activeTab, modelName)}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              extensions={[getLanguageExtension(activeTab)]}
-              editable={false}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: false,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+              <ToolCopyButton value={generatedCode} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={generatedCode}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            width="100%"
+            extensions={[getLanguageExtension(activeTab)]}
+            editable={false}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: false,
+            }}
+          />
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

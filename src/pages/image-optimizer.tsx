@@ -1,9 +1,14 @@
 import { zipSync } from 'fflate';
 import { Download, Trash2, Upload, Wand2 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
+import { ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-// Removed dropdown menu imports as clear action is now instant
 import { Label } from '../components/ui/label';
 import {
   Select,
@@ -271,15 +276,11 @@ export function ImageOptimizerPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Image Optimizer/Converter</h1>
-        <p className="text-muted-foreground">
-          Convert and optimize images. In some cases, optimized files can be larger (e.g.,
-          converting from already-compressed formats, metadata retention, or when target codec
-          parameters differ).
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Image Optimizer/Converter"
+        description="Convert and optimize images. In some cases, optimized files can be larger (e.g., converting from already-compressed formats, metadata retention, or when target codec parameters differ)."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-4 space-y-4">
@@ -301,14 +302,7 @@ export function ImageOptimizerPage() {
                 <Upload className="w-4 h-4 mr-2" /> Load
               </Button>
               {files.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  title="Clear images"
-                  onClick={() => handleFile(null)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <ToolClearButton onClear={() => handleFile(null)} label="Clear images" />
               )}
             </div>
           </div>
@@ -486,11 +480,7 @@ export function ImageOptimizerPage() {
               </div>
             )}
 
-            {error && (
-              <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-                {error}
-              </div>
-            )}
+            <ToolErrorBanner error={error} />
 
             {result && (
               <div className="text-sm">
@@ -543,6 +533,6 @@ export function ImageOptimizerPage() {
           </div>
         </Card>
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

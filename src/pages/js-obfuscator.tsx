@@ -17,13 +17,26 @@
  */
 
 import { javascript } from "@codemirror/lang-javascript";
+import { Settings } from "lucide-react";
 import JavaScriptObfuscator from "javascript-obfuscator";
 import React, { useCallback, useState } from "react";
 import { AppCodeMirror } from "../components/app-code-mirror";
 import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
 import { Checkbox } from "../components/ui/checkbox";
 import { Label } from "../components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../components/ui/popover";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 
 export function JsObfuscatorPage() {
   const [input, setInput] = useState("");
@@ -96,189 +109,110 @@ const users = [
 console.log(calculateSum([1, 2, 3, 4, 5]));`);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">JavaScript Obfuscator</h1>
-        <p className="text-muted-foreground">
-          Obfuscate JavaScript code to protect your source
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="JavaScript Obfuscator"
+        description="Obfuscate JavaScript code to protect your source"
+      />
 
-      <div className="flex gap-4 items-center">
-        <Button onClick={obfuscate} disabled={isObfuscating}>
-          {isObfuscating ? "Obfuscating..." : "Obfuscate"}
-        </Button>
-        <Button variant="outline" onClick={handleSample}>
-          Sample
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setInput("");
-            setOutput("");
-          }}
-        >
-          Clear
-        </Button>
-      </div>
-
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4 space-y-3">
-          <h3 className="font-semibold">Basic Options</h3>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="compact"
-              checked={options.compact}
-              onCheckedChange={(checked) => updateOption("compact", !!checked)}
-            />
-            <Label htmlFor="compact">Compact Output</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="stringArray"
-              checked={options.stringArray}
-              onCheckedChange={(checked) =>
-                updateOption("stringArray", !!checked)
-              }
-            />
-            <Label htmlFor="stringArray">String Array</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="shuffleStringArray"
-              checked={options.shuffleStringArray}
-              onCheckedChange={(checked) =>
-                updateOption("shuffleStringArray", !!checked)
-              }
-            />
-            <Label htmlFor="shuffleStringArray">Shuffle String Array</Label>
-          </div>
-        </Card>
-
-        <Card className="p-4 space-y-3">
-          <h3 className="font-semibold">Advanced Options</h3>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="controlFlowFlattening"
-              checked={options.controlFlowFlattening}
-              onCheckedChange={(checked) =>
-                updateOption("controlFlowFlattening", !!checked)
-              }
-            />
-            <Label htmlFor="controlFlowFlattening">
-              Control Flow Flattening
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="deadCodeInjection"
-              checked={options.deadCodeInjection}
-              onCheckedChange={(checked) =>
-                updateOption("deadCodeInjection", !!checked)
-              }
-            />
-            <Label htmlFor="deadCodeInjection">Dead Code Injection</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="selfDefending"
-              checked={options.selfDefending}
-              onCheckedChange={(checked) =>
-                updateOption("selfDefending", !!checked)
-              }
-            />
-            <Label htmlFor="selfDefending">Self Defending</Label>
-          </div>
-        </Card>
-
-        <Card className="p-4 space-y-3">
-          <h3 className="font-semibold">Protection Options</h3>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="debugProtection"
-              checked={options.debugProtection}
-              onCheckedChange={(checked) =>
-                updateOption("debugProtection", !!checked)
-              }
-            />
-            <Label htmlFor="debugProtection">Debug Protection</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="disableConsoleOutput"
-              checked={options.disableConsoleOutput}
-              onCheckedChange={(checked) =>
-                updateOption("disableConsoleOutput", !!checked)
-              }
-            />
-            <Label htmlFor="disableConsoleOutput">Disable Console</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="numbersToExpressions"
-              checked={options.numbersToExpressions}
-              onCheckedChange={(checked) =>
-                updateOption("numbersToExpressions", !!checked)
-              }
-            />
-            <Label htmlFor="numbersToExpressions">Numbers to Expressions</Label>
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">Input JavaScript</Label>
-          </div>
-          <div className="h-[calc(100vh-28rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-28rem)]"
-              height="100%"
-              width="100%"
-              onChange={setInput}
-              placeholder="Paste your JavaScript here..."
-              extensions={[javascript()]}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="output">Obfuscated Output</Label>
-            {output && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(output)}
-              >
-                Copy
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input JavaScript"
+          actions={
+            <>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                    <Settings className="h-4 w-4" />
+                    <span className="sr-only">Options</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium leading-none">Obfuscation Options</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Configure protection settings
+                      </p>
+                    </div>
+                    <div className="grid gap-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="compact" checked={options.compact} onCheckedChange={(checked) => updateOption("compact", !!checked)} />
+                        <Label htmlFor="compact">Compact Output</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="stringArray" checked={options.stringArray} onCheckedChange={(checked) => updateOption("stringArray", !!checked)} />
+                        <Label htmlFor="stringArray">String Array</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="shuffleStringArray" checked={options.shuffleStringArray} onCheckedChange={(checked) => updateOption("shuffleStringArray", !!checked)} />
+                        <Label htmlFor="shuffleStringArray">Shuffle String Array</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="controlFlowFlattening" checked={options.controlFlowFlattening} onCheckedChange={(checked) => updateOption("controlFlowFlattening", !!checked)} />
+                        <Label htmlFor="controlFlowFlattening">Control Flow Flattening</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="deadCodeInjection" checked={options.deadCodeInjection} onCheckedChange={(checked) => updateOption("deadCodeInjection", !!checked)} />
+                        <Label htmlFor="deadCodeInjection">Dead Code Injection</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="selfDefending" checked={options.selfDefending} onCheckedChange={(checked) => updateOption("selfDefending", !!checked)} />
+                        <Label htmlFor="selfDefending">Self Defending</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="debugProtection" checked={options.debugProtection} onCheckedChange={(checked) => updateOption("debugProtection", !!checked)} />
+                        <Label htmlFor="debugProtection">Debug Protection</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="disableConsoleOutput" checked={options.disableConsoleOutput} onCheckedChange={(checked) => updateOption("disableConsoleOutput", !!checked)} />
+                        <Label htmlFor="disableConsoleOutput">Disable Console</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="numbersToExpressions" checked={options.numbersToExpressions} onCheckedChange={(checked) => updateOption("numbersToExpressions", !!checked)} />
+                        <Label htmlFor="numbersToExpressions">Numbers to Expressions</Label>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button onClick={obfuscate} disabled={isObfuscating}>
+                {isObfuscating ? "Obfuscating..." : "Obfuscate"}
               </Button>
-            )}
-          </div>
-          <div className="h-[calc(100vh-28rem)]">
+              <Button variant="outline" onClick={handleSample}>
+                Sample
+              </Button>
+              <ToolClearButton onClear={() => { setInput(""); setOutput(""); }} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setInput}
+            placeholder="Paste your JavaScript here..."
+            extensions={[javascript()]}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label="Obfuscated Output"
+          actions={<ToolCopyButton value={output} />}
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
               value={output}
-              className="h-[calc(100vh-28rem)]"
+              className="h-[calc(100vh-17rem)]"
               height="100%"
-              width="100%"
               extensions={[javascript()]}
               editable={false}
               basicSetup={{
@@ -287,9 +221,9 @@ console.log(calculateSum([1, 2, 3, 4, 5]));`);
                 highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-      </div>
-    </div>
+          )}
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

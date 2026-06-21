@@ -16,6 +16,11 @@
  */
 
 import React, { useState } from "react";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolToolbar,
+} from "../components/tool-page-layout";
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -238,15 +243,13 @@ export function HttpStatusCodesPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">HTTP Status Codes Reference</h1>
-        <p className="text-muted-foreground">
-          Complete reference for HTTP status codes
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="HTTP Status Codes Reference"
+        description="Complete reference for HTTP status codes"
+      />
 
-      <div className="flex flex-wrap gap-4">
+      <ToolToolbar>
         <div className="flex-1 min-w-[200px]">
           <Input
             placeholder="Search by code, name or description..."
@@ -267,7 +270,7 @@ export function HttpStatusCodesPage() {
             <SelectItem value="5">5xx Server Error</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </ToolToolbar>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredCodes.map((status) => (
@@ -294,6 +297,6 @@ export function HttpStatusCodesPage() {
           No status codes found matching your search.
         </div>
       )}
-    </div>
+    </ToolPageContainer>
   );
 }

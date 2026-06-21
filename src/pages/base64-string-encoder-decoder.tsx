@@ -1,9 +1,14 @@
 import { javascript } from '@codemirror/lang-javascript';
 import React, { useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
@@ -55,29 +60,30 @@ export function Base64StringEncoderDecoderPage() {
     handleProcess(output, mode);
   };
 
+  const handleClear = () => {
+    setInput('');
+    setOutput('');
+  };
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Base64 String Encoder/Decoder</h1>
-        <p className="text-muted-foreground">Convert text to and from Base64 encoding</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Base64 String Encoder/Decoder"
+        description="Convert text to and from Base64 encoding"
+      />
 
       <div className="space-y-6">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Input</Label>
-            <div className="flex items-center gap-4">
-              <div className="space-x-2">
-                <Button variant="outline" onClick={handleClipboardPaste}>
-                  Clipboard
-                </Button>
-                <Button variant="outline" onClick={handleSample}>
-                  Sample
-                </Button>
-                <Button variant="outline" onClick={() => setInput('')}>
-                  Clear
-                </Button>
-              </div>
+        <ToolEditorPanel
+          label="Input"
+          actions={
+            <>
+              <Button variant="outline" size="sm" onClick={handleClipboardPaste}>
+                Clipboard
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleSample}>
+                Sample
+              </Button>
+              <ToolClearButton onClear={handleClear} />
               <Select value={mode} onValueChange={handleModeChange}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue />
@@ -87,13 +93,14 @@ export function Base64StringEncoderDecoderPage() {
                   <SelectItem value="decode">Decode</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <Card className="p-4">
+            </>
+          }
+          heightClass="h-[200px]"
+        >
+          <Card className="p-4 h-full overflow-hidden">
             <AppCodeMirror
               value={input}
-              height="200px"
+              height="100%"
               width="100%"
               onChange={(value) => setInput(value)}
               extensions={[javascript()]}
@@ -105,25 +112,24 @@ export function Base64StringEncoderDecoderPage() {
               }}
             />
           </Card>
-        </div>
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Output</Label>
-            <div className="space-x-2">
-              <Button variant="outline" onClick={() => navigator.clipboard.writeText(output)}>
-                Copy
-              </Button>
-              <Button variant="outline" onClick={handleUseAsInput}>
+        <ToolEditorPanel
+          label="Output"
+          actions={
+            <>
+              <ToolCopyButton value={output} />
+              <Button variant="outline" size="sm" onClick={handleUseAsInput}>
                 Use as Input
               </Button>
-            </div>
-          </div>
-
-          <Card className="p-4">
+            </>
+          }
+          heightClass="h-[200px]"
+        >
+          <Card className="p-4 h-full overflow-hidden">
             <AppCodeMirror
               value={output}
-              height="200px"
+              height="100%"
               width="100%"
               extensions={[javascript()]}
               editable={false}
@@ -134,8 +140,8 @@ export function Base64StringEncoderDecoderPage() {
               }}
             />
           </Card>
-        </div>
+        </ToolEditorPanel>
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

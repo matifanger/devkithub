@@ -31,6 +31,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+} from "../components/tool-page-layout";
 
 export function JsonSchemaValidatorPage() {
   const [schema, setSchema] = useState("");
@@ -138,20 +146,14 @@ export function JsonSchemaValidatorPage() {
 }`);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">JSON Schema Validator</h1>
-        <p className="text-muted-foreground">
-          Validate JSON data against JSON Schema definitions
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="JSON Schema Validator"
+        description="Validate JSON data against JSON Schema definitions"
+      />
 
-      <div className="flex items-center gap-4">
+      <ToolToolbar>
         <div className="flex items-center gap-2">
           <Label>Spaces:</Label>
           <Select value={schemaFormat} onValueChange={setSchemaFormat}>
@@ -173,16 +175,13 @@ export function JsonSchemaValidatorPage() {
         <Button variant="outline" onClick={handleSample}>
           Sample
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
+        <ToolClearButton
+          onClear={() => {
             setSchema("");
             setData("");
           }}
-        >
-          Clear
-        </Button>
-      </div>
+        />
+      </ToolToolbar>
 
       {validationResult && (
         <Card
@@ -217,60 +216,46 @@ export function JsonSchemaValidatorPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="schema">JSON Schema</Label>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={schema}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={setSchema}
-              placeholder="Enter your JSON Schema..."
-              extensions={[json()]}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
+      <ToolEditorGrid>
+        <ToolEditorPanel label="JSON Schema">
+          <AppCodeMirror
+            value={schema}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setSchema}
+            placeholder="Enter your JSON Schema..."
+            extensions={[json()]}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="data">JSON Data</Label>
-            {validationResult?.valid && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(data)}
-              >
-                Copy
-              </Button>
-            )}
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={data}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={setData}
-              placeholder="Enter JSON data to validate..."
-              extensions={[json()]}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+        <ToolEditorPanel
+          label="JSON Data"
+          actions={
+            validationResult?.valid ? (
+              <ToolCopyButton value={data} />
+            ) : undefined
+          }
+        >
+          <AppCodeMirror
+            value={data}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setData}
+            placeholder="Enter JSON data to validate..."
+            extensions={[json()]}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

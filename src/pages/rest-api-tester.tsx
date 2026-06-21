@@ -22,6 +22,11 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { AppCodeMirror } from "../components/app-code-mirror";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -137,13 +142,11 @@ export function RestApiTesterPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">REST API Tester</h1>
-        <p className="text-muted-foreground">
-          Test REST APIs by sending HTTP requests
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="REST API Tester"
+        description="Test REST APIs by sending HTTP requests"
+      />
 
       <Card className="p-6 space-y-4">
         <div className="flex flex-wrap gap-4">
@@ -167,8 +170,20 @@ export function RestApiTesterPage() {
             onChange={(e) => setUrl(e.target.value)}
           />
 
-          <Button onClick={sendRequest} disabled={loading}>
+          <Button size="sm" onClick={sendRequest} disabled={loading}>
             {loading ? "Sending..." : "Send"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setUrl("https://httpbin.org/get");
+              setMethod("GET");
+              setHeaders([{ key: "Accept", value: "application/json" }]);
+              setBody("");
+            }}
+          >
+            Sample
           </Button>
         </div>
 
@@ -188,12 +203,12 @@ export function RestApiTesterPage() {
                 onChange={(e) => updateHeader(index, "value", e.target.value)}
                 className="flex-1"
               />
-              <Button variant="outline" onClick={() => removeHeader(index)}>
+              <Button variant="outline" size="sm" onClick={() => removeHeader(index)}>
                 Remove
               </Button>
             </div>
           ))}
-          <Button variant="outline" onClick={addHeader}>
+          <Button variant="outline" size="sm" onClick={addHeader}>
             Add Header
           </Button>
         </div>
@@ -212,11 +227,7 @@ export function RestApiTesterPage() {
         )}
       </Card>
 
-      {error && (
-        <Card className="p-4 bg-red-500/10 border-red-500">
-          <div className="text-red-600 dark:text-red-400">{error}</div>
-        </Card>
-      )}
+      <ToolErrorBanner error={error} />
 
       {response && (
         <div className="space-y-4">
@@ -242,6 +253,6 @@ export function RestApiTesterPage() {
           </Card>
         </div>
       )}
-    </div>
+    </ToolPageContainer>
   );
 }

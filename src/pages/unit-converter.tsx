@@ -22,7 +22,11 @@
  */
 
 import React, { useMemo } from "react";
-import { Button } from "../components/ui/button";
+import { ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+} from "../components/tool-page-layout";
 import {
   Card,
   CardContent,
@@ -396,13 +400,11 @@ export function UnitConverterPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Unit Converter</h1>
-        <p className="text-muted-foreground">
-          Convert values between different units of measurement
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Unit Converter"
+        description="Convert values between different units of measurement"
+      />
 
       <Card>
         <CardHeader>
@@ -488,11 +490,9 @@ export function UnitConverterPage() {
             </div>
           </div>
 
-          <Button variant="outline" onClick={clearState}>
-            Clear
-          </Button>
+          <ToolClearButton onClear={clearState} />
         </CardContent>
       </Card>
-    </div>
+    </ToolPageContainer>
   );
 }

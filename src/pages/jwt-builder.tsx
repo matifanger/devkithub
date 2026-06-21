@@ -27,9 +27,14 @@ import { EditorView } from "@codemirror/view";
 import { Eye, EyeOff, RefreshCw, Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { AppCodeMirror } from "../components/app-code-mirror";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
-import { CopyButton } from "../components/ui/copy-button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
@@ -281,11 +286,11 @@ export function JwtBuilderPage() {
   const header = { alg: algorithm, typ: "JWT" };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">JWT Builder</h1>
-        <p className="text-muted-foreground">Create and sign JSON Web Tokens</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="JWT Builder"
+        description="Create and sign JSON Web Tokens"
+      />
 
       <div className="space-y-4">
         <Card className="p-4 space-y-4">
@@ -424,29 +429,23 @@ export function JwtBuilderPage() {
         </Card>
 
         <div className="flex gap-2">
-          <Button onClick={generateToken} className="flex-1">
+          <Button size="sm" onClick={generateToken} className="flex-1">
             <RefreshCw className="h-4 w-4 mr-2" />
             Generate Token
           </Button>
-          <Button variant="outline" onClick={loadSampleData}>
+          <Button variant="outline" size="sm" onClick={loadSampleData}>
             Sample
           </Button>
-          <Button variant="outline" onClick={handleClear}>
-            Clear
-          </Button>
+          <ToolClearButton onClear={handleClear} />
         </div>
 
-        {error && (
-          <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-            {error}
-          </div>
-        )}
+        <ToolErrorBanner error={error} />
 
         {generatedToken && (
           <Card className="p-4 space-y-2">
             <div className="flex items-center justify-between">
               <Label>Generated JWT</Label>
-              <CopyButton value={generatedToken} src="generated-jwt" />
+              <ToolCopyButton value={generatedToken} />
             </div>
             <AppCodeMirror
               value={generatedToken}
@@ -468,10 +467,7 @@ export function JwtBuilderPage() {
             <Card className="p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Header (decoded)</Label>
-                <CopyButton
-                  value={JSON.stringify(header, null, 2)}
-                  src="header-decoded"
-                />
+                <ToolCopyButton value={JSON.stringify(header, null, 2)} />
               </div>
               <AppCodeMirror
                 value={JSON.stringify(header, null, 2)}
@@ -490,7 +486,7 @@ export function JwtBuilderPage() {
             <Card className="p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Payload (decoded)</Label>
-                <CopyButton
+                <ToolCopyButton
                   value={JSON.stringify(
                     claims.reduce(
                       (acc, c) => ({
@@ -507,7 +503,6 @@ export function JwtBuilderPage() {
                     null,
                     2,
                   )}
-                  src="payload-decoded"
                 />
               </div>
               <AppCodeMirror
@@ -541,6 +536,6 @@ export function JwtBuilderPage() {
           </div>
         )}
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

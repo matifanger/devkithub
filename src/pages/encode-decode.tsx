@@ -1,8 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { CopyButton } from '../components/ui/copy-button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import {
@@ -149,26 +154,20 @@ const EncodingPanel: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label>Input</Label>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={handleClipboardPaste}>
+                <Button variant="outline" size="sm" onClick={handleClipboardPaste}>
                   Clipboard
                 </Button>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => {
                     setInput(encodingSample);
                   }}
                 >
                   Sample
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setInput('');
-                  }}
-                >
-                  Clear
-                </Button>
-                <Button variant="outline" onClick={handleSwap} disabled={!output}>
+                <ToolClearButton onClear={() => setInput('')} />
+                <Button variant="outline" size="sm" onClick={handleSwap} disabled={!output}>
                   Swap
                 </Button>
               </div>
@@ -192,18 +191,7 @@ const EncodingPanel: React.FC = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Output</Label>
-              <Button
-                variant="outline"
-                disabled={!output}
-                onClick={() => {
-                  if (!output) return;
-                  navigator.clipboard
-                    .writeText(output)
-                    .catch(() => setError('Failed to copy output to clipboard'));
-                }}
-              >
-                Copy
-              </Button>
+              <ToolCopyButton value={output} />
             </div>
             <AppCodeMirror
               value={output}
@@ -216,7 +204,7 @@ const EncodingPanel: React.FC = () => {
                 highlightActiveLine: false,
               }}
             />
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <ToolErrorBanner error={error ?? ''} />
           </div>
         </div>
       </Card>
@@ -318,28 +306,22 @@ const HashPanel: React.FC = () => {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <Label>Input</Label>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={handleClipboardPaste}>
+              <Button variant="outline" size="sm" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => {
                   setInput(encodingSample);
                 }}
               >
                 Sample
               </Button>
-              <Button variant="outline" onClick={handleFileLoad}>
+              <Button variant="outline" size="sm" onClick={handleFileLoad}>
                 Load File...
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setInput('');
-                }}
-              >
-                Clear
-              </Button>
+              <ToolClearButton onClear={() => setInput('')} />
             </div>
           </div>
 
@@ -404,17 +386,13 @@ const HashPanel: React.FC = () => {
                         {result?.error ? (
                           <p className="text-sm text-destructive">{result.error}</p>
                         ) : (
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 items-center">
                             <Input
                               value={displayValue}
                               readOnly
-                              className="font-mono bg-muted flex-1"
+                              className="font-mono bg-muted flex-1 h-8 text-xs"
                             />
-                            <CopyButton
-                              value={displayValue}
-                              disabled={!displayValue}
-                              src={algorithm.id}
-                            />
+                            <ToolCopyButton value={displayValue} />
                           </div>
                         )}
                       </div>
@@ -700,7 +678,7 @@ const EncryptionPanel: React.FC = () => {
                   value={inputEncoding}
                   onValueChange={(value) => setInputEncoding(value as CryptoEncoding)}
                 >
-                  <SelectTrigger className="w-28">
+                  <SelectTrigger className="w-28 h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -713,6 +691,7 @@ const EncryptionPanel: React.FC = () => {
                 </Select>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={async () => {
                     try {
                       const text = await navigator.clipboard.readText();
@@ -724,9 +703,7 @@ const EncryptionPanel: React.FC = () => {
                 >
                   Clipboard
                 </Button>
-                <Button variant="outline" onClick={() => setInput('')}>
-                  Clear
-                </Button>
+                <ToolClearButton onClear={() => setInput('')} />
               </div>
             </div>
             <AppCodeMirror
@@ -755,7 +732,7 @@ const EncryptionPanel: React.FC = () => {
                   value={outputEncoding}
                   onValueChange={(value) => setOutputEncoding(value as CryptoEncoding)}
                 >
-                  <SelectTrigger className="w-28">
+                  <SelectTrigger className="w-28 h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -766,19 +743,7 @@ const EncryptionPanel: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button
-                  variant="outline"
-                  disabled={!output}
-                  onClick={() =>
-                    output
-                      ? navigator.clipboard
-                          .writeText(output)
-                          .catch(() => setError('Failed to copy encrypted output to clipboard'))
-                      : undefined
-                  }
-                >
-                  Copy
-                </Button>
+                <ToolCopyButton value={output} />
               </div>
             </div>
             <AppCodeMirror
@@ -804,18 +769,14 @@ const EncryptionPanel: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Input
                     value={generatedAuthTag ?? ''}
                     readOnly
-                    className="font-mono"
+                    className="font-mono h-8 text-xs"
                     placeholder="Run an encryption to generate the auth tag"
                   />
-                  <CopyButton
-                    value={generatedAuthTag ?? ''}
-                    disabled={!generatedAuthTag}
-                    src="generated-auth-tag"
-                  />
+                  <ToolCopyButton value={generatedAuthTag ?? ''} />
                 </div>
                 {!generatedAuthTag && (
                   <p className="text-xs text-muted-foreground">
@@ -825,7 +786,7 @@ const EncryptionPanel: React.FC = () => {
                 )}
               </div>
             )}
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <ToolErrorBanner error={error ?? ''} />
           </div>
         </div>
 
@@ -968,7 +929,7 @@ const EncryptionPanel: React.FC = () => {
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={handleProcess} disabled={processing}>
+          <Button size="sm" onClick={handleProcess} disabled={processing}>
             {processing ? 'Processing...' : mode === 'encrypt' ? 'Encrypt' : 'Decrypt'}
           </Button>
         </div>
@@ -979,13 +940,11 @@ const EncryptionPanel: React.FC = () => {
 
 export function EncodeDecodePage() {
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Encode & Decode Tools</h1>
-        <p className="text-muted-foreground">
-          Unified toolkit for string encoding, hashing, and encryption workflows.
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Encode & Decode Tools"
+        description="Unified toolkit for string encoding, hashing, and encryption workflows."
+      />
 
       <Tabs defaultValue="encoding" className="space-y-4">
         <TabsList className="flex flex-wrap gap-2">
@@ -1004,6 +963,6 @@ export function EncodeDecodePage() {
           <EncryptionPanel />
         </TabsContent>
       </Tabs>
-    </div>
+    </ToolPageContainer>
   );
 }

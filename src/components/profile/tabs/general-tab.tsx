@@ -2,8 +2,12 @@ import React from "react";
 import {
   CLOSE_TO_TRAY_KEY,
   LAUNCH_ON_STARTUP_KEY,
+  VOICE_TRANSCRIPTION_ENABLED_KEY,
+  VOICE_TRANSCRIPTION_SHORTCUT_KEY,
 } from "../../../constants/settings-keys";
+import { useAutosaveSettings } from "../../../contexts/autosave-settings-context";
 import { useClipboardSettings } from "../../../hooks/use-clipboard-settings";
+import { Input } from "../../ui/input";
 import {
   Card,
   CardContent,
@@ -17,6 +21,59 @@ import { Switch } from "../../ui/switch";
 
 export function GeneralTab() {
   const { isEnabled, isLoading, toggleEnabled } = useClipboardSettings();
+  const {
+    autoSaveEnabled,
+    saveIndicatorVisible,
+    isLoading: autoSaveLoading,
+    toggleAutoSave,
+    toggleSaveIndicator,
+  } = useAutosaveSettings();
+  const [voiceEnabled, setVoiceEnabled] = React.useState(false);
+  const [voiceShortcut, setVoiceShortcut] = React.useState("CommandOrControl+Shift+V");
+  const [loadingVoice, setLoadingVoice] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadVoice = async () => {
+      const enabled = await window.electron.settingsStore.get(VOICE_TRANSCRIPTION_ENABLED_KEY);
+      if (enabled !== null) setVoiceEnabled(enabled === "true");
+      const shortcut = await window.electron.settingsStore.get(VOICE_TRANSCRIPTION_SHORTCUT_KEY);
+      if (shortcut) setVoiceShortcut(shortcut);
+      setLoadingVoice(false);
+    };
+    loadVoice();
+  }, []);
+
+  const [voiceShortcutError, setVoiceShortcutError] = React.useState("");
+  const shortcutTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const toggleVoice = async (value: boolean) => {
+    setVoiceEnabled(value);
+    setVoiceShortcutError("");
+    await window.electron.settingsStore.set(VOICE_TRANSCRIPTION_ENABLED_KEY, String(value));
+    if (value) {
+      const result = await window.electron.voice.registerShortcut();
+      if (!result.success) {
+        setVoiceShortcutError(result.error || "Failed to register shortcut.");
+      }
+    } else {
+      await window.electron.voice.unregisterShortcut();
+    }
+  };
+
+  const updateVoiceShortcut = (shortcut: string) => {
+    setVoiceShortcut(shortcut);
+    setVoiceShortcutError("");
+    if (shortcutTimerRef.current) clearTimeout(shortcutTimerRef.current);
+    shortcutTimerRef.current = setTimeout(async () => {
+      await window.electron.settingsStore.set(VOICE_TRANSCRIPTION_SHORTCUT_KEY, shortcut);
+      if (voiceEnabled) {
+        const result = await window.electron.voice.registerShortcut();
+        if (!result.success) {
+          setVoiceShortcutError(result.error || "Failed to register shortcut.");
+        }
+      }
+    }, 600);
+  };
   const [closeToTray, setCloseToTray] = React.useState<boolean>(false);
   const [loadingClosePref, setLoadingClosePref] = React.useState<boolean>(true);
   const [launchOnStartup, setLaunchOnStartup] = React.useState<boolean>(false);
@@ -143,6 +200,107 @@ export function GeneralTab() {
                     • All processing happens locally - no data is sent
                     externally
                   </p>
+                </div>
+              )}
+            </div>
+
+            {/* Voice Transcription Section */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium">Voice Transcription</h3>
+                <p className="text-xs text-muted-foreground">
+                  Activate a global shortcut to open voice transcription from
+                  anywhere
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="voice-transcription"
+                  checked={voiceEnabled}
+                  onCheckedChange={(v) => toggleVoice(!!v)}
+                  disabled={loadingVoice}
+                />
+                <Label htmlFor="voice-transcription" className="text-sm">
+                  Enable voice transcription shortcut
+                  {loadingVoice && (
+                    <span className="text-xs text-muted-foreground ml-1">
+                      (Loading...)
+                    </span>
+                  )}
+                </Label>
+              </div>
+
+              {voiceEnabled && !loadingVoice && (
+                <div className="space-y-2 pl-6">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm whitespace-nowrap">
+                      Global Shortcut:
+                    </Label>
+                    <Input
+                      value={voiceShortcut}
+                      onChange={(e) => updateVoiceShortcut(e.target.value)}
+                      placeholder="e.g. CommandOrControl+Shift+V"
+                      className="max-w-[280px] h-8 text-sm"
+                    />
+                  </div>
+                  {voiceShortcutError ? (
+                    <p className="text-xs text-destructive">
+                      {voiceShortcutError}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Use Electron accelerator format (e.g.
+                      CommandOrControl+Shift+V)
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Auto-Save Section */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium">Auto-Save</h3>
+                <p className="text-xs text-muted-foreground">
+                  Automatically save tool state so it persists across sessions
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="auto-save"
+                  checked={autoSaveEnabled}
+                  onCheckedChange={(v) => toggleAutoSave(!!v)}
+                  disabled={autoSaveLoading}
+                />
+                <Label htmlFor="auto-save" className="text-sm">
+                  Enable auto-save globally
+                  {autoSaveLoading && (
+                    <span className="text-xs text-muted-foreground ml-1">
+                      (Loading...)
+                    </span>
+                  )}
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="save-indicator"
+                  checked={saveIndicatorVisible}
+                  onCheckedChange={(v) => toggleSaveIndicator(!!v)}
+                  disabled={autoSaveLoading}
+                />
+                <Label htmlFor="save-indicator" className="text-sm">
+                  Show save status indicator
+                </Label>
+              </div>
+
+              {autoSaveEnabled && !autoSaveLoading && (
+                <div className="text-xs text-muted-foreground pl-6">
+                  <p>• Tool state is saved after 500ms of inactivity</p>
+                  <p>• Data is stored locally in settings.json</p>
+                  <p>• Individual tools can override this setting</p>
                 </div>
               )}
             </div>

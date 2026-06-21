@@ -30,6 +30,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 
 export function ExcelConverterPage() {
   const [input, setInput] = useState("");
@@ -139,23 +148,17 @@ export function ExcelConverterPage() {
     URL.revokeObjectURL(url);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   const isExcelInput = direction.startsWith("excel-to");
   const isExcelOutput = direction.endsWith("excel");
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Excel ↔ JSON/CSV Converter</h1>
-        <p className="text-muted-foreground">
-          Convert between Excel files and JSON/CSV formats
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Excel ↔ JSON/CSV Converter"
+        description="Convert between Excel files and JSON/CSV formats"
+      />
 
-      <div className="flex flex-wrap gap-4 items-center">
+      <ToolToolbar>
         <div className="flex items-center gap-2">
           <Label>Direction:</Label>
           <Select value={direction} onValueChange={setDirection}>
@@ -200,81 +203,78 @@ export function ExcelConverterPage() {
           </div>
         )}
 
-        <Button
-          variant="outline"
-          onClick={() => {
+        <ToolClearButton
+          onClear={() => {
             setInput("");
             setOutput("");
             setSheets([]);
           }}
-        >
-          Clear
-        </Button>
-      </div>
+        />
+      </ToolToolbar>
 
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">
-              {isExcelInput ? "Input (Base64 Excel)" : "Input"}
-            </Label>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={setInput}
-              placeholder={
-                isExcelInput
-                  ? "Upload Excel file or paste Base64..."
-                  : direction === "json-to-excel"
-                    ? "Paste JSON here..."
-                    : "Paste CSV here..."
-              }
-              extensions={[isExcelInput ? [] : json()]}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="output">
-              {isExcelOutput ? "Output (Excel Base64)" : "Output"}
-            </Label>
-            {output && !isExcelOutput && (
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label={isExcelInput ? "Input (Base64 Excel)" : "Input"}
+          actions={
+            <ToolToolbar>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => copyToClipboard(output)}
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    setInput(text);
+                  } catch { /* noop */ }
+                }}
               >
-                Copy
+                Clipboard
               </Button>
-            )}
-            {output && isExcelOutput && (
-              <Button variant="outline" size="sm" onClick={handleDownload}>
-                Download
-              </Button>
-            )}
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+              <ToolClearButton onClear={() => setInput("")} />
+            </ToolToolbar>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setInput}
+            placeholder={
+              isExcelInput
+                ? "Upload Excel file or paste Base64..."
+                : direction === "json-to-excel"
+                  ? "Paste JSON here..."
+                  : "Paste CSV here..."
+            }
+            extensions={[isExcelInput ? [] : json()]}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label={isExcelOutput ? "Output (Excel Base64)" : "Output"}
+          actions={
+            isExcelOutput
+              ? (
+                  <Button variant="outline" size="sm" onClick={handleDownload}>
+                    Download
+                  </Button>
+                )
+              : (
+                  <ToolCopyButton value={output} />
+                )
+          }
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
               value={isExcelOutput ? "[Excel file generated]" : output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              width="100%"
               extensions={[isExcelOutput ? [] : json()]}
               editable={false}
               basicSetup={{
@@ -283,9 +283,9 @@ export function ExcelConverterPage() {
                 highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-      </div>
-    </div>
+          )}
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

@@ -1,4 +1,9 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
@@ -18,7 +23,6 @@ interface ConverterFieldProps {
   label: string;
   onChange: (value: string) => void;
   onPaste: () => void;
-  onCopy: () => void;
   onClear: () => void;
   showSelector?: boolean;
   onBaseChange?: (base: string) => void;
@@ -31,7 +35,6 @@ const ConverterField = React.memo(({
   label,
   onChange,
   onPaste,
-  onCopy,
   onClear,
   showSelector = false,
   onBaseChange,
@@ -56,16 +59,12 @@ const ConverterField = React.memo(({
           </Select>
         )}
       </div>
-      <div className="space-x-2">
+      <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={onPaste}>
           Clipboard
         </Button>
-        <Button variant="outline" size="sm" onClick={onCopy}>
-          Copy
-        </Button>
-        <Button variant="outline" size="sm" onClick={onClear}>
-          Clear
-        </Button>
+        <ToolCopyButton value={value} />
+        <ToolClearButton onClear={onClear} />
       </div>
     </div>
     <Input
@@ -170,13 +169,11 @@ export function NumberBaseConverterPage() {
   ], [currentBase]);
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Universal Base Converter</h1>
-        <p className="text-muted-foreground">
-          Enter your number in any of the text fields. The other fields will automatically update.
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Universal Base Converter"
+        description="Enter your number in any of the text fields. The other fields will automatically update."
+      />
 
       <div className="space-y-6">
         {fields.map(({ base, label, key, showSelector }) => (
@@ -187,7 +184,6 @@ export function NumberBaseConverterPage() {
             label={label}
             onChange={handleValueChange(base)}
             onPaste={() => handlePaste(base, (v) => handleValueChange(base)(v))}
-            onCopy={() => navigator.clipboard.writeText(values[key as keyof typeof values])}
             onClear={() => setValues({ binary: '', octal: '', decimal: '', hex: '', custom: '' })}
             showSelector={showSelector}
             onBaseChange={setCurrentBase}
@@ -195,6 +191,6 @@ export function NumberBaseConverterPage() {
           />
         ))}
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

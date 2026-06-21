@@ -6,8 +6,15 @@ import { shell } from '@codemirror/legacy-modes/mode/shell';
 import { EditorView } from '@uiw/react-codemirror';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
@@ -247,10 +254,6 @@ ${headerStr}
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   const getLanguageExtension = (language: string) => {
     switch (language) {
       case 'javascript':
@@ -265,55 +268,52 @@ ${headerStr}
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">CURL to Code</h1>
-        <p className="text-muted-foreground">
-          Convert CURL commands to various programming languages
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="CURL to Code"
+        description="Convert CURL commands to various programming languages"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">CURL Command</Label>
-            <div className="space-x-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="CURL Command"
+          actions={
+            <>
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => setInput('')}>
-                Clear
-              </Button>
+              <ToolClearButton onClear={() => setInput('')} />
+            </>
+          }
+        >
+          <div className="flex flex-col h-full">
+            <div className="flex-1 min-h-0">
+              <AppCodeMirror
+                value={input}
+                className="h-full"
+                height="100%"
+                width="100%"
+                extensions={[StreamLanguage.define(shell), EditorView.lineWrapping]}
+                onChange={(value) => setInput(value)}
+                placeholder="Enter your CURL command here"
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: true,
+                }}
+              />
             </div>
+            <ToolErrorBanner error={error} />
           </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              extensions={[StreamLanguage.define(shell), EditorView.lineWrapping]}
-              onChange={(value) => setInput(value)}
-              placeholder="Enter your CURL command here"
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-          {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          )}
-        </div>
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>Generated Code</Label>
-            <div className="flex items-center space-x-2">
+        <ToolEditorPanel
+          label="Generated Code"
+          actions={
+            <>
               <Select value={activeTab} onValueChange={setActiveTab}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="Language" />
@@ -325,28 +325,25 @@ ${headerStr}
                   <SelectItem value="go">Go</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" onClick={() => copyToClipboard(convertedCode)}>
-                Copy
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={convertedCode}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              extensions={[getLanguageExtension(activeTab)]}
-              editable={false}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: false,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+              <ToolCopyButton value={convertedCode} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={convertedCode}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            width="100%"
+            extensions={[getLanguageExtension(activeTab)]}
+            editable={false}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: false,
+            }}
+          />
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

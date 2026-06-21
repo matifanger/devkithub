@@ -21,20 +21,19 @@
  * 4. Use the copy button to copy specific statistics
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
+import React, { useMemo } from "react";
+import { AppCodeMirror } from "../components/app-code-mirror";
 import { Checkbox } from "../components/ui/checkbox";
-import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { ScrollArea } from "../components/ui/scroll-area";
+import { ToolClearButton } from "../components/tool-actions";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+} from "../components/tool-page-layout";
 import { useToolState } from "../hooks/useToolState";
 
 interface CharacterWordCounterState {
@@ -50,12 +49,6 @@ const initialState: CharacterWordCounterState = {
   includeSpaces: true,
   caseSensitive: false,
 };
-
-const sampleText = `The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet. 
-
-Text analysis is an important skill for writers, students, and professionals. Whether you're writing an essay, a blog post, or code documentation, knowing your text statistics helps improve your writing.
-
-This tool provides comprehensive text analysis including character counts, word counts, reading time, and more.`;
 
 export function CharacterWordCounterPage() {
   const [state, setState, clearState] = useToolState(
@@ -167,10 +160,6 @@ export function CharacterWordCounterPage() {
     setState((prev) => ({ ...prev, text: value }));
   };
 
-  const handleClear = () => {
-    clearState();
-  };
-
   const StatCard = ({
     label,
     value,
@@ -190,15 +179,13 @@ export function CharacterWordCounterPage() {
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Character/Word Counter</h1>
-        <p className="text-muted-foreground">
-          Count characters, words, lines, sentences and more in real-time
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Character/Word Counter"
+        description="Count characters, words, lines, sentences and more in real-time"
+      />
 
-      <div className="flex flex-wrap gap-4 items-center">
+      <ToolToolbar>
         <div className="flex items-center space-x-2">
           <Checkbox
             id="include-spaces"
@@ -219,10 +206,8 @@ export function CharacterWordCounterPage() {
           />
           <Label htmlFor="case-sensitive">Case sensitive</Label>
         </div>
-        <Button variant="outline" onClick={handleClear}>
-          Clear
-        </Button>
-      </div>
+        <ToolClearButton onClear={() => clearState()} />
+      </ToolToolbar>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
@@ -234,9 +219,6 @@ export function CharacterWordCounterPage() {
         <StatCard label="Words" value={stats.words} />
         <StatCard label="Lines" value={stats.lines} />
         <StatCard label="Sentences" value={stats.sentences} />
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Paragraphs" value={stats.paragraphs} />
         <StatCard label="Reading Time" value={stats.readingTime} unit="min" />
         <StatCard label="Speaking Time" value={stats.speakingTime} unit="min" />
@@ -247,63 +229,70 @@ export function CharacterWordCounterPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-4">
-          <h3 className="font-semibold mb-4">Text Input</h3>
-          <textarea
-            className="w-full h-[300px] p-3 border rounded-md resize-none font-mono text-sm"
+      <ToolEditorGrid>
+        <ToolEditorPanel label="Text Input">
+          <AppCodeMirror
             value={state.text}
-            onChange={(e) => handleTextChange(e.target.value)}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={handleTextChange}
             placeholder="Paste or type your text here..."
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: false,
+              highlightActiveLine: true,
+            }}
           />
-        </Card>
+        </ToolEditorPanel>
 
-        <ScrollArea className="h-[340px]">
-          <div className="space-y-4 pr-4">
-            <Card className="p-4">
-              <h3 className="font-semibold mb-4">Most Common Words</h3>
-              {stats.mostCommonWords.length > 0 ? (
-                <div className="space-y-2">
-                  {stats.mostCommonWords.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center">
-                      <span className="font-mono text-sm">{item.word}</span>
-                      <span className="text-muted-foreground">
-                        {item.count}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  Enter text to see word frequency
-                </p>
-              )}
-            </Card>
+        <ToolEditorPanel label="Analysis">
+          <ScrollArea className="h-[calc(100vh-17rem)]">
+            <div className="space-y-4 pr-4">
+              <div className="rounded-lg border p-4">
+                <h3 className="font-semibold mb-4">Most Common Words</h3>
+                {stats.mostCommonWords.length > 0 ? (
+                  <div className="space-y-2">
+                    {stats.mostCommonWords.map((item, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <span className="font-mono text-sm">{item.word}</span>
+                        <span className="text-muted-foreground">
+                          {item.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    Enter text to see word frequency
+                  </p>
+                )}
+              </div>
 
-            <Card className="p-4">
-              <h3 className="font-semibold mb-4">Character Frequency</h3>
-              {stats.characterFrequency.length > 0 ? (
-                <div className="space-y-2">
-                  {stats.characterFrequency.slice(0, 10).map((item, i) => (
-                    <div key={i} className="flex justify-between items-center">
-                      <span className="font-mono text-sm">
-                        {item.char === " " ? "(space)" : item.char}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {item.count}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  Enter text to see character frequency
-                </p>
-              )}
-            </Card>
-          </div>
-        </ScrollArea>
-      </div>
-    </div>
+              <div className="rounded-lg border p-4">
+                <h3 className="font-semibold mb-4">Character Frequency</h3>
+                {stats.characterFrequency.length > 0 ? (
+                  <div className="space-y-2">
+                    {stats.characterFrequency.slice(0, 10).map((item, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <span className="font-mono text-sm">
+                          {item.char === " " ? "(space)" : item.char}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {item.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    Enter text to see character frequency
+                  </p>
+                )}
+              </div>
+            </div>
+          </ScrollArea>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

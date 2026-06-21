@@ -20,6 +20,11 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+} from "../components/tool-page-layout";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -27,7 +32,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { CopyButton } from "../components/ui/copy-button";
 import { useToolState } from "../hooks/useToolState";
 
 interface LapTime {
@@ -135,14 +139,20 @@ export function StopwatchPage() {
     )
     .join("\n");
 
+  const handleClear = async () => {
+    await clearState();
+    setIsRunning(false);
+    setElapsed(0);
+    elapsedRef.current = 0;
+    startTimeRef.current = null;
+  };
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Stopwatch</h1>
-        <p className="text-muted-foreground">
-          Precision timer for measuring elapsed time
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Stopwatch"
+        description="Precision timer for measuring elapsed time"
+      />
 
       <div className="max-w-2xl mx-auto space-y-6">
         <Card>
@@ -179,6 +189,8 @@ export function StopwatchPage() {
               <Button size="lg" variant="outline" onClick={handleReset}>
                 Reset
               </Button>
+
+              <ToolClearButton onClear={handleClear} size="lg" />
             </div>
           </CardContent>
         </Card>
@@ -187,7 +199,7 @@ export function StopwatchPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Lap Times</CardTitle>
-              <CopyButton value={lapTimesText} />
+              <ToolCopyButton value={lapTimesText} />
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -215,6 +227,6 @@ export function StopwatchPage() {
           </Card>
         )}
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

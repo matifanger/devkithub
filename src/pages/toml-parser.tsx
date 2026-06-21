@@ -27,6 +27,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 
 export function TomlParserPage() {
   const [input, setInput] = useState("");
@@ -107,22 +116,16 @@ enabled = true`);
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   const isTomlInput = direction === "toml-to-json";
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">TOML Parser</h1>
-        <p className="text-muted-foreground">
-          Convert between TOML and JSON formats
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="TOML Parser"
+        description="Convert between TOML and JSON formats"
+      />
 
-      <div className="flex flex-wrap gap-4 items-center">
+      <ToolToolbar>
         <div className="flex items-center gap-2">
           <Label>Direction:</Label>
           <Select value={direction} onValueChange={setDirection}>
@@ -135,7 +138,6 @@ enabled = true`);
             </SelectContent>
           </Select>
         </div>
-
         <div className="flex items-center gap-2">
           <Label>Spaces:</Label>
           <Select value={spaces} onValueChange={setSpaces}>
@@ -148,80 +150,49 @@ enabled = true`);
             </SelectContent>
           </Select>
         </div>
-
         <Button variant="outline" onClick={handleFormat}>
           Format
         </Button>
         <Button variant="outline" onClick={handleSample}>
           Sample
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setInput("");
-            setOutput("");
-          }}
+        <ToolClearButton onClear={() => { setInput(""); setOutput(""); }} />
+      </ToolToolbar>
+
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label={isTomlInput ? "Input TOML" : "Input JSON"}
         >
-          Clear
-        </Button>
-      </div>
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setInput}
+            placeholder={
+              isTomlInput
+                ? "Paste your TOML here..."
+                : "Paste your JSON here..."
+            }
+            extensions={[isTomlInput ? [] : json()]}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
 
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">
-              {isTomlInput ? "Input TOML" : "Input JSON"}
-            </Label>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={setInput}
-              placeholder={
-                isTomlInput
-                  ? "Paste your TOML here..."
-                  : "Paste your JSON here..."
-              }
-              extensions={[isTomlInput ? [] : json()]}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="output">
-              {isTomlInput ? "Output JSON" : "Output TOML"}
-            </Label>
-            {output && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(output)}
-              >
-                Copy
-              </Button>
-            )}
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+        <ToolEditorPanel
+          label={isTomlInput ? "Output JSON" : "Output TOML"}
+          actions={<ToolCopyButton value={output} />}
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              width="100%"
               extensions={[json()]}
               editable={false}
               basicSetup={{
@@ -230,9 +201,9 @@ enabled = true`);
                 highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-      </div>
-    </div>
+          )}
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

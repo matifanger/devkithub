@@ -2,9 +2,17 @@ import { StreamLanguage } from '@codemirror/language';
 import { diff } from '@codemirror/legacy-modes/mode/diff';
 import { EditorView } from '@codemirror/view';
 import { Change, diffChars, diffLines, diffSentences, diffWords, diffWordsWithSpace } from 'diff';
-import { ArrowLeftRight, Clipboard, Copy, Download, Settings, Trash2, Upload } from 'lucide-react';
+import { ArrowLeftRight, Clipboard, Download, Settings, Trash2, Upload } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolToolbar,
+  ToolEditorGrid,
+  ToolEditorPanel,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
@@ -214,10 +222,6 @@ export function TextDiffCheckerPage() {
     setText2(SAMPLE_TEXT_2);
   };
 
-  const copyText = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   const updateConfig = <K extends keyof DiffConfig>(key: K, value: DiffConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
   };
@@ -339,83 +343,75 @@ export function TextDiffCheckerPage() {
   const unifiedOutput = useMemo(() => formatDiffOutput(diffResult), [diffResult, formatDiffOutput]);
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Text Diff Checker</h1>
-        <p className="text-muted-foreground">Compare two texts and highlight their differences</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Text Diff Checker"
+        description="Compare two texts and highlight their differences"
+      />
 
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <Label>Granularity</Label>
-            <Select
-              value={config.type}
-              onValueChange={(value: DiffConfig['type']) => updateConfig('type', value)}
-            >
-              <SelectTrigger className="w-[170px]">
-                <SelectValue placeholder="Select Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lines">Lines</SelectItem>
-                <SelectItem value="words">Words</SelectItem>
-                <SelectItem value="chars">Characters</SelectItem>
-                <SelectItem value="sentences">Sentences</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>View</Label>
-            <Select
-              value={config.view}
-              onValueChange={(value: DiffConfig['view']) => updateConfig('view', value)}
-            >
-              <SelectTrigger className="w-[170px]">
-                <SelectValue placeholder="Select View" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="split">Side by Side</SelectItem>
-                <SelectItem value="unified">Unified</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2 pt-6">
+      <ToolToolbar>
+        <div className="flex flex-wrap items-center gap-3">
+          <Select
+            value={config.type}
+            onValueChange={(value: DiffConfig['type']) => updateConfig('type', value)}
+          >
+            <SelectTrigger className="w-[130px] h-8 text-xs">
+              <SelectValue placeholder="Granularity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="lines">Lines</SelectItem>
+              <SelectItem value="words">Words</SelectItem>
+              <SelectItem value="chars">Characters</SelectItem>
+              <SelectItem value="sentences">Sentences</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={config.view}
+            onValueChange={(value: DiffConfig['view']) => updateConfig('view', value)}
+          >
+            <SelectTrigger className="w-[130px] h-8 text-xs">
+              <SelectValue placeholder="View" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="split">Side by Side</SelectItem>
+              <SelectItem value="unified">Unified</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-1.5">
             <Switch
               checked={config.ignoreWhitespace}
               onCheckedChange={(v) => updateConfig('ignoreWhitespace', v)}
             />
-            <span className="text-sm">Ignore whitespace</span>
+            <span className="text-xs">Whitespace</span>
           </div>
-          <div className="flex items-center gap-2 pt-6">
+          <div className="flex items-center gap-1.5">
             <Switch
               checked={config.ignoreCase}
               onCheckedChange={(v) => updateConfig('ignoreCase', v)}
             />
-            <span className="text-sm">Ignore case</span>
+            <span className="text-xs">Case</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={loadSampleText}>
-            <Settings className="w-4 h-4 mr-2" /> Sample
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={loadSampleText}>
+            Sample
           </Button>
-          <Button variant="outline" onClick={handleSwap} title="Swap (Ctrl+Shift+S)">
-            <ArrowLeftRight className="w-4 h-4 mr-2" /> Swap
+          <Button variant="outline" size="sm" onClick={handleSwap} title="Swap (Ctrl+Shift+S)">
+            <ArrowLeftRight className="w-3.5 h-3.5 mr-1" /> Swap
           </Button>
-          <Button variant="outline" onClick={handleClear}>
-            <Trash2 className="w-4 h-4 mr-2" /> Clear
-          </Button>
-          <Button variant="outline" onClick={handleDownload}>
-            <Download className="w-4 h-4 mr-2" /> Download
+          <ToolClearButton onClear={handleClear} />
+          <Button variant="outline" size="sm" onClick={handleDownload}>
+            <Download className="w-3.5 h-3.5 mr-1" /> Download
           </Button>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" /> Settings
+              <Button variant="outline" size="sm">
+                <Settings className="w-3.5 h-3.5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-4">
+            <PopoverContent className="w-72">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Collapse unchanged</span>
                   <Switch
@@ -424,12 +420,12 @@ export function TextDiffCheckerPage() {
                   />
                 </div>
                 <div>
-                  <Label>Context lines</Label>
+                  <Label className="text-xs">Context lines</Label>
                   <Select
                     value={String(config.contextLines)}
                     onValueChange={(v) => updateConfig('contextLines', Number(v))}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -442,14 +438,14 @@ export function TextDiffCheckerPage() {
                   </Select>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Editor line numbers</span>
+                  <span className="text-sm">Line numbers</span>
                   <Switch
                     checked={config.showLineNumbers}
                     onCheckedChange={(v) => updateConfig('showLineNumbers', v)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Editor wrap lines</span>
+                  <span className="text-sm">Wrap lines</span>
                   <Switch
                     checked={config.wrapLines}
                     onCheckedChange={(v) => updateConfig('wrapLines', v)}
@@ -459,13 +455,13 @@ export function TextDiffCheckerPage() {
             </PopoverContent>
           </Popover>
         </div>
-      </div>
+      </ToolToolbar>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Original Text</Label>
-            <div className="space-x-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Original Text"
+          actions={
+            <>
               <input
                 type="file"
                 accept=".txt,.md,.json,.log,.csv,.xml,.html,.js,.ts,.css,.scss,.yml,.yaml"
@@ -474,7 +470,7 @@ export function TextDiffCheckerPage() {
                 onChange={(e) => onLoadFile(e, 'left')}
               />
               <Button variant="outline" size="sm" onClick={handlePasteLeft}>
-                <Clipboard className="w-4 h-4 mr-2" />
+                <Clipboard className="w-3.5 h-3.5 mr-1" />
                 Clipboard
               </Button>
               <Button
@@ -482,18 +478,17 @@ export function TextDiffCheckerPage() {
                 size="sm"
                 onClick={() => document.getElementById('load-left')?.click()}
               >
-                <Upload className="w-4 h-4 mr-2" />
+                <Upload className="w-3.5 h-3.5 mr-1" />
                 Load
               </Button>
-              <Button variant="outline" size="sm" onClick={() => copyText(text1)}>
-                <Copy className="w-4 h-4 mr-2" />
-                Copy
-              </Button>
-            </div>
-          </div>
+              <ToolCopyButton value={text1} />
+            </>
+          }
+          heightClass="h-[250px]"
+        >
           <AppCodeMirror
             value={text1}
-            height="400px"
+            height="250px"
             onChange={setText1}
             extensions={config.wrapLines ? [EditorView.lineWrapping] : []}
             basicSetup={{
@@ -502,12 +497,12 @@ export function TextDiffCheckerPage() {
               highlightActiveLine: true,
             }}
           />
-        </div>
+        </ToolEditorPanel>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Modified Text</Label>
-            <div className="space-x-2">
+        <ToolEditorPanel
+          label="Modified Text"
+          actions={
+            <>
               <input
                 type="file"
                 accept=".txt,.md,.json,.log,.csv,.xml,.html,.js,.ts,.css,.scss,.yml,.yaml"
@@ -516,7 +511,7 @@ export function TextDiffCheckerPage() {
                 onChange={(e) => onLoadFile(e, 'right')}
               />
               <Button variant="outline" size="sm" onClick={handlePasteRight}>
-                <Clipboard className="w-4 h-4 mr-2" />
+                <Clipboard className="w-3.5 h-3.5 mr-1" />
                 Clipboard
               </Button>
               <Button
@@ -524,18 +519,17 @@ export function TextDiffCheckerPage() {
                 size="sm"
                 onClick={() => document.getElementById('load-right')?.click()}
               >
-                <Upload className="w-4 h-4 mr-2" />
+                <Upload className="w-3.5 h-3.5 mr-1" />
                 Load
               </Button>
-              <Button variant="outline" size="sm" onClick={() => copyText(text2)}>
-                <Copy className="w-4 h-4 mr-2" />
-                Copy
-              </Button>
-            </div>
-          </div>
+              <ToolCopyButton value={text2} />
+            </>
+          }
+          heightClass="h-[250px]"
+        >
           <AppCodeMirror
             value={text2}
-            height="400px"
+            height="250px"
             onChange={setText2}
             extensions={config.wrapLines ? [EditorView.lineWrapping] : []}
             basicSetup={{
@@ -544,87 +538,77 @@ export function TextDiffCheckerPage() {
               highlightActiveLine: true,
             }}
           />
-        </div>
-      </div>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label>Diff Output</Label>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>
-              Additions: <span className="text-green-500">{stats.additions}</span>
-            </span>
-            <span>
-              Deletions: <span className="text-red-500">{stats.deletions}</span>
-            </span>
-            <span>
-              Changes: <span className="text-blue-500">{stats.changes}</span>
-            </span>
-            <span>Total Lines: {stats.totalLines}</span>
-          </div>
-        </div>
-        <div className="bg-muted rounded-lg p-4 space-y-3">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => copyText(unifiedOutput)}>
-              <Copy className="w-4 h-4 mr-2" /> Copy diff
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="w-4 h-4 mr-2" /> Download diff
-            </Button>
+            <Label>Diff Output</Label>
+            <ToolCopyButton value={unifiedOutput} label="Copy" />
           </div>
-          {config.view === 'unified' && (
-            <AppCodeMirror
-              value={unifiedOutput}
-              height="240px"
-              extensions={[EditorView.lineWrapping, StreamLanguage.define(diff)]}
-              editable={false}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: false,
-              }}
-            />
-          )}
-          {config.view === 'split' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-md border border-border bg-background p-3 overflow-auto h-60">
-                <pre className="text-sm whitespace-pre-wrap leading-5">
-                  {diffResult.map((part, idx) => {
-                    const cls = part.removed
-                      ? 'bg-red-500/10 text-red-500'
-                      : part.added
-                        ? 'bg-green-500/10 text-green-600'
-                        : '';
-                    const val = part.removed || (!part.added && !part.removed) ? part.value : '';
-                    return (
-                      <span key={idx} className={cls}>
-                        {val}
-                      </span>
-                    );
-                  })}
-                </pre>
-              </div>
-              <div className="rounded-md border border-border bg-background p-3 overflow-auto h-60">
-                <pre className="text-sm whitespace-pre-wrap leading-5">
-                  {diffResult.map((part, idx) => {
-                    const cls = part.added
-                      ? 'bg-green-500/10 text-green-600'
-                      : part.removed
-                        ? 'bg-red-500/10 text-red-500'
-                        : '';
-                    const val = part.added || (!part.added && !part.removed) ? part.value : '';
-                    return (
-                      <span key={idx} className={cls}>
-                        {val}
-                      </span>
-                    );
-                  })}
-                </pre>
-              </div>
-            </div>
-          )}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span>
+              <span className="text-green-500 font-medium">+{stats.additions}</span> added
+            </span>
+            <span>
+              <span className="text-red-500 font-medium">-{stats.deletions}</span> removed
+            </span>
+            <span>{stats.totalLines} lines</span>
+          </div>
         </div>
+        {config.view === 'unified' && (
+          <AppCodeMirror
+            value={unifiedOutput}
+            height="200px"
+            extensions={[EditorView.lineWrapping, StreamLanguage.define(diff)]}
+            editable={false}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: false,
+              highlightActiveLine: false,
+            }}
+          />
+        )}
+        {config.view === 'split' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="rounded-md border border-border bg-background p-3 overflow-auto max-h-[200px]">
+              <pre className="text-xs whitespace-pre-wrap leading-5">
+                {diffResult.map((part, idx) => {
+                  const cls = part.removed
+                    ? 'bg-red-500/10 text-red-500'
+                    : part.added
+                      ? 'bg-green-500/10 text-green-600'
+                      : '';
+                  const val = part.removed || (!part.added && !part.removed) ? part.value : '';
+                  return (
+                    <span key={idx} className={cls}>
+                      {val}
+                    </span>
+                  );
+                })}
+              </pre>
+            </div>
+            <div className="rounded-md border border-border bg-background p-3 overflow-auto max-h-[200px]">
+              <pre className="text-xs whitespace-pre-wrap leading-5">
+                {diffResult.map((part, idx) => {
+                  const cls = part.added
+                    ? 'bg-green-500/10 text-green-600'
+                    : part.removed
+                      ? 'bg-red-500/10 text-red-500'
+                      : '';
+                  const val = part.added || (!part.added && !part.removed) ? part.value : '';
+                  return (
+                    <span key={idx} className={cls}>
+                      {val}
+                    </span>
+                  );
+                })}
+              </pre>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </ToolPageContainer>
   );
 }

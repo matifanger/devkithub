@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { ToolPageContainer, ToolPageHeader } from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import {
@@ -188,13 +189,11 @@ export function PomodoroTimerPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Pomodoro Timer</h1>
-        <p className="text-muted-foreground">
-          Stay focused and productive with the Pomodoro Technique
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="Pomodoro Timer"
+        description="Stay focused and productive with the Pomodoro Technique"
+      />
 
       <div className="max-w-6xl mx-auto space-y-8">
         <Card>
@@ -463,6 +462,6 @@ export function PomodoroTimerPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </ToolPageContainer>
   );
 }

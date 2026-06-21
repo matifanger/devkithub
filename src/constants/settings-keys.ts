@@ -16,6 +16,20 @@ export const LAUNCH_ON_STARTUP_KEY = 'launch-on-startup';
 export const EDITOR_FONT_SIZE_KEY = 'editor-font-size';
 export const EDITOR_THEME_KEY = 'editor-theme';
 
+// Autosave settings
+export const AUTO_SAVE_ENABLED_KEY = 'autoSaveEnabled';
+export const SAVE_INDICATOR_VISIBLE_KEY = 'saveIndicatorVisible';
+
+// Voice transcription
+export const VOICE_TRANSCRIPTION_ENABLED_KEY = 'voiceTranscriptionEnabled';
+export const VOICE_TRANSCRIPTION_SHORTCUT_KEY = 'voiceTranscriptionShortcut';
+export const VOICE_TRANSCRIPTION_MODE_KEY = 'voiceTranscriptionMode'; // 'google' | 'whisper-local'
+export const VOICE_GOOGLE_API_KEY = 'voiceGoogleApiKey';
+export const VOICE_WHISPER_MODEL_KEY = 'voiceWhisperModel';
+export const VOICE_WHISPER_LANGUAGE_KEY = 'voiceWhisperLanguage';
+export const VOICE_WHISPER_TRANSLATE_KEY = 'voiceWhisperTranslate';
+export const VOICE_AUTO_START_KEY = 'voiceAutoStart';
+
 // Keytar constants
 export const SERVICE_NAME = 'devkithub';
 export const ACCOUNT_NAME = 'default';

@@ -3,8 +3,15 @@ import { php } from '@codemirror/lang-php';
 import { EditorView } from '@codemirror/view';
 import React, { useCallback, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 
 export function JsonToPhpPage() {
   const [input, setInput] = useState('');
@@ -87,47 +94,78 @@ export function JsonToPhpPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleClear = () => {
+    setInput('');
+    setOutput('');
+    setError('');
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">JSON to PHP</h1>
-        <p className="text-muted-foreground">Convert JSON to PHP array format</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="JSON to PHP"
+        description="Convert JSON to PHP array format"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>JSON Input</Label>
-            <div className="space-x-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="JSON Input"
+          actions={
+            <>
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setInput('');
-                  setOutput('');
-                  setError('');
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+              <ToolClearButton onClear={handleClear} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            extensions={[
+              json(),
+              EditorView.lineWrapping,
+              EditorView.theme({
+                '&': {
+                  backgroundColor: 'var(--background)',
+                },
+                '.cm-line': {
+                  'word-wrap': 'break-word',
+                  'white-space': 'pre-wrap',
+                  'word-break': 'break-all',
+                },
+              }),
+            ]}
+            onChange={(value) => {
+              setInput(value);
+              convertJsonToPhp(value);
+            }}
+            placeholder="Enter JSON"
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label="PHP Array Output"
+          actions={<ToolCopyButton value={output} />}
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
+              value={output}
               height="100%"
+              className="h-[calc(100vh-17rem)]"
               extensions={[
-                json(),
+                php(),
                 EditorView.lineWrapping,
                 EditorView.theme({
                   '&': {
@@ -140,61 +178,16 @@ export function JsonToPhpPage() {
                   },
                 }),
               ]}
-              onChange={(value) => {
-                setInput(value);
-                convertJsonToPhp(value);
-              }}
-              placeholder="Enter JSON"
+              editable={false}
               basicSetup={{
                 lineNumbers: true,
                 foldGutter: true,
-                highlightActiveLine: true,
+                highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>PHP Array Output</Label>
-            <Button variant="outline" onClick={() => copyToClipboard(output)}>
-              Copy
-            </Button>
-          </div>
-
-          {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
-          ) : (
-            <div className="h-[calc(100vh-17rem)]">
-              <AppCodeMirror
-                value={output}
-                height="100%"
-                className="h-[calc(100vh-17rem)]"
-                extensions={[
-                  php(),
-                  EditorView.lineWrapping,
-                  EditorView.theme({
-                    '&': {
-                      backgroundColor: 'var(--background)',
-                    },
-                    '.cm-line': {
-                      'word-wrap': 'break-word',
-                      'white-space': 'pre-wrap',
-                      'word-break': 'break-all',
-                    },
-                  }),
-                ]}
-                editable={false}
-                basicSetup={{
-                  lineNumbers: true,
-                  foldGutter: true,
-                  highlightActiveLine: false,
-                }}
-              />
-            </div>
           )}
-        </div>
-      </div>
-    </div>
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

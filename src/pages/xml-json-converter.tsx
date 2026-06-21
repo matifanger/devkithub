@@ -23,7 +23,6 @@ import parser from "xml2js";
 import React, { useCallback, useEffect, useState } from "react";
 import { AppCodeMirror } from "../components/app-code-mirror";
 import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
@@ -33,6 +32,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 
 export function XmlJsonConverterPage() {
   const [input, setInput] = useState("");
@@ -146,22 +154,16 @@ export function XmlJsonConverterPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   const isXmlInput = direction === "xml-to-json";
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">XML ↔ JSON Converter</h1>
-        <p className="text-muted-foreground">
-          Convert between XML and JSON formats
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="XML ↔ JSON Converter"
+        description="Convert between XML and JSON formats"
+      />
 
-      <div className="flex flex-wrap gap-4 items-center">
+      <ToolToolbar>
         <div className="flex items-center gap-2">
           <Label>Direction:</Label>
           <Select value={direction} onValueChange={setDirection}>
@@ -206,73 +208,65 @@ export function XmlJsonConverterPage() {
         <Button variant="outline" onClick={handleSample}>
           Sample
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
+        <ToolClearButton
+          onClear={() => {
             setInput("");
             setOutput("");
           }}
-        >
-          Clear
-        </Button>
-      </div>
+        />
+      </ToolToolbar>
 
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">
-              {isXmlInput ? "Input XML" : "Input JSON"}
-            </Label>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={setInput}
-              placeholder={
-                isXmlInput
-                  ? "Paste your XML here..."
-                  : "Paste your JSON here..."
-              }
-              extensions={[isXmlInput ? xmlLang() : json()]}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="output">
-              {isXmlInput ? "Output JSON" : "Output XML"}
-            </Label>
-            {output && (
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label={isXmlInput ? "Input XML" : "Input JSON"}
+          actions={
+            <ToolToolbar>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => copyToClipboard(output)}
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    setInput(text);
+                  } catch { /* noop */ }
+                }}
               >
-                Copy
+                Clipboard
               </Button>
-            )}
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+              <ToolClearButton onClear={() => setInput("")} />
+            </ToolToolbar>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setInput}
+            placeholder={
+              isXmlInput
+                ? "Paste your XML here..."
+                : "Paste your JSON here..."
+            }
+            extensions={[isXmlInput ? xmlLang() : json()]}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label={isXmlInput ? "Output JSON" : "Output XML"}
+          actions={<ToolCopyButton value={output} />}
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              width="100%"
               extensions={[isXmlInput ? json() : xmlLang()]}
               editable={false}
               basicSetup={{
@@ -281,9 +275,9 @@ export function XmlJsonConverterPage() {
                 highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-      </div>
-    </div>
+          )}
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

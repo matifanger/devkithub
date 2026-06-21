@@ -389,6 +389,70 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("handle-autostart-selection", enable),
   shouldShowAutostartDialog: (currentPref: string | null) =>
     ipcRenderer.invoke("should-show-autostart-dialog", currentPref),
+  voice: {
+    registerShortcut: () => ipcRenderer.invoke("register-voice-shortcut") as Promise<{ success: boolean; error?: string }>,
+    unregisterShortcut: () => ipcRenderer.invoke("unregister-voice-shortcut") as Promise<{ success: boolean }>,
+    getConfig: () => ipcRenderer.invoke("voice:get-config") as Promise<{ mode: string; model: string; googleApiKey: string }>,
+    getStatus: (modelName: string) =>
+      ipcRenderer.invoke("voice:get-status", modelName) as Promise<{
+        binaryInstalled: boolean;
+        modelInstalled: boolean;
+        platform: string;
+        arch: string;
+        supported: boolean;
+      }>,
+    downloadModel: (modelName: string) =>
+      ipcRenderer.invoke("voice:download-model", modelName) as Promise<{ success: boolean; error?: string }>,
+    startLocalSession: (sessionId: string, modelName: string, language?: string, translate?: boolean) =>
+      ipcRenderer.invoke("voice:start-local-session", sessionId, modelName, language, translate) as Promise<{ success: boolean; error?: string }>,
+    pushAudioChunk: (sessionId: string, audioData: ArrayBuffer) =>
+      ipcRenderer.invoke("voice:push-audio-chunk", sessionId, audioData) as Promise<{ text: string; error?: string } | null>,
+    stopLocalSession: (sessionId: string) =>
+      ipcRenderer.invoke("voice:stop-local-session", sessionId) as Promise<{ success: boolean }>,
+    onModelProgress: (callback: (progress: { status: string; percent: number; detail?: string }) => void) => {
+      ipcRenderer.on("voice:model-progress", (_, progress) => callback(progress));
+    },
+    onTranscript: (callback: (data: { sessionId: string; text: string; error?: string }) => void) => {
+      ipcRenderer.on("voice:transcript", (_, data) => callback(data));
+    },
+    removeAllListeners: () => {
+      ipcRenderer.removeAllListeners("voice:model-progress");
+      ipcRenderer.removeAllListeners("voice:transcript");
+    },
+  },
+  clipboardReadText: () => ipcRenderer.invoke("clipboard-read-text") as Promise<string>,
+  showCopyToast: (content: string) =>
+    ipcRenderer.invoke("show-copy-toast", content),
+  screenshot: {
+    captureToolScreenshot: (route: string, slug: string) =>
+      ipcRenderer.invoke("capture-tool-screenshot", route, slug),
+    getScreenshotsDir: () => ipcRenderer.invoke("get-screenshots-dir"),
+  },
+  portKill: {
+    scanPorts: () =>
+      ipcRenderer.invoke("port-kill:scan") as Promise<
+        Array<{
+          port: number;
+          pid: number;
+          protocol: string;
+          process: string;
+          address: string;
+        }>
+      >,
+    killProcess: (pid: number) =>
+      ipcRenderer.invoke("port-kill:kill", pid) as Promise<{ success: boolean; error?: string }>,
+  },
+  onNavigateTo: (callback: (route: string) => void) => {
+    ipcRenderer.removeAllListeners("navigate-to");
+    ipcRenderer.on("navigate-to", (_, route) => callback(route));
+  },
+  updater: {
+    downloadAndInstall: (downloadUrl: string) =>
+      ipcRenderer.invoke("download-and-install-update", downloadUrl),
+    onProgress: (callback: (progress: { status: string; percent: number }) => void) => {
+      ipcRenderer.on("update-download-progress", (_, progress) => callback(progress));
+    },
+  },
 });
 
 contextBridge.exposeInMainWorld("cursor", {
@@ -424,7 +488,7 @@ contextBridge.exposeInMainWorld("recorder", {
 });
 
 contextBridge.exposeInMainWorld("shortcuts", {
-  register: (customShortcuts?: any) =>
+  register: (customShortcuts?: Record<string, string>) =>
     ipcRenderer.invoke("shortcuts:register", customShortcuts),
   unregister: () => ipcRenderer.invoke("shortcuts:unregister"),
   getCurrent: () => ipcRenderer.invoke("shortcuts:get-current"),
@@ -444,7 +508,7 @@ contextBridge.exposeInMainWorld("ffmpegRecorder", {
     ipcRenderer.invoke("ffmpeg-recorder:get-default-config"),
   listAudioDevices: () =>
     ipcRenderer.invoke("ffmpeg-recorder:list-audio-devices"),
-  start: (config: any) => ipcRenderer.invoke("ffmpeg-recorder:start", config),
+  start: (config: Record<string, unknown>) => ipcRenderer.invoke("ffmpeg-recorder:start", config),
   pause: () => ipcRenderer.invoke("ffmpeg-recorder:pause"),
   resume: () => ipcRenderer.invoke("ffmpeg-recorder:resume"),
   stop: () => ipcRenderer.invoke("ffmpeg-recorder:stop"),
@@ -456,27 +520,27 @@ contextBridge.exposeInMainWorld("ffmpegRecorder", {
     ipcRenderer.invoke("ffmpeg-recorder:delete-recording", filePath),
   openRecordingsFolder: () =>
     ipcRenderer.invoke("ffmpeg-recorder:open-recordings-folder"),
-  onStatus: (callback: (status: any) => void) => {
+  onStatus: (callback: (status: Record<string, unknown>) => void) => {
     ipcRenderer.on("ffmpeg-recorder:status", (_, status) => callback(status));
   },
 });
 
 contextBridge.exposeInMainWorld("exporter", {
   getPresets: () => ipcRenderer.invoke("exporter:get-presets"),
-  start: (settings: any, outputPath: string) =>
+  start: (settings: Record<string, unknown>, outputPath: string) =>
     ipcRenderer.invoke("exporter:start", settings, outputPath),
   cancel: () => ipcRenderer.invoke("exporter:cancel"),
   isExporting: () => ipcRenderer.invoke("exporter:is-exporting"),
   showSaveDialog: (defaultName: string, format: string) =>
     ipcRenderer.invoke("exporter:show-save-dialog", defaultName, format),
-  onProgress: (callback: (progress: any) => void) => {
+  onProgress: (callback: (progress: Record<string, unknown>) => void) => {
     ipcRenderer.on("exporter:progress", (_, progress) => callback(progress));
   },
 });
 
 contextBridge.exposeInMainWorld("project", {
   new: (name: string) => ipcRenderer.invoke("project:new", name),
-  save: (project: any) => ipcRenderer.invoke("project:save", project),
+  save: (project: Record<string, unknown>) => ipcRenderer.invoke("project:save", project),
   load: (projectId: string) => ipcRenderer.invoke("project:load", projectId),
   saveDialog: (defaultName: string) =>
     ipcRenderer.invoke("project:save-dialog", defaultName),

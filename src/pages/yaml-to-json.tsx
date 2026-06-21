@@ -4,6 +4,14 @@ import yaml from 'js-yaml';
 import { JSONPath } from 'jsonpath-plus';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppCodeMirror } from '../components/app-code-mirror';
+import { ToolCopyButton, ToolClearButton } from '../components/tool-actions';
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolErrorBanner,
+} from '../components/tool-page-layout';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -82,55 +90,49 @@ export function YamlToJsonPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">YAML to JSON Converter</h1>
-        <p className="text-muted-foreground">Convert YAML format to JSON with formatting options</p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="YAML to JSON Converter"
+        description="Convert YAML format to JSON with formatting options"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">Input YAML</Label>
-            <div className="space-x-2">
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label="Input YAML"
+          actions={
+            <>
               <Button variant="outline" onClick={handleClipboardPaste}>
                 Clipboard
               </Button>
               <Button variant="outline" onClick={handleSample}>
                 Sample
               </Button>
-              <Button variant="outline" onClick={() => setInput('')}>
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={(value) => setInput(value)}
-              extensions={[yamlLang()]}
-              placeholder="Paste your YAML here"
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
+              <ToolClearButton onClear={() => setInput('')} />
+            </>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            width="100%"
+            onChange={(value) => setInput(value)}
+            extensions={[yamlLang()]}
+            placeholder="Paste your YAML here"
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label>JSON Output</Label>
-            <div className="flex items-center space-x-2">
+          <ToolEditorPanel
+            label="JSON Output"
+            actions={
+            <>
               <Select value={spaces} onValueChange={setSpaces}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="Spaces" />
@@ -142,30 +144,28 @@ export function YamlToJsonPage() {
                   <SelectItem value="8">8 Spaces</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" onClick={() => copyToClipboard(output)}>
-                Copy
-              </Button>
-            </div>
-          </div>
-
+              <ToolCopyButton value={output} />
+            </>
+          }
+        >
           {error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
+            <ToolErrorBanner error={error} />
           ) : (
             <AppCodeMirror
-              value={output}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              extensions={[json()]}
-              editable={false}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: false,
-              }}
-            />
+                value={output}
+                className="h-[calc(100vh-17rem)]"
+                height="100%"
+                width="100%"
+                extensions={[json()]}
+                editable={false}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: false,
+                }}
+              />
           )}
-
+          </ToolEditorPanel>
           <div className="space-y-2 mt-4">
             <Label htmlFor="jsonpath" spellCheck={false}>
               JSONPath Query
@@ -179,7 +179,7 @@ export function YamlToJsonPage() {
             />
           </div>
         </div>
-      </div>
-    </div>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

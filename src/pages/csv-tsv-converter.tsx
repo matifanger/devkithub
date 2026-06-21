@@ -26,6 +26,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { ToolCopyButton, ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolEditorPanel,
+  ToolEditorGrid,
+  ToolToolbar,
+  ToolErrorBanner,
+} from "../components/tool-page-layout";
 import Papa from "papaparse";
 
 export function CsvTsvConverterPage() {
@@ -80,28 +89,22 @@ export function CsvTsvConverterPage() {
 John Doe,30,New York,john@example.com
 Jane Smith,25,Los Angeles,jane@example.com`);
     } else {
-      setInput(`name	age	city	email
-John Doe	30	New York	john@example.com
-Jane Smith	25	Los Angeles	jane@example.com`);
+      setInput(`name\tage\tcity\temail
+John Doe\t30\tNew York\tjohn@example.com
+Jane Smith\t25\tLos Angeles\tjane@example.com`);
     }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
   };
 
   const isCsvInput = direction === "csv-to-tsv";
 
   return (
-    <div className="container mx-auto p-6 space-y-6 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">CSV ↔ TSV Converter</h1>
-        <p className="text-muted-foreground">
-          Convert between CSV and TSV formats
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="CSV ↔ TSV Converter"
+        description="Convert between CSV and TSV formats"
+      />
 
-      <div className="flex flex-wrap gap-4 items-center">
+      <ToolToolbar>
         <div className="flex items-center gap-2">
           <Label>Direction:</Label>
           <Select value={direction} onValueChange={setDirection}>
@@ -127,70 +130,62 @@ Jane Smith	25	Los Angeles	jane@example.com`);
         <Button variant="outline" onClick={handleSample}>
           Sample
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
+        <ToolClearButton
+          onClear={() => {
             setInput("");
             setOutput("");
           }}
-        >
-          Clear
-        </Button>
-      </div>
+        />
+      </ToolToolbar>
 
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="input">
-              {isCsvInput ? "Input CSV" : "Input TSV"}
-            </Label>
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
-            <AppCodeMirror
-              value={input}
-              className="h-[calc(100vh-17rem)]"
-              height="100%"
-              width="100%"
-              onChange={setInput}
-              placeholder={
-                isCsvInput ? "Paste your CSV here..." : "Paste your TSV here..."
-              }
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="output">
-              {isCsvInput ? "Output TSV" : "Output CSV"}
-            </Label>
-            {output && (
+      <ToolEditorGrid>
+        <ToolEditorPanel
+          label={isCsvInput ? "Input CSV" : "Input TSV"}
+          actions={
+            <ToolToolbar>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => copyToClipboard(output)}
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    setInput(text);
+                  } catch { /* noop */ }
+                }}
               >
-                Copy
+                Clipboard
               </Button>
-            )}
-          </div>
-          <div className="h-[calc(100vh-17rem)]">
+              <ToolClearButton onClear={() => setInput("")} />
+            </ToolToolbar>
+          }
+        >
+          <AppCodeMirror
+            value={input}
+            className="h-[calc(100vh-17rem)]"
+            height="100%"
+            onChange={setInput}
+            placeholder={
+              isCsvInput ? "Paste your CSV here..." : "Paste your TSV here..."
+            }
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              highlightActiveLine: true,
+            }}
+          />
+        </ToolEditorPanel>
+
+        <ToolEditorPanel
+          label={isCsvInput ? "Output TSV" : "Output CSV"}
+          actions={<ToolCopyButton value={output} />}
+        >
+          {error ? (
+            <ToolErrorBanner error={error} />
+          ) : (
             <AppCodeMirror
               value={output}
               className="h-[calc(100vh-17rem)]"
               height="100%"
-              width="100%"
               editable={false}
               basicSetup={{
                 lineNumbers: true,
@@ -198,9 +193,9 @@ Jane Smith	25	Los Angeles	jane@example.com`);
                 highlightActiveLine: false,
               }}
             />
-          </div>
-        </div>
-      </div>
-    </div>
+          )}
+        </ToolEditorPanel>
+      </ToolEditorGrid>
+    </ToolPageContainer>
   );
 }

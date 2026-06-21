@@ -17,6 +17,11 @@
  */
 
 import React, { useState } from "react";
+import { ToolClearButton } from "../components/tool-actions";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+} from "../components/tool-page-layout";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -141,13 +146,11 @@ export function IpValidatorPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">IPv4/IPv6 Validator</h1>
-        <p className="text-muted-foreground">
-          Validate and analyze IPv4 and IPv6 addresses
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="IPv4/IPv6 Validator"
+        description="Validate and analyze IPv4 and IPv6 addresses"
+      />
 
       <Card className="p-6 space-y-4">
         <div className="space-y-2">
@@ -157,10 +160,30 @@ export function IpValidatorPage() {
               id="ip"
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && validate()}
               placeholder="e.g., 192.168.1.1 or 2001:0db8:85a3::8a2e:0370:7334"
               className="flex-1"
             />
-            <Button onClick={validate}>Validate</Button>
+            <Button size="sm" onClick={validate}>Validate</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const samples = [
+                  "192.168.1.1/24",
+                  "10.0.0.1",
+                  "172.16.0.1/16",
+                  "2001:0db8:85a3::8a2e:0370:7334",
+                  "::1",
+                  "fe80::1",
+                ];
+                const sample = samples[Math.floor(Math.random() * samples.length)];
+                setInput(sample);
+              }}
+            >
+              Sample
+            </Button>
+            <ToolClearButton onClear={() => { setInput(""); setResult(null); }} />
           </div>
         </div>
 
@@ -210,6 +233,6 @@ export function IpValidatorPage() {
           </div>
         )}
       </Card>
-    </div>
+    </ToolPageContainer>
   );
 }

@@ -16,9 +16,13 @@
  */
 
 import React, { useState } from "react";
+import {
+  ToolPageContainer,
+  ToolPageHeader,
+  ToolToolbar,
+} from "../components/tool-page-layout";
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
 import {
   Select,
   SelectContent,
@@ -353,15 +357,13 @@ export function MimeTypesReferencePage() {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">MIME Types Reference</h1>
-        <p className="text-muted-foreground">
-          Complete reference for MIME types (Media Types)
-        </p>
-      </div>
+    <ToolPageContainer>
+      <ToolPageHeader
+        title="MIME Types Reference"
+        description="Complete reference for MIME types (Media Types)"
+      />
 
-      <div className="flex flex-wrap gap-4">
+      <ToolToolbar>
         <div className="flex-1 min-w-[200px]">
           <Input
             placeholder="Search by type, extension or description..."
@@ -383,7 +385,7 @@ export function MimeTypesReferencePage() {
             <SelectItem value="Font">Font</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </ToolToolbar>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredTypes.map((mime) => (
@@ -407,6 +409,6 @@ export function MimeTypesReferencePage() {
           No MIME types found matching your search.
         </div>
       )}
-    </div>
+    </ToolPageContainer>
   );
 }
