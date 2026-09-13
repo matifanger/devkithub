@@ -84,7 +84,7 @@ describe("SqlJsonConverterPage", () => {
 
   it("renders Clear button", () => {
     render(<SqlJsonConverterPage />);
-    expect(screen.getByText("Clear")).toBeDefined();
+    expect(screen.getAllByText("Clear").length).toBeGreaterThan(0);
   });
 
   it("renders input label for SQL", () => {

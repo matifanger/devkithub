@@ -2,6 +2,56 @@ import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export interface ClipboardTrayOptions {
+  monitoring: boolean;
+  recentItems: Array<{ id: string; text: string; type: string }>;
+  openHistory: () => void;
+  toggleMonitoring: () => void;
+  copyItem: (id: string) => void;
+}
+
+function itemLabel(item: ClipboardTrayOptions['recentItems'][number]) {
+  const compact = item.text.replace(/\s+/g, ' ').trim();
+  const preview = compact || `[${item.type}]`;
+  return preview.length > 58 ? `${preview.slice(0, 57)}…` : preview;
+}
+
+export function updateTrayMenu(
+  tray: Tray,
+  showWindow: () => void,
+  quitApp: () => void,
+  clipboardOptions?: ClipboardTrayOptions,
+) {
+  const clipboardItems: Electron.MenuItemConstructorOptions[] = clipboardOptions
+    ? [
+        { label: 'Clipboard History', click: clipboardOptions.openHistory },
+        {
+          label: clipboardOptions.monitoring
+            ? 'Pause clipboard monitoring'
+            : 'Resume clipboard monitoring',
+          click: clipboardOptions.toggleMonitoring,
+        },
+        {
+          label: 'Recent clipboard items',
+          enabled: clipboardOptions.recentItems.length > 0,
+          submenu: clipboardOptions.recentItems.map((item, index) => ({
+            label: `${index + 1}. ${itemLabel(item)}`,
+            click: () => clipboardOptions.copyItem(item.id),
+          })),
+        },
+        { type: 'separator' },
+      ]
+    : [];
+
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: 'Show DevKitHub', click: showWindow },
+      ...clipboardItems,
+      { label: 'Quit', click: quitApp },
+    ]),
+  );
+}
+
 function resolveTrayIcon(): Electron.NativeImage | null {
   const baseWebpack = path.join(app.getAppPath(), '.webpack/renderer', 'assets', 'icons');
   const baseSrc = path.join(process.cwd(), 'src', 'assets', 'icons');
@@ -46,11 +96,7 @@ export function createTray(showWindow: () => void, quitApp: () => void): Tray | 
     tray.on('click', showWindow);
     tray.on('double-click', showWindow);
 
-    const contextMenu = Menu.buildFromTemplate([
-      { label: 'Show', click: showWindow },
-      { label: 'Quit', click: quitApp },
-    ]);
-    tray.setContextMenu(contextMenu);
+    updateTrayMenu(tray, showWindow, quitApp);
 
     return tray;
   } catch (error) {

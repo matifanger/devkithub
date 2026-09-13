@@ -105,6 +105,8 @@ import { VoiceTranscriptionPage } from "./pages/voice-transcription";
 import { CodeComparisonPage } from "./pages/code-comparison";
 import { KanbanPage } from "./pages/kanban";
 import { PortKillPage } from "./pages/port-kill";
+import { ClipboardHistoryPage } from "./pages/clipboard-history";
+import { ClipboardQuickPage } from "./pages/clipboard-quick";
 import { ThemeProvider } from "./providers/theme-provider";
 import { getBaseApiUrl } from "./utils/environment";
 
@@ -220,6 +222,7 @@ const App = () => {
                     path="/validate-license"
                     element={<ValidateLicensePage />}
                   />
+                  <Route path="/clipboard-quick" element={<ClipboardQuickPage />} />
                   <Route element={<AppLayout />}>
                     <Route path="/" element={<MainPage />} />
                     <Route
@@ -430,6 +433,7 @@ const App = () => {
                     />
                     <Route path="/kanban" element={<KanbanPage />} />
                     <Route path="/port-kill" element={<PortKillPage />} />
+                    <Route path="/clipboard-history" element={<ClipboardHistoryPage />} />
                     {/* <Route path="/screen-recorder" element={<ScreenRecorderPage />} /> */}
                     {/* <Route path="/video-editor" element={<VideoEditorPage />} /> */}
                   </Route>

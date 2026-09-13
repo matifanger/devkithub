@@ -26,7 +26,7 @@ export function useProfileModal() {
   return useContext(ProfileModalContext);
 }
 
-function ThemeLoader({ children }: { children: React.ReactNode }) {
+export function ThemeLoader({ children }: { children: React.ReactNode }) {
   const { setTheme } = useTheme();
 
   useEffect(() => {

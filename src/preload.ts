@@ -9,6 +9,12 @@ import type {
   DecipherGCM,
 } from "crypto";
 import { contextBridge, ipcRenderer, shell } from "electron";
+import type {
+  ClipboardHistoryRule,
+  ClipboardHistorySettings,
+  ClipboardHistoryState,
+  ClipboardItemUpdate,
+} from "./types/clipboard-history";
 import {
   blake2b,
   blake2s,
@@ -390,9 +396,21 @@ contextBridge.exposeInMainWorld("electron", {
   shouldShowAutostartDialog: (currentPref: string | null) =>
     ipcRenderer.invoke("should-show-autostart-dialog", currentPref),
   voice: {
-    registerShortcut: () => ipcRenderer.invoke("register-voice-shortcut") as Promise<{ success: boolean; error?: string }>,
-    unregisterShortcut: () => ipcRenderer.invoke("unregister-voice-shortcut") as Promise<{ success: boolean }>,
-    getConfig: () => ipcRenderer.invoke("voice:get-config") as Promise<{ mode: string; model: string; googleApiKey: string }>,
+    registerShortcut: () =>
+      ipcRenderer.invoke("register-voice-shortcut") as Promise<{
+        success: boolean;
+        error?: string;
+      }>,
+    unregisterShortcut: () =>
+      ipcRenderer.invoke("unregister-voice-shortcut") as Promise<{
+        success: boolean;
+      }>,
+    getConfig: () =>
+      ipcRenderer.invoke("voice:get-config") as Promise<{
+        mode: string;
+        model: string;
+        googleApiKey: string;
+      }>,
     getStatus: (modelName: string) =>
       ipcRenderer.invoke("voice:get-status", modelName) as Promise<{
         binaryInstalled: boolean;
@@ -402,17 +420,51 @@ contextBridge.exposeInMainWorld("electron", {
         supported: boolean;
       }>,
     downloadModel: (modelName: string) =>
-      ipcRenderer.invoke("voice:download-model", modelName) as Promise<{ success: boolean; error?: string }>,
-    startLocalSession: (sessionId: string, modelName: string, language?: string, translate?: boolean) =>
-      ipcRenderer.invoke("voice:start-local-session", sessionId, modelName, language, translate) as Promise<{ success: boolean; error?: string }>,
+      ipcRenderer.invoke("voice:download-model", modelName) as Promise<{
+        success: boolean;
+        error?: string;
+      }>,
+    startLocalSession: (
+      sessionId: string,
+      modelName: string,
+      language?: string,
+      translate?: boolean,
+    ) =>
+      ipcRenderer.invoke(
+        "voice:start-local-session",
+        sessionId,
+        modelName,
+        language,
+        translate,
+      ) as Promise<{ success: boolean; error?: string }>,
     pushAudioChunk: (sessionId: string, audioData: ArrayBuffer) =>
-      ipcRenderer.invoke("voice:push-audio-chunk", sessionId, audioData) as Promise<{ text: string; error?: string } | null>,
+      ipcRenderer.invoke(
+        "voice:push-audio-chunk",
+        sessionId,
+        audioData,
+      ) as Promise<{ text: string; error?: string } | null>,
     stopLocalSession: (sessionId: string) =>
-      ipcRenderer.invoke("voice:stop-local-session", sessionId) as Promise<{ success: boolean }>,
-    onModelProgress: (callback: (progress: { status: string; percent: number; detail?: string }) => void) => {
-      ipcRenderer.on("voice:model-progress", (_, progress) => callback(progress));
+      ipcRenderer.invoke("voice:stop-local-session", sessionId) as Promise<{
+        success: boolean;
+      }>,
+    onModelProgress: (
+      callback: (progress: {
+        status: string;
+        percent: number;
+        detail?: string;
+      }) => void,
+    ) => {
+      ipcRenderer.on("voice:model-progress", (_, progress) =>
+        callback(progress),
+      );
     },
-    onTranscript: (callback: (data: { sessionId: string; text: string; error?: string }) => void) => {
+    onTranscript: (
+      callback: (data: {
+        sessionId: string;
+        text: string;
+        error?: string;
+      }) => void,
+    ) => {
       ipcRenderer.on("voice:transcript", (_, data) => callback(data));
     },
     removeAllListeners: () => {
@@ -420,7 +472,88 @@ contextBridge.exposeInMainWorld("electron", {
       ipcRenderer.removeAllListeners("voice:transcript");
     },
   },
-  clipboardReadText: () => ipcRenderer.invoke("clipboard-read-text") as Promise<string>,
+  clipboardReadText: () =>
+    ipcRenderer.invoke("clipboard-read-text") as Promise<string>,
+  clipboardHistory: {
+    getState: () =>
+      ipcRenderer.invoke(
+        "clipboard-history:get-state",
+      ) as Promise<ClipboardHistoryState>,
+    updateSettings: (patch: Partial<ClipboardHistorySettings>) =>
+      ipcRenderer.invoke(
+        "clipboard-history:update-settings",
+        patch,
+      ) as Promise<ClipboardHistoryState>,
+    upsertRule: (
+      rule: Partial<ClipboardHistoryRule> &
+        Pick<ClipboardHistoryRule, "name" | "pattern">,
+    ) =>
+      ipcRenderer.invoke(
+        "clipboard-history:upsert-rule",
+        rule,
+      ) as Promise<ClipboardHistoryState>,
+    addTextItem: (text: string) =>
+      ipcRenderer.invoke(
+        "clipboard-history:add-text-item",
+        text,
+      ) as Promise<ClipboardHistoryState>,
+    deleteRule: (id: string) =>
+      ipcRenderer.invoke(
+        "clipboard-history:delete-rule",
+        id,
+      ) as Promise<ClipboardHistoryState>,
+    copyItem: (id: string, closeQuickWindow = false) =>
+      ipcRenderer.invoke(
+        "clipboard-history:copy-item",
+        id,
+        closeQuickWindow,
+      ) as Promise<boolean>,
+    updateItem: (id: string, patch: ClipboardItemUpdate) =>
+      ipcRenderer.invoke(
+        "clipboard-history:update-item",
+        id,
+        patch,
+      ) as Promise<ClipboardHistoryState>,
+    deleteItem: (id: string) =>
+      ipcRenderer.invoke(
+        "clipboard-history:delete-item",
+        id,
+      ) as Promise<ClipboardHistoryState>,
+    clear: (includePinned = false) =>
+      ipcRenderer.invoke(
+        "clipboard-history:clear",
+        includePinned,
+      ) as Promise<ClipboardHistoryState>,
+    openQuickWindow: () =>
+      ipcRenderer.invoke("clipboard-history:open-quick") as Promise<boolean>,
+    closeQuickWindow: () =>
+      ipcRenderer.invoke("clipboard-history:close-quick") as Promise<boolean>,
+    openFullHistory: () =>
+      ipcRenderer.invoke("clipboard-history:open-full") as Promise<boolean>,
+    openWithTool: (id: string, route: string) =>
+      ipcRenderer.invoke(
+        "clipboard-history:open-with-tool",
+        id,
+        route,
+      ) as Promise<boolean>,
+    beginShortcutCapture: () =>
+      ipcRenderer.invoke(
+        "clipboard-history:shortcut-capture-start",
+      ) as Promise<boolean>,
+    endShortcutCapture: () =>
+      ipcRenderer.invoke(
+        "clipboard-history:shortcut-capture-end",
+      ) as Promise<boolean>,
+    onChanged: (callback: (state: ClipboardHistoryState) => void) => {
+      ipcRenderer.removeAllListeners("clipboard-history:changed");
+      ipcRenderer.on("clipboard-history:changed", (_event, state) =>
+        callback(state),
+      );
+    },
+    removeChangedListeners: () => {
+      ipcRenderer.removeAllListeners("clipboard-history:changed");
+    },
+  },
   showCopyToast: (content: string) =>
     ipcRenderer.invoke("show-copy-toast", content),
   screenshot: {
@@ -440,7 +573,10 @@ contextBridge.exposeInMainWorld("electron", {
         }>
       >,
     killProcess: (pid: number) =>
-      ipcRenderer.invoke("port-kill:kill", pid) as Promise<{ success: boolean; error?: string }>,
+      ipcRenderer.invoke("port-kill:kill", pid) as Promise<{
+        success: boolean;
+        error?: string;
+      }>,
   },
   onNavigateTo: (callback: (route: string) => void) => {
     ipcRenderer.removeAllListeners("navigate-to");
@@ -449,8 +585,12 @@ contextBridge.exposeInMainWorld("electron", {
   updater: {
     downloadAndInstall: (downloadUrl: string) =>
       ipcRenderer.invoke("download-and-install-update", downloadUrl),
-    onProgress: (callback: (progress: { status: string; percent: number }) => void) => {
-      ipcRenderer.on("update-download-progress", (_, progress) => callback(progress));
+    onProgress: (
+      callback: (progress: { status: string; percent: number }) => void,
+    ) => {
+      ipcRenderer.on("update-download-progress", (_, progress) =>
+        callback(progress),
+      );
     },
   },
 });
@@ -508,7 +648,8 @@ contextBridge.exposeInMainWorld("ffmpegRecorder", {
     ipcRenderer.invoke("ffmpeg-recorder:get-default-config"),
   listAudioDevices: () =>
     ipcRenderer.invoke("ffmpeg-recorder:list-audio-devices"),
-  start: (config: Record<string, unknown>) => ipcRenderer.invoke("ffmpeg-recorder:start", config),
+  start: (config: Record<string, unknown>) =>
+    ipcRenderer.invoke("ffmpeg-recorder:start", config),
   pause: () => ipcRenderer.invoke("ffmpeg-recorder:pause"),
   resume: () => ipcRenderer.invoke("ffmpeg-recorder:resume"),
   stop: () => ipcRenderer.invoke("ffmpeg-recorder:stop"),
@@ -540,7 +681,8 @@ contextBridge.exposeInMainWorld("exporter", {
 
 contextBridge.exposeInMainWorld("project", {
   new: (name: string) => ipcRenderer.invoke("project:new", name),
-  save: (project: Record<string, unknown>) => ipcRenderer.invoke("project:save", project),
+  save: (project: Record<string, unknown>) =>
+    ipcRenderer.invoke("project:save", project),
   load: (projectId: string) => ipcRenderer.invoke("project:load", projectId),
   saveDialog: (defaultName: string) =>
     ipcRenderer.invoke("project:save-dialog", defaultName),

@@ -3,6 +3,7 @@ import {
   Binary,
   Clock,
   Clock3,
+  ClipboardList,
   Code,
   Database,
   Database as Database2,
@@ -724,6 +725,15 @@ export const allTools = [
     url: "/bmi-calculator",
     icon: Activity,
     color: "bg-green-500/10 text-green-500",
+    category: "utilities",
+  },
+  {
+    id: slugify("Clipboard History"),
+    title: "Clipboard History",
+    description: "Search, organize and restore everything you copy",
+    url: "/clipboard-history",
+    icon: ClipboardList,
+    color: "bg-amber-500/10 text-amber-500",
     category: "utilities",
   },
   {

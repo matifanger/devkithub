@@ -33,7 +33,9 @@ import {
   attachCloseBehavior,
   createTray as createAppTray,
   registerCloseDialogIpc,
+  updateTrayMenu,
 } from "./main/tray";
+import { ClipboardHistoryController } from "./main/clipboard/history-controller";
 // import { registerScreenRecorderIpc, setupDisplayMediaHandler } from './main/recorder/screen-capture';
 // import { registerCursorTrackerIpc } from './main/recorder/cursor-tracker';
 // import { registerShortcutIpc, registerGlobalShortcuts, unregisterGlobalShortcuts, setMainWindowRef } from './main/shortcuts/global-shortcuts';
@@ -68,6 +70,7 @@ const persistentStore: Record<string, string> = {};
 let tray: Tray | null = null;
 let mainWindowRef: BrowserWindow | null = null;
 let isQuitting = false;
+let clipboardHistoryController: ClipboardHistoryController | null = null;
 
 // Load settings from file
 function loadSettings() {
@@ -840,6 +843,33 @@ function createTray() {
     app.quit();
   };
   tray = createAppTray(show, quit);
+  refreshTrayMenu();
+}
+
+function refreshTrayMenu() {
+  if (!tray) return;
+  const show = () => {
+    if (mainWindowRef) mainWindowRef.show();
+  };
+  const quit = () => {
+    isQuitting = true;
+    app.quit();
+  };
+  const controller = clipboardHistoryController;
+  if (!controller) {
+    updateTrayMenu(tray, show, quit);
+    return;
+  }
+  const state = controller.service.getState();
+  updateTrayMenu(tray, show, quit, {
+    monitoring: state.monitoring,
+    recentItems: state.items.slice(0, 8),
+    openHistory: () => controller.openFullHistory(),
+    toggleMonitoring: () => controller.toggleMonitoring(),
+    copyItem: (id) => {
+      controller.service.copyItem(id);
+    },
+  });
 }
 
 // This method will be called when Electron has finished
@@ -861,6 +891,14 @@ app.whenReady().then(async () => {
   setupScreenshotIpc();
   setupPortKillIpc();
   setupInAppUpdaterIpc();
+  clipboardHistoryController = new ClipboardHistoryController({
+    userDataPath: app.getPath("userData"),
+    rendererEntry: MAIN_WINDOW_WEBPACK_ENTRY,
+    preloadEntry: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    getMainWindow: () => mainWindowRef,
+    onTrayChange: refreshTrayMenu,
+  });
+  clipboardHistoryController.initialize();
   createTray();
   createWindow();
   registerVoiceShortcut();
@@ -879,6 +917,10 @@ app.whenReady().then(async () => {
     if (process.platform !== "darwin") {
       app.quit();
     }
+  });
+
+  app.on("will-quit", () => {
+    clipboardHistoryController?.dispose();
   });
 
   app.on("activate", () => {

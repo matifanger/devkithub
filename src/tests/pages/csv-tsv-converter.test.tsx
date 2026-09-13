@@ -97,7 +97,7 @@ describe("CsvTsvConverterPage", () => {
 
   it("renders Clear button", () => {
     render(<CsvTsvConverterPage />);
-    expect(screen.getByText("Clear")).toBeDefined();
+    expect(screen.getAllByText("Clear").length).toBeGreaterThan(0);
   });
 
   it("renders input label for CSV", () => {

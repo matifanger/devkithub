@@ -92,7 +92,7 @@ describe("ExcelConverterPage", () => {
 
   it("renders Clear button", () => {
     render(<ExcelConverterPage />);
-    expect(screen.getByText("Clear")).toBeDefined();
+    expect(screen.getAllByText("Clear").length).toBeGreaterThan(0);
   });
 
   it("renders input label", () => {

@@ -83,6 +83,7 @@ interface Window {
       removeAllListeners: () => void;
     };
     clipboardReadText: () => Promise<string>;
+    clipboardHistory: import("./types/clipboard-history").ClipboardHistoryApi;
     showCopyToast: (content: string) => Promise<boolean>;
     screenshot: {
       captureToolScreenshot: (route: string, slug: string) => Promise<string | null>;

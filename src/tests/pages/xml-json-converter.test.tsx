@@ -114,7 +114,7 @@ describe("XmlJsonConverterPage", () => {
 
   it("renders Clear button", () => {
     render(<XmlJsonConverterPage />);
-    expect(screen.getByText("Clear")).toBeDefined();
+    expect(screen.getAllByText("Clear").length).toBeGreaterThan(0);
   });
 
   it("renders input label for XML", () => {
