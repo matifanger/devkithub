@@ -144,6 +144,7 @@ async function until(probe, timeout = 20000) {
   ];
   const visited = [];
   for (const route of routes) {
+    console.log('SMOKE_ROUTE ' + route);
     const previousMarkup = await main.webContents.executeJavaScript(
       'document.querySelector("main").innerHTML',
     );
