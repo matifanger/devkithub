@@ -13,7 +13,9 @@ import * as path from "path";
 
 const TOOLS_DATA_PATH = path.resolve(__dirname, "../src/utils/tools-data.ts");
 const TOOLS_META_PATH = path.resolve(__dirname, "../src/utils/tools-metadata.ts");
-const OUTPUT_DIR = path.resolve(__dirname, "../../frontend/content/tools");
+const OUTPUT_DIR = process.env.DEVKITHUB_WEBSITE_DIR
+  ? path.resolve(process.env.DEVKITHUB_WEBSITE_DIR, "content/tools")
+  : path.resolve(__dirname, "../docs/generated-tools");
 const force = process.argv.includes("--force");
 const only = process.argv.find(arg => arg.startsWith('--only='))?.slice(7).split(',');
 

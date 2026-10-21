@@ -9,13 +9,6 @@ import {
   normalizeCrop,
   shotLayout,
 } from "../../utils/capture-image";
-import {
-  accessSignature,
-  equalSecret,
-  matchesMime,
-  parseRange,
-  passwordRecord,
-} from "../../../../frontend/server/utils/capture-policy";
 const options = {
   start: 2,
   end: 6,
@@ -79,50 +72,5 @@ describe("Capture media output", () => {
     });
     expect(args.join(" ")).toContain("zoompan");
     expect(args.join(" ")).toContain("pad=iw+64:ih+64");
-  });
-});
-describe("Cloud access and streaming", () => {
-  it("salts passwords and verifies only the matching password", () => {
-    const a = passwordRecord("correct horse battery staple");
-    expect(passwordRecord("correct horse battery staple").hash).not.toBe(
-      a.hash,
-    );
-    expect(
-      equalSecret(
-        passwordRecord("correct horse battery staple", a.salt).hash,
-        a.hash,
-      ),
-    ).toBe(true);
-    expect(equalSecret(passwordRecord("wrong", a.salt).hash, a.hash)).toBe(
-      false,
-    );
-  });
-  it("binds access cookies to capture, expiry and server secret", () => {
-    const a = accessSignature("id", "1000", "secret");
-    expect(accessSignature("other", "1000", "secret")).not.toBe(a);
-    expect(accessSignature("id", "1001", "secret")).not.toBe(a);
-    expect(accessSignature("id", "1000", "other")).not.toBe(a);
-  });
-  it("serves normal, open-ended and suffix ranges, rejecting malformed ranges", () => {
-    expect(parseRange("bytes=2-4", 10)).toEqual({ start: 2, end: 4 });
-    expect(parseRange("bytes=5-", 10)).toEqual({ start: 5, end: 9 });
-    expect(parseRange("bytes=-3", 10)).toEqual({ start: 7, end: 9 });
-    expect(parseRange(undefined, 10)).toBeNull();
-    for (const r of [
-      "bytes=10-",
-      "bytes=5-3",
-      "bytes=0-1,3-4",
-      "bytes=-0",
-      "bytes=-",
-    ])
-      expect(() => parseRange(r, 10)).toThrow();
-  });
-  it("rejects HTML and mismatched content types disguised as images", () => {
-    expect(matchesMime(Buffer.from("<html>secret</html>"), "image/png")).toBe(
-      false,
-    );
-    const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-    expect(matchesMime(png, "image/png")).toBe(true);
-    expect(matchesMime(png, "video/webm")).toBe(false);
   });
 });

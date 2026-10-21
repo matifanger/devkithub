@@ -94,6 +94,9 @@ async function until(probe, timeout = 20000) {
       )),
   );
   const startupMs = Math.round(performance.now() - started);
+  // Capture the clean fixture, never the user's profile or clipboard.
+  const homeScreenshot = await main.webContents.capturePage();
+  fs.writeFileSync(path.join(outputDirectory, 'open-source-home.png'), homeScreenshot.toPNG());
   assert.equal(
     main.isVisible(),
     false,

@@ -17,7 +17,9 @@ import * as fs from "fs";
 import * as path from "path";
 
 const DEV_SERVER_URL = "http://localhost:3000/main_window";
-const OUTPUT_DIR = path.resolve(__dirname, "../../frontend/public/screenshots");
+const OUTPUT_DIR = process.env.DEVKITHUB_WEBSITE_DIR
+  ? path.resolve(process.env.DEVKITHUB_WEBSITE_DIR, "public/screenshots")
+  : path.resolve(__dirname, "../docs/screenshots");
 const VIEWPORT = { width: 1280, height: 800 };
 const WAIT_MS = 2500;
 
