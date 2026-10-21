@@ -1,133 +1,72 @@
-name: Build Electron App
+name: Build and release
 
 on:
   push:
-    branches:
-      - master
-      - 'release/*'
+    branches: [master, 'release/**']
+    tags: ['v*']
   pull_request:
-    branches:
-      - master
-      - 'release/*'
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win32
+            arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: arm64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: x64
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Rebuild native dependencies
-        run: npx electron-rebuild
-
-      - name: Make for macOS
-        run: npm run make -- --platform=darwin --verbose
-
-      - name: Get version from package.json
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Create/Update release and upload macOS assets
-        uses: ncipollo/release-action@v1
+          node-version: '22'
+          cache: npm
+      - name: Linux packaging dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm libsecret-1-dev
+      - run: npm ci
+      - run: npm run test:run
+      - run: npx tsc --noEmit
+      - name: Package
+        run: npm run make -- --platform=${{ matrix.platform }} --arch=${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
         with:
-          tag: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
-          artifacts: |
-            out/make/**/*.dmg
-            out/make/**/*.zip
-          artifactContentType: application/zip
-          allowUpdates: true
-          replacesArtifacts: true
-          owner: matifanger
-          repo: DevKitHub-Releases
-          token: ${{ secrets.GH_RELEASES_TOKEN }}
+          name: devkithub-${{ matrix.platform }}-${{ matrix.arch }}
+          path: out/make/**
+          if-no-files-found: error
 
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Rebuild native dependencies
-        run: npx electron-rebuild
-
-      - name: Make for Windows
-        run: npm run make -- --platform=win32 --arch=x64 --verbose
-
-      - name: Get version from package.json
-        run: |
-          $version = node -p "require('./package.json').version"
-          Write-Host "Version captured: $version"
-          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        shell: pwsh
-
-      - name: Create/Update release and upload Windows assets
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
-          artifacts: |
-            out/make/**/*.exe
-          artifactContentType: application/octet-stream
-          allowUpdates: true
-          replacesArtifacts: true
-          owner: matifanger
-          repo: DevKitHub-Releases
-          token: ${{ secrets.GH_RELEASES_TOKEN }}
-
-  build-linux:
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Verify release version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node -e "if ('v' + require('./package.json').version !== process.env.RELEASE_TAG) process.exit(1)"
+      - uses: actions/download-artifact@v4
         with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Rebuild native dependencies
-        run: npx electron-rebuild
-
-      - name: Make for Linux
-        run: npm run make -- --platform=linux --verbose
-
-      - name: Get version from package.json
+          path: artifacts
+      - name: Publish in this repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Create/Update release and upload Linux assets
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
-          artifacts: |
-            out/make/**/*.deb
-            out/make/**/*.rpm
-          artifactContentType: application/zip
-          allowUpdates: true
-          replacesArtifacts: true
-          owner: matifanger
-          repo: DevKitHub-Releases
-          token: ${{ secrets.GH_RELEASES_TOKEN }}
+          gh release create "$RELEASE_TAG" --verify-tag --generate-notes --title "DevKitHub $RELEASE_TAG"
+          find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.zip' -o -name '*.deb' -o -name '*.rpm' \) -exec gh release upload "$RELEASE_TAG" {} +

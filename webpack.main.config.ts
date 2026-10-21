@@ -1,6 +1,7 @@
 import type { Configuration } from 'webpack';
 
 import { rules } from './webpack.rules';
+import { nativeAssetsPlugin } from './webpack.native-assets';
 
 export const mainConfig: Configuration = {
   /**
@@ -8,6 +9,7 @@ export const mainConfig: Configuration = {
    * that runs in the main process.
    */
   entry: './src/index.ts',
+  plugins: [nativeAssetsPlugin],
   // Put your normal webpack config below here
   module: {
     rules,

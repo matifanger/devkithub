@@ -51,11 +51,9 @@ vi.mock("../../hooks/useToolState", () => ({
 
 vi.mock("sucrase", () => ({
   __esModule: true,
-  default: {
-    transform: vi.fn((code, options) => ({
-      code: code.replace(/:\s*\w+/g, ""),
-    })),
-  },
+  transform: vi.fn((code, options) => ({
+    code: code.replace(/:\s*\w+/g, ""),
+  })),
 }));
 
 import { TypescriptToJsPage } from "../../pages/typescript-to-js";

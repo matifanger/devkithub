@@ -15,6 +15,7 @@ const TOOLS_DATA_PATH = path.resolve(__dirname, "../src/utils/tools-data.ts");
 const TOOLS_META_PATH = path.resolve(__dirname, "../src/utils/tools-metadata.ts");
 const OUTPUT_DIR = path.resolve(__dirname, "../../frontend/content/tools");
 const force = process.argv.includes("--force");
+const only = process.argv.find(arg => arg.startsWith('--only='))?.slice(7).split(',');
 
 interface ToolInfo {
   id: string;
@@ -83,6 +84,7 @@ function generatePage(tool: ToolInfo, meta: ToolMeta | undefined): string {
   const description = meta?.longDescription || tool.description;
   const features = meta?.features || [];
   const usage = meta?.usage || [];
+  const isCaptureTool = ['screenshot-studio', 'screen-recorder', 'video-editor', 'capture-library'].includes(slug);
 
   const keywords = [
     tool.title.toLowerCase(),
@@ -118,13 +120,22 @@ function generatePage(tool: ToolInfo, meta: ToolMeta | undefined): string {
     operatingSystem: "Windows, macOS, Linux",
     url: `https://devkithub.com/tools/${slug}`,
     description,
-    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    ...(!isCaptureTool ? { offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } } : {}),
     featureList: features.length > 0 ? features : [description],
   };
 
+  if (isCaptureTool) {
+    faq.splice(0, faq.length,
+      { q: `What is ${tool.title}?`, a: description },
+      { q: 'Does this upload my captures automatically?', a: 'No. Capture and editing happen locally. Only choosing Upload in Capture Library sends the selected file to your configured Capture Cloud server.' },
+      { q: 'What does cloud sharing require?', a: 'A deployed DevKitHub Capture Cloud server, private object storage and an upload token. Hosting and storage costs are separate. Cloud sharing requires internet access; local capture and editing do not.' },
+      { q: 'Which recording formats are supported?', a: 'Screen Recorder creates WebM files. Video Editor exports MP4, WebM and animated GIF using bundled FFmpeg. System audio capture is available on Windows; microphone and webcam depend on device permissions.' },
+      { q: 'How do I get started?', a: usage.join('. ') },
+    );
+  }
   let page = `---
-title: "${tool.title} — Free Private Developer Tool | DevKitHub"
-description: "${description.replace(/"/g, '\\"')} Zero tracking. 100% offline."
+title: "${tool.title} — ${isCaptureTool ? 'Capture Toolkit' : 'Free Private Developer Tool'} | DevKitHub"
+description: "${description.replace(/"/g, '\\"')}${isCaptureTool ? '' : ' Zero tracking. 100% offline.'}"
 toolName: "${tool.title}"
 keywords:
 ${keywords.map((k) => `  - "${k}"`).join("\n")}
@@ -164,6 +175,7 @@ function main() {
 
   for (const tool of tools) {
     const slug = getSlug(tool.url);
+    if (only && !only.includes(slug)) continue;
     const toolDir = path.join(OUTPUT_DIR, slug);
     const indexPath = path.join(toolDir, "index.md");
 

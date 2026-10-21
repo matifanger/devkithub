@@ -1,0 +1,4 @@
+# Public sample JWTs and api.example.com Bearer token123; reviewed, not credentials.
+1bc6408f2ccebf8d31cf8818762b3f40408e1c83:src/pages/jwt-debug.tsx:jwt:146
+81141531247a085c10391f12976eb55be252274e:src/pages/curl-to-code.tsx:curl-auth-header:237
+49851c3e68c225540596b132191857dfaff07daa:src/pages/jwt-debug.tsx:jwt:65

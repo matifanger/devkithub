@@ -3,7 +3,7 @@ import type { Configuration } from "webpack";
 
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import { plugins } from "./webpack.plugins";
-import { rules } from "./webpack.rules";
+import { getRules } from "./webpack.rules";
 
 const assets = ["assets"];
 
@@ -20,7 +20,7 @@ export const rendererConfig: Configuration = {
     topLevelAwait: true,
   },
   module: {
-    rules,
+    rules: getRules("esnext"),
   },
   plugins: [...plugins, copyPlugins],
   resolve: {

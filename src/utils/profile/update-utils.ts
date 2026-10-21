@@ -1,15 +1,20 @@
 import axios from 'axios';
 import { UpdateStatus } from '../../types/profile';
-import { getBaseApiUrl } from '../environment';
+export function isNewerVersion(latest: string, current: string): boolean {
+  const parse = (version: string) => version.replace(/^v/, '').split('-')[0].split('.').map(Number);
+  const a = parse(latest), b = parse(current);
+  if (a.length !== 3 || b.length !== 3 || [...a, ...b].some(n => !Number.isFinite(n))) return false;
+  for (let i = 0; i < 3; i++) { if (a[i] !== b[i]) return a[i] > b[i]; }
+  return !latest.includes('-') && current.includes('-');
+}
 
 export async function checkForUpdates(): Promise<UpdateStatus> {
   try {
-    const baseApiUrl = await getBaseApiUrl();
-    const response = await axios.get(baseApiUrl + '/api/version');
-    const latestVersion = response.data.version;
+    const response = await axios.get('https://api.github.com/repos/matifanger/devkithub/releases/latest');
+    const latestVersion = response.data.tag_name.replace(/^v/, "");
     const currentVersion = await window.electron.env.get('npm_package_version');
 
-    const hasUpdate = latestVersion !== currentVersion;
+    const hasUpdate = isNewerVersion(latestVersion, currentVersion);
 
     return {
       hasUpdate,
@@ -17,7 +22,7 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
       currentVersion,
       isLoading: false,
       error: null,
-      releaseNotes: response.data.releaseNotes,
+      releaseNotes: response.data.body,
     };
   } catch (error) {
     console.error('Failed to check for updates:', error);
@@ -32,9 +37,9 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
 }
 
 export function downloadUpdate() {
-  window.electron.openExternal('https://devkithub.com/downloads');
+  window.electron.openExternal('https://github.com/matifanger/devkithub/releases/latest');
 }
 
 export function viewChangelog() {
-  window.electron.openExternal('https://devkithub.com/changelog');
+  window.electron.openExternal('https://github.com/matifanger/devkithub/releases');
 }

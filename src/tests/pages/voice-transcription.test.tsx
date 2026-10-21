@@ -1,346 +1,79 @@
-import "@testing-library/jest-dom";
 import React from "react";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, cleanup, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-
-let mockRecognitionInstance: any = null;
-
-class MockSpeechRecognition {
-  continuous = false;
-  interimResults = false;
-  lang = "";
-  onstart: (() => void) | null = null;
-  onresult: ((event: any) => void) | null = null;
-  onerror: ((event: any) => void) | null = null;
-  onend: (() => void) | null = null;
-
-  constructor() {
-    mockRecognitionInstance = this;
-  }
-
-  start() {
-    setTimeout(() => this.onstart?.(), 0);
-  }
-
-  stop() {
-    setTimeout(() => this.onend?.(), 0);
-  }
-
-  abort() {
-    setTimeout(() => this.onend?.(), 0);
-  }
-}
-
-Object.defineProperty(window, "webkitSpeechRecognition", {
-  writable: true,
-  value: MockSpeechRecognition,
-});
-
-Object.assign(navigator, {
-  clipboard: {
-    writeText: vi.fn().mockResolvedValue(undefined),
-  },
-});
-
-Element.prototype.scrollIntoView = vi.fn();
-
-(window as any).electron = {
-  settingsStore: {
-    get: vi.fn().mockResolvedValue(null),
-    set: vi.fn().mockResolvedValue(true),
-    delete: vi.fn().mockResolvedValue(true),
-  },
-  voice: {
-    registerShortcut: vi.fn().mockResolvedValue({ success: true }),
-    unregisterShortcut: vi.fn().mockResolvedValue({ success: true }),
-    getConfig: vi.fn().mockResolvedValue({ mode: "google", model: "ggml-tiny", googleApiKey: "" }),
-    getStatus: vi.fn().mockResolvedValue({
-      binaryInstalled: false,
-      modelInstalled: false,
-      platform: "win32",
-      arch: "x64",
-      supported: true,
-    }),
-    downloadModel: vi.fn().mockResolvedValue({ success: true }),
-    startLocalSession: vi.fn().mockResolvedValue({ success: true }),
-    pushAudioChunk: vi.fn().mockResolvedValue(null),
-    stopLocalSession: vi.fn().mockResolvedValue({ success: true }),
-    onModelProgress: vi.fn(),
-    onTranscript: vi.fn(),
-    removeAllListeners: vi.fn(),
-  },
-  clipboardReadText: vi.fn().mockResolvedValue(""),
-};
-
 import { VoiceTranscriptionPage } from "../../pages/voice-transcription";
 
-async function renderAndWait() {
+let transcript: (data: { text?: string; error?: string }) => void;
+const voice = {
+  getStatus: vi.fn(), startLocalSession: vi.fn(), stopLocalSession: vi.fn(), pushAudioChunk: vi.fn(),
+  onTranscript: vi.fn((cb) => { transcript = cb; }), removeAllListeners: vi.fn(),
+  onModelProgress: vi.fn(), downloadModel: vi.fn(),
+};
+const settings = { get: vi.fn(), set: vi.fn() };
+const stopTrack = vi.fn();
+class Recorder {
+  static isTypeSupported() { return true; }
+  state = "inactive";
+  start() { this.state = "recording"; }
+  stop() { this.state = "inactive"; }
+}
+beforeEach(() => {
+  vi.clearAllMocks();
+  settings.get.mockResolvedValue(null);
+  voice.getStatus.mockResolvedValue({ binaryInstalled: true, modelInstalled: true });
+  voice.startLocalSession.mockResolvedValue({ success: true });
+  voice.stopLocalSession.mockResolvedValue({ success: true });
+  voice.downloadModel.mockResolvedValue({ success: true });
+  vi.stubGlobal("electron", { voice, settingsStore: settings });
+  vi.stubGlobal("MediaRecorder", Recorder);
+  Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: vi.fn().mockResolvedValue({ getTracks: () => [{ stop: stopTrack }] }) } });
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockResolvedValue(undefined) } });
+  Element.prototype.scrollIntoView = vi.fn();
+});
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+async function open() {
   render(<VoiceTranscriptionPage />);
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
-  await act(async () => {
-    vi.advanceTimersByTime(200);
-  });
+  await waitFor(() => expect(screen.getByRole("button", { name: "Start" })).toBeEnabled());
 }
-
-/**
- * Render with auto-start enabled in google mode, so recognition fires automatically.
- */
-async function renderWithAutoStart() {
-  (window as any).electron.settingsStore.get.mockImplementation((key: string) => {
-    if (key === "voiceTranscriptionMode") return Promise.resolve("google");
-    if (key === "voiceAutoStart") return Promise.resolve("true");
-    return Promise.resolve(null);
+describe("local voice transcription without API keys", () => {
+  it("uses Whisper without cloud credentials on installations previously set to Google", async () => {
+    settings.get.mockImplementation(async key => key === "voiceTranscriptionMode" ? "google" : null);
+    await open();
+    expect(screen.getByText("Whisper (Local)")).toBeInTheDocument();
+    expect(settings.get).not.toHaveBeenCalledWith("voiceGoogleApiKey");
+    expect(voice.startLocalSession).not.toHaveBeenCalled();
   });
-  await renderAndWait();
-}
-
-describe("VoiceTranscriptionPage", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    mockRecognitionInstance = null;
-    (window as any).electron.settingsStore.get.mockImplementation((key: string) => {
-      if (key === "voiceTranscriptionMode") return Promise.resolve("google");
-      return Promise.resolve(null);
-    });
+  it("starts and stops a local session and releases the microphone", async () => {
+    await open(); fireEvent.click(screen.getByRole("button", { name: "Start" }));
+    await screen.findByRole("button", { name: "Stop" });
+    expect(voice.startLocalSession).toHaveBeenCalledWith(expect.any(String), "ggml-tiny", "auto", false);
+    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+    await screen.findByRole("button", { name: "Start" });
+    expect(stopTrack).toHaveBeenCalled(); expect(voice.stopLocalSession).toHaveBeenCalled();
   });
-
-  afterEach(() => {
-    vi.useRealTimers();
+  it("appends transcripts, copies them and clears the text", async () => {
+    await open();
+    act(() => { transcript({ text: "Hello" }); transcript({ text: "world" }); });
+    expect(screen.getByText("Hello world")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Copy/ }));
+    await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith("Hello world"));
+    fireEvent.click(screen.getByRole("button", { name: /Clear/ }));
+    expect(screen.queryByText("Hello world")).not.toBeInTheDocument();
   });
-
-  it("renders page title", () => {
+  it("disables recording until the local runtime and model are installed", async () => {
+    voice.getStatus.mockResolvedValue({ binaryInstalled: false, modelInstalled: false });
     render(<VoiceTranscriptionPage />);
-    expect(screen.getByText("Voice Transcription")).toBeDefined();
+    await waitFor(() => expect(voice.getStatus).toHaveBeenCalled());
+    expect(screen.getByRole("button", { name: "Start" })).toBeDisabled();
   });
-
-  it("renders page description", () => {
-    render(<VoiceTranscriptionPage />);
-    expect(
-      screen.getByText("Speak and see text appear in real-time."),
-    ).toBeDefined();
+  it("reports microphone failures and closes the local session", async () => {
+    vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValue(new Error("Permission denied"));
+    await open(); fireEvent.click(screen.getByRole("button", { name: "Start" }));
+    expect(await screen.findByText("Microphone error: Permission denied")).toBeInTheDocument();
+    expect(voice.stopLocalSession).toHaveBeenCalled();
   });
-
-  it("does not auto-start when autoStart is off", async () => {
-    await renderAndWait();
-    expect(mockRecognitionInstance).toBeNull();
-  });
-
-  it("auto-starts recognition when autoStart is on in google mode", async () => {
-    await renderWithAutoStart();
-    expect(mockRecognitionInstance).not.toBeNull();
-    expect(mockRecognitionInstance.continuous).toBe(true);
-    expect(mockRecognitionInstance.interimResults).toBe(true);
-  });
-
-  it("shows Listening indicator when recognition starts", async () => {
-    await renderWithAutoStart();
-    expect(screen.getByText(/Listening/)).toBeDefined();
-  });
-
-  it("accumulates final results into continuous text", async () => {
-    await renderWithAutoStart();
-
-    await act(async () => {
-      mockRecognitionInstance.onresult({
-        resultIndex: 0,
-        results: [
-          { isFinal: true, 0: { transcript: "Hello world" }, length: 1 },
-        ],
-      });
-    });
-
-    await act(async () => {
-      mockRecognitionInstance.onresult({
-        resultIndex: 1,
-        results: [
-          { isFinal: true, 0: { transcript: "Hello world" }, length: 1 },
-          { isFinal: true, 0: { transcript: "how are you" }, length: 1 },
-        ],
-      });
-    });
-
-    expect(screen.getByText(/Hello world how are you/)).toBeDefined();
-  });
-
-  it("shows interim text inline while speaking", async () => {
-    await renderWithAutoStart();
-
-    await act(async () => {
-      mockRecognitionInstance.onresult({
-        resultIndex: 0,
-        results: [
-          { isFinal: false, 0: { transcript: "Hello wor" }, length: 1 },
-        ],
-      });
-    });
-
-    expect(screen.getByText("Hello wor")).toBeDefined();
-  });
-
-  it("copies full text when Copy is clicked", async () => {
-    await renderWithAutoStart();
-
-    await act(async () => {
-      mockRecognitionInstance.onresult({
-        resultIndex: 0,
-        results: [
-          { isFinal: true, 0: { transcript: "Copy me" }, length: 1 },
-        ],
-      });
-    });
-
-    const copyButton = screen.getByText("Copy");
-    await act(async () => {
-      fireEvent.click(copyButton);
-    });
-
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("Copy me");
-  });
-
-  it("stops recognition when Stop is clicked", async () => {
-    await renderWithAutoStart();
-
-    const stopButton = screen.getByText("Stop");
-    await act(async () => {
-      fireEvent.click(stopButton);
-      vi.advanceTimersByTime(10);
-    });
-
-    expect(screen.getByText("Start")).toBeDefined();
-  });
-
-  it("shows error on fatal recognition error", async () => {
-    await renderWithAutoStart();
-
-    await act(async () => {
-      mockRecognitionInstance.onerror({ error: "not-allowed" });
-    });
-
-    expect(
-      screen.getByText("Recognition error: not-allowed"),
-    ).toBeDefined();
-  });
-
-  it("shows not supported message when SpeechRecognition is unavailable", async () => {
-    const original = (window as any).webkitSpeechRecognition;
-    try {
-      (window as any).webkitSpeechRecognition = undefined;
-      (window as any).SpeechRecognition = undefined;
-
-      (window as any).electron.settingsStore.get.mockImplementation((key: string) => {
-        if (key === "voiceTranscriptionMode") return Promise.resolve("google");
-        if (key === "voiceAutoStart") return Promise.resolve("true");
-        return Promise.resolve(null);
-      });
-
-      await renderAndWait();
-
-      expect(screen.getByText("Not Supported")).toBeDefined();
-    } finally {
-      (window as any).webkitSpeechRecognition = original;
-    }
-  });
-
-  it("clears text when Clear is clicked", async () => {
-    await renderWithAutoStart();
-
-    await act(async () => {
-      mockRecognitionInstance.onresult({
-        resultIndex: 0,
-        results: [
-          { isFinal: true, 0: { transcript: "Some text" }, length: 1 },
-        ],
-      });
-    });
-
-    expect(screen.getByText(/Some text/)).toBeDefined();
-
-    const clearButton = screen.getByText("Clear");
-    await act(async () => {
-      fireEvent.click(clearButton);
-    });
-
-    expect(screen.queryByText(/Some text/)).toBeNull();
-  });
-
-  it("shows engine label in the settings button", async () => {
-    await renderAndWait();
-    expect(screen.getByText("Google Web Speech")).toBeDefined();
-  });
-
-  it("disables start button in whisper mode when model is not ready", async () => {
-    (window as any).electron.settingsStore.get.mockImplementation((key: string) => {
-      if (key === "voiceTranscriptionMode") return Promise.resolve("whisper-local");
-      if (key === "voiceWhisperModel") return Promise.resolve("ggml-tiny");
-      return Promise.resolve(null);
-    });
-    (window as any).electron.voice.getStatus.mockResolvedValue({
-      binaryInstalled: false,
-      modelInstalled: false,
-      platform: "win32",
-      arch: "x64",
-      supported: true,
-    });
-
-    await renderAndWait();
-
-    const startButton = screen.getByText("Start").closest("button")!;
-    expect(startButton.disabled).toBe(true);
-  });
-
-  it("enables start button in whisper mode when model is ready", async () => {
-    (window as any).electron.settingsStore.get.mockImplementation((key: string) => {
-      if (key === "voiceTranscriptionMode") return Promise.resolve("whisper-local");
-      if (key === "voiceWhisperModel") return Promise.resolve("ggml-tiny");
-      return Promise.resolve(null);
-    });
-    (window as any).electron.voice.getStatus.mockResolvedValue({
-      binaryInstalled: true,
-      modelInstalled: true,
-      platform: "win32",
-      arch: "x64",
-      supported: true,
-    });
-
-    await renderAndWait();
-
-    const startButton = screen.getByText("Start").closest("button")!;
-    expect(startButton.disabled).toBe(false);
-  });
-
-  it("checks whisper status on load in whisper-local mode", async () => {
-    (window as any).electron.settingsStore.get.mockImplementation((key: string) => {
-      if (key === "voiceTranscriptionMode") return Promise.resolve("whisper-local");
-      if (key === "voiceWhisperModel") return Promise.resolve("ggml-tiny");
-      return Promise.resolve(null);
-    });
-
-    await renderAndWait();
-
-    expect((window as any).electron.voice.getStatus).toHaveBeenCalledWith("ggml-tiny");
-  });
-
-  it("registers transcript listener on mount", () => {
-    render(<VoiceTranscriptionPage />);
-    expect((window as any).electron.voice.onTranscript).toHaveBeenCalled();
-  });
-
-  it("manually starts and stops with Start/Stop buttons", async () => {
-    await renderAndWait();
-
-    expect(mockRecognitionInstance).toBeNull();
-
-    const startButton = screen.getByText("Start");
-    await act(async () => {
-      fireEvent.click(startButton);
-      vi.advanceTimersByTime(10);
-    });
-
-    expect(mockRecognitionInstance).not.toBeNull();
-    expect(screen.getByText(/Listening/)).toBeDefined();
+  it("shows local engine errors", async () => {
+    await open(); act(() => transcript({ error: "Local model unavailable" }));
+    expect(screen.getByText("Local model unavailable")).toBeInTheDocument();
   });
 });

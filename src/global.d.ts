@@ -23,6 +23,7 @@ interface DecryptOptions extends Omit<EncryptOptions, "outputEncoding"> {
 }
 
 interface Window {
+  captureStudio: import('./types/capture').CaptureApi;
   cryptoAPI: {
     hash: (algorithm: string, data: string) => Promise<string | null>;
     encrypt: (
@@ -33,6 +34,7 @@ interface Window {
     generateRandomBytes: (size: number) => string;
   };
   electron: {
+    maintenance: import("./types/maintenance").MaintenanceApi;
     store: {
       get: (key: string) => Promise<string | null>;
       set: (key: string, value: string) => Promise<boolean>;
@@ -66,7 +68,7 @@ interface Window {
     voice: {
       registerShortcut: () => Promise<{ success: boolean; error?: string }>;
       unregisterShortcut: () => Promise<{ success: boolean }>;
-      getConfig: () => Promise<{ mode: string; model: string; googleApiKey: string }>;
+      getConfig: () => Promise<{ mode: string; model: string }>;
       getStatus: (modelName: string) => Promise<{
         binaryInstalled: boolean;
         modelInstalled: boolean;

@@ -19,8 +19,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/icons/icon.png';
 import { UPDATE_THEME_KEY } from '../constants/settings-keys';
-import { useAuth } from '../contexts/auth-context';
-import { useUpgradeModal } from '../contexts/upgrade-modal-context';
 import { useClipboardRecommendations } from '../hooks/use-clipboard-recommendations';
 import { useProfileModal } from '../layouts/app-layout';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -307,7 +305,6 @@ function WindowControls({
   onUpgradeClick?: () => void;
 }) {
   const [isMaximized, setIsMaximized] = useState(false);
-  const { isPro } = useUpgradeModal();
 
   useEffect(() => {
     const checkMaximized = async () => {
@@ -340,26 +337,11 @@ function WindowControls({
     </button>
   );
 
-  const upgradeButton = isPro ? (
-    <div className="flex flex-col items-center gap-0.5">
-      <button
-        onClick={onUpgradeClick}
-        className="flex items-center justify-center bg-gradient-to-r from-emerald-500 to-green-400 text-emerald-950 font-semibold text-xs rounded transition-all w-16 h-7 gap-1"
-      >
-        <Crown className="w-3.5 h-3.5" />
-        <span>Pro</span>
-      </button>
-    </div>
-  ) : (
-    <div className="flex flex-col items-center gap-0.5">
-      <button
-        onClick={onUpgradeClick}
-        className="flex items-center justify-center bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-amber-950 font-semibold text-xs rounded transition-all w-20 h-7 gap-1"
-      >
-        <Crown className="w-3.5 h-3.5" />
-        <span>Get Pro</span>
-      </button>
-    </div>
+  const upgradeButton = (
+    <button onClick={() => window.electron.openExternal('https://github.com/matifanger/devkithub')}
+      className="px-2 h-7 text-xs rounded hover:bg-accent" aria-label="View DevKitHub on GitHub">
+      GitHub ☆
+    </button>
   );
 
   const minimizeButton = (
@@ -425,8 +407,6 @@ export function TopNavbar() {
 
   const showControlsOnLeft = platform === 'mac';
   const showControlsOnRight = platform === 'windows' || platform === 'linux';
-  const { openModal: openUpgradeModal, isPro } = useUpgradeModal();
-  const { isAuthenticated } = useAuth();
   const { setIsProfileOpen, setActiveTab } = useProfileModal();
 
   const handleProClick = () => {

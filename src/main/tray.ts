@@ -2,6 +2,14 @@ import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export function revealWindow(window: BrowserWindow | null): boolean {
+  if (!window || window.isDestroyed()) return false;
+  if (window.isMinimized()) window.restore();
+  window.show();
+  window.focus();
+  return true;
+}
+
 export interface ClipboardTrayOptions {
   monitoring: boolean;
   recentItems: Array<{ id: string; text: string; type: string }>;

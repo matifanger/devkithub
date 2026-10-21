@@ -15,6 +15,56 @@ export interface ToolMetadata {
 export type ToolWithMetadata = Tool & { metadata: ToolMetadata };
 
 const metadataMap: Record<string, Omit<ToolMetadata, "toolId" | "title" | "shortDescription" | "category" | "url" | "slug">> = {
+  "screenshot-studio": {
+    longDescription: "Create polished screenshots locally: capture a window or screen, paste or drop images, annotate, redact, crop and add backgrounds. Save flattened results to Capture Library or export directly.",
+    features: ["Screen and window capture with countdown", "Arrows, shapes, text, steps and freehand drawing", "Opaque redaction, crop, undo and redo", "Gradients, patterns, custom photos, shadows and browser frames", "Aspect ratios, alignment and saved style presets", "PNG, JPEG and WebP export at multiple scales"],
+    usage: ["Choose a capture source or import/paste an image", "Drag on the canvas to annotate or crop", "Choose a background, frame and layout", "Export, copy, pin or save to Capture Library"],
+  },
+  "screen-recorder": {
+    longDescription: "Record a screen, window or rectangular area with microphone, Windows system audio and a webcam bubble. Recordings are written incrementally to disk and continue when switching tools.",
+    features: ["Screen, window and region recording", "Optional microphone and Windows system audio", "Circular webcam overlay", "15, 30 and 60 FPS with configurable bitrate", "Countdown, pause/resume and global stop shortcuts", "Persistent disk-backed recording library"],
+    usage: ["Choose a screen or window", "Set audio, camera, quality and countdown", "Record, pause if needed, and stop", "Open the saved recording in Video Editor"],
+  },
+  "video-editor": {
+    longDescription: "Turn recordings into clear walkthroughs with precise trimming, speed and audio controls, a guided zoom segment and presentation backgrounds. Real FFmpeg exports preserve your original files.",
+    features: ["Trim start/end with frame stepping and playhead", "0.5x to 2x playback speed and audio gain", "Guided zoom with selectable focus and smooth easing", "Background color and padding", "MP4, WebM and animated GIF export", "Progress, cancellation and still-frame extraction"],
+    usage: ["Import a video or choose a library recording", "Set trim points and preview the selection", "Adjust zoom, audio, speed and background", "Export to the library and download or share"],
+  },
+  "capture-library": {
+    longDescription: "Find and reuse screenshots and recordings saved on your device. Optional Capture Cloud sharing requires a configured server and uploads only the selected file, with expiring links, passwords and revocation.",
+    features: ["Persistent local capture history", "Search, media filters, preview and rename", "Download, copy images and pin above other windows", "Direct handoff to screenshot and video editors", "Optional cloud upload with 1, 7 or 30 day links", "Password protection, link revocation and OS credential storage"],
+    usage: ["Save captures from Screenshot Studio or Screen Recorder", "Search and preview files in the library", "Edit, rename, copy, pin or download", "Optionally configure Capture Cloud and explicitly upload a selected capture"],
+  },
+  "pc-maintenance": {
+    longDescription: "Local maintenance dashboard for storage, temporary files and startup registrations.",
+    features: ["Local drive capacity", "Cleanup preview", "Startup registration summary"],
+    usage: ["Open a maintenance tool", "Scan to inspect your computer", "Review results before making changes"],
+  },
+  "disk-space-analyzer": {
+    longDescription: "Analyze a selected folder or drive, inspect immediate folder totals and find the largest files without modifying them.",
+    features: ["Folder size breakdown", "Largest files", "Search and sort", "Progress and cancellation", "Show in Explorer"],
+    usage: ["Choose a folder", "Wait for the scan or stop it to see partial results", "Filter results and open a file location"],
+  },
+  "temporary-file-cleaner": {
+    longDescription: "Preview Windows and user temporary files last modified at least seven days ago and permanently delete selected categories after confirmation.",
+    features: ["Scan before deleting", "Category selection", "Changed-file protection", "Partial failure reporting"],
+    usage: ["Scan temporary files", "Preview and select categories", "Confirm permanent deletion", "Review the cleanup report"],
+  },
+  "startup-manager": {
+    longDescription: "Review Run entries and Startup folders. Disable personal registrations and restore their original values; shared entries are read-only.",
+    features: ["Registry and Startup folder inventory", "Reversible personal changes", "Preserved commands and registry types", "Windows settings shortcut"],
+    usage: ["Load startup apps", "Review name, command and source", "Disable or restore a personal entry", "Use Windows settings for effective startup status"],
+  },
+  "smart-file-renamer": {
+    longDescription: "Rename and organize real files using reusable naming templates, local AI through Ollama or LM Studio, editable previews and reversible history. Read documents and scanned PDFs with a vision model, watch incoming folders, search extracted text and compare exact duplicates locally.",
+    features: ["Bulk rename with editable preview and preserved extensions", "Saved naming presets and custom extraction fields", "Ollama and LM Studio on localhost", "PDF text extraction and scanned PDF/image analysis with a vision model", "Office, OpenDocument, EPUB and text file extraction", "Ordered organization rules with relative destination folders", "Persistent watch folders with review or automatic mode", "Content search and SHA-256 exact duplicate comparison", "Durable operation history and protected undo", "Collision checks, cancellation and per-file errors", "Metadata naming without an AI server", "CSV export of extracted fields and rename history"],
+    usage: ["Add files or a folder, or drag files into the library", "Choose a naming preset; configure a local model for content-based names", "Analyze files and review names, missing fields and destination folders", "Select files and apply the preview; use History to undo", "Optionally watch a folder and choose review or automatic mode"],
+  },
+  "uuid-validator": {
+    longDescription: "Validate and inspect UUIDs locally, including versions 1-8, Nil, and Max. Detect formatting errors, identify variants, extract supported timestamps, and copy normalized representations.",
+    features: ["Instant format, version, and variant validation", "Canonical, compact, uppercase, braced GUID, and URN input", "UUID versions 1-8 plus Nil and Max", "UTC timestamp extraction for v1, v6, and v7", "Node and clock sequence inspection for v1 and v6", "Normalized formats and JSON report copying", "Examples, clear action, and persistent input"],
+    usage: ["Paste a UUID or load an example", "Review validation errors or UUID details", "Inspect any embedded timestamp, node, and clock sequence", "Copy a normalized UUID or the JSON report"],
+  },
   "dummy-data-generator": {
     longDescription: "Generate realistic sample data for testing and development. Supports multiple data types including names, emails, addresses, dates, and custom schemas.",
     features: ["Multiple data type generators", "Customizable output format (JSON, CSV, SQL)", "Bulk generation with configurable count", "Faker.js powered realistic data"],

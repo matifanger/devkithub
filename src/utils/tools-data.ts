@@ -1,5 +1,13 @@
 import {
+  Camera,
+  Video,
+  Library,
+  Clapperboard,
   Activity,
+  HardDrive,
+  Monitor,
+  Power,
+  Sparkles,
   Binary,
   Clock,
   Clock3,
@@ -64,7 +72,8 @@ export type Category =
   | "development"
   | "security"
   | "media"
-  | "utilities";
+  | "utilities"
+  | "maintenance";
 
 export const categoryLabels: Record<Category, string> = {
   "encode-decode": "Encode & Decode",
@@ -75,6 +84,7 @@ export const categoryLabels: Record<Category, string> = {
   security: "Security",
   media: "Media",
   utilities: "Utilities",
+  maintenance: "PC Maintenance",
 };
 
 // Helper function to create a slug from a title
@@ -86,6 +96,64 @@ const slugify = (title: string) =>
     .replace(/[^\w-]+/g, "");
 
 export const allTools = [
+  {
+    id: slugify("Screenshot Studio"),
+    title: "Screenshot Studio",
+    description: "Capture, annotate, redact and style beautiful screenshots",
+    url: "/screenshot-studio",
+    icon: Camera,
+    color: "bg-indigo-500/10 text-indigo-500",
+    category: "media",
+  },
+  {
+    id: slugify("Screen Recorder"),
+    title: "Screen Recorder",
+    description: "Record screens, windows and regions with audio and webcam",
+    url: "/screen-recorder",
+    icon: Video,
+    color: "bg-red-500/10 text-red-500",
+    category: "media",
+  },
+  {
+    id: slugify("Video Editor"),
+    title: "Video Editor",
+    description: "Trim, zoom and export recordings as MP4, WebM or GIF",
+    url: "/video-editor",
+    icon: Clapperboard,
+    color: "bg-purple-500/10 text-purple-500",
+    category: "media",
+  },
+  {
+    id: slugify("Capture Library"),
+    title: "Capture Library",
+    description: "Organize local captures and create optional cloud share links",
+    url: "/capture-library",
+    icon: Library,
+    color: "bg-cyan-500/10 text-cyan-500",
+    category: "media",
+  },
+  { id: "pc-maintenance", title: "PC Maintenance", description: "Your storage, cleanup and startup dashboard", url: "/pc-maintenance", icon: Monitor, color: "bg-teal-500/10 text-teal-500", category: "maintenance" },
+  { id: "disk-space-analyzer", title: "Disk Space Analyzer", description: "Find large files and explore folder sizes", url: "/pc-maintenance?tab=disk", icon: HardDrive, color: "bg-blue-500/10 text-blue-500", category: "maintenance" },
+  { id: "temporary-file-cleaner", title: "Temporary File Cleaner", description: "Preview and remove old Windows temporary files", url: "/pc-maintenance?tab=cleanup", icon: Sparkles, color: "bg-emerald-500/10 text-emerald-500", category: "maintenance" },
+  { id: "startup-manager", title: "Startup Manager", description: "Disable and restore personal startup registrations", url: "/pc-maintenance?tab=startup", icon: Power, color: "bg-amber-500/10 text-amber-500", category: "maintenance" },
+  {
+    id: slugify("Smart File Renamer"),
+    title: "Smart File Renamer",
+    description: "Rename and organize files by content with local AI, presets and undo",
+    url: "/smart-file-renamer",
+    icon: FileEdit,
+    color: "bg-teal-500/10 text-teal-500",
+    category: "utilities",
+  },
+  {
+    id: slugify("UUID Validator"),
+    title: "UUID Validator",
+    description: "Validate UUID formats, versions, variants, and timestamps",
+    url: "/uuid-validator",
+    icon: Hash,
+    color: "bg-emerald-500/10 text-emerald-500",
+    category: "development",
+  },
   {
     id: slugify("Dummy Data Generator"),
     title: "Dummy Data Generator",

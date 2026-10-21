@@ -1,12 +1,23 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/auth-context";
 import { TopNavbar } from "../components/top-navbar";
-import { ProfileModal } from "../components/profile-modal";
 import { loadThemePreferences } from "../utils/profile/settings-utils";
 import { getSelectedThemeObject } from "../utils/profile/theme-utils";
 import { applyTheme } from "../utils/themes";
 import { useTheme } from "next-themes";
+
+const ProfileModal = React.lazy(() =>
+  import("../components/profile-modal").then((module) => ({
+    default: module.ProfileModal,
+  })),
+);
 
 interface ProfileModalContextType {
   isProfileOpen: boolean;
@@ -89,16 +100,28 @@ function AppContent() {
       <div className="flex flex-col h-screen">
         <TopNavbar />
         <main className="flex-1 overflow-hidden">
-          <Outlet />
+          <React.Suspense
+            fallback={
+              <div role="status" className="p-6 text-sm text-muted-foreground">
+                Loading tool…
+              </div>
+            }
+          >
+            <Outlet />
+          </React.Suspense>
         </main>
       </div>
-      <ProfileModal
-        open={isProfileOpen}
-        onOpenChange={setIsProfileOpen}
-        userData={userData}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      {isProfileOpen && (
+        <React.Suspense fallback={null}>
+          <ProfileModal
+            open={isProfileOpen}
+            onOpenChange={setIsProfileOpen}
+            userData={userData}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </React.Suspense>
+      )}
     </ProfileModalContext.Provider>
   );
 }

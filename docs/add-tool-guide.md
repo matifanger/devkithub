@@ -68,10 +68,14 @@ Edita `src/utils/tools-data.ts`:
 
 Edita `src/app.tsx`:
 
-1. Importa la página:
+1. Carga la página con `React.lazy` para no agregar su código al arranque:
 
 ```typescript
-import { NuevaHerramientaPage } from "./pages/nueva-herramienta";
+const NuevaHerramientaPage = React.lazy(() =>
+  import("./pages/nueva-herramienta").then((module) => ({
+    default: module.NuevaHerramientaPage,
+  })),
+);
 ```
 
 2. Agrega la ruta:

@@ -111,7 +111,7 @@ export function ProfileModal({
               </TabsTrigger>
               <TabsTrigger value="license" className="flex items-center gap-2">
                 <Key className="h-4 w-4" />
-                License
+                Open source
               </TabsTrigger>
               {isDev && (
                 <TabsTrigger value="dev" className="flex items-center gap-2">

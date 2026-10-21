@@ -202,10 +202,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         ))}
                       </div>
                     )}
-                    <div className="px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-0.5">
+                    {filteredItems.some(tool => tool.category === "maintenance") && <>
+                      <div className="px-2 mt-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-0.5">PC Maintenance</div>
+                      {filteredItems.filter(tool => tool.category === "maintenance").map(tool => <ToolItem key={tool.id} tool={tool} isFavorite={false} onToggleFavorite={toggleFavorite} />)}
+                    </>}
+                    <div className="px-2 mt-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-0.5">
                       All Tools
                     </div>
-                    {filteredItems.map((tool) => (
+                    {filteredItems.filter(tool => tool.category !== "maintenance").map((tool) => (
                       <ToolItem
                         key={tool.id}
                         tool={tool}

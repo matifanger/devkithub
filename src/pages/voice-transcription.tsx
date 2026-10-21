@@ -1,10 +1,4 @@
-/**
- * Voice Transcription – Dual Engine
- *
- * Continuous flowing text, like Google Docs voice typing.
- * - Google Web Speech API (real-time streaming with interim results)
- * - Whisper local (offline, whisper.cpp via main process, chunk-appended)
- */
+/** Local Whisper transcription. No hosted speech service or API key. */
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
@@ -40,15 +34,12 @@ import {
   ToolPageHeader,
 } from "../components/tool-page-layout";
 import {
-  VOICE_TRANSCRIPTION_MODE_KEY,
   VOICE_WHISPER_MODEL_KEY,
-  VOICE_GOOGLE_API_KEY,
   VOICE_WHISPER_LANGUAGE_KEY,
   VOICE_WHISPER_TRANSLATE_KEY,
   VOICE_AUTO_START_KEY,
 } from "../constants/settings-keys";
 
-type VoiceMode = "google" | "whisper-local";
 
 const WHISPER_LANGUAGES = [
   { value: "auto", label: "Auto-detect" },
@@ -84,14 +75,12 @@ export function VoiceTranscriptionPage() {
   const [interimText, setInterimText] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
-  const [isSupported, setIsSupported] = useState(true);
 
   // ─── Configuration state ────────────────────────────────────────────
-  const [voiceMode, setVoiceMode] = useState<VoiceMode>("google");
+  const voiceMode = "whisper-local";
   const [whisperModel, setWhisperModel] = useState("ggml-tiny");
   const [whisperLanguage, setWhisperLanguage] = useState("auto");
   const [whisperTranslate, setWhisperTranslate] = useState(false);
-  const [googleApiKey, setGoogleApiKey] = useState("");
   const [autoStart, setAutoStart] = useState(false);
   const [configLoaded, setConfigLoaded] = useState(false);
 
@@ -104,19 +93,13 @@ export function VoiceTranscriptionPage() {
   const [modelDownloadError, setModelDownloadError] = useState("");
 
   // ─── Refs ───────────────────────────────────────────────────────────
-  const recognitionRef = useRef<any>(null);
   const textEndRef = useRef<HTMLDivElement>(null);
-  const shouldRestartRef = useRef(false);
-  const restartCountRef = useRef(0);
-  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastResultTimeRef = useRef(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const whisperActiveRef = useRef(false);
   const chunkTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sessionIdRef = useRef<string | null>(null);
-  const googleKeyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoStartFiredRef = useRef(false);
   const pendingRestartRef = useRef(false);
 
@@ -128,22 +111,18 @@ export function VoiceTranscriptionPage() {
           setConfigLoaded(true);
           return;
         }
-        const [mode, model, gKey, lang, translatePref, autoStartPref] = await Promise.all([
-          window.electron.settingsStore.get(VOICE_TRANSCRIPTION_MODE_KEY),
+        const [model, lang, translatePref, autoStartPref] = await Promise.all([
           window.electron.settingsStore.get(VOICE_WHISPER_MODEL_KEY),
-          window.electron.settingsStore.get(VOICE_GOOGLE_API_KEY),
           window.electron.settingsStore.get(VOICE_WHISPER_LANGUAGE_KEY),
           window.electron.settingsStore.get(VOICE_WHISPER_TRANSLATE_KEY),
           window.electron.settingsStore.get(VOICE_AUTO_START_KEY),
         ]);
-        if (mode === "google" || mode === "whisper-local") setVoiceMode(mode);
         if (model) setWhisperModel(model);
-        if (gKey) setGoogleApiKey(gKey);
         if (lang) setWhisperLanguage(lang);
         if (translatePref === "true") setWhisperTranslate(true);
         if (autoStartPref === "true") setAutoStart(true);
 
-        if (model || !mode || mode === "whisper-local") {
+        {
           const status = await window.electron.voice.getStatus(model || "ggml-tiny");
           if (status.modelInstalled && status.binaryInstalled) {
             setModelDownloadStatus("ready");
@@ -175,126 +154,6 @@ export function VoiceTranscriptionPage() {
     return () => {
       window.electron.voice.removeAllListeners();
     };
-  }, []);
-
-  // ─── Google Web Speech ──────────────────────────────────────────────
-
-  const startGoogleListening = useCallback(() => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setIsSupported(false);
-      setError("Speech recognition is not supported in this browser.");
-      return;
-    }
-
-    if (restartTimerRef.current) {
-      clearTimeout(restartTimerRef.current);
-      restartTimerRef.current = null;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setError("");
-    };
-
-    recognition.onresult = (event: any) => {
-      restartCountRef.current = 0;
-      lastResultTimeRef.current = Date.now();
-
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          const text = result[0].transcript.trim();
-          if (text) {
-            setFullText((prev) => {
-              const separator = prev.length > 0 ? " " : "";
-              return prev + separator + text;
-            });
-          }
-        } else {
-          interim += result[0].transcript;
-        }
-      }
-      setInterimText(interim);
-    };
-
-    recognition.onerror = (event: any) => {
-      if (event.error === "no-speech") return;
-      if (event.error === "aborted") return;
-      shouldRestartRef.current = false;
-      setError(`Recognition error: ${event.error}`);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      if (!shouldRestartRef.current) {
-        setIsListening(false);
-        return;
-      }
-
-      restartCountRef.current += 1;
-      const timeSinceLastResult = Date.now() - lastResultTimeRef.current;
-      const maxFastRestarts = timeSinceLastResult < 5000 ? 3 : 10;
-
-      if (restartCountRef.current > maxFastRestarts) {
-        shouldRestartRef.current = false;
-        setIsListening(false);
-        setError(
-          "Voice recognition keeps disconnecting. Check your microphone and internet connection, then try again.",
-        );
-        return;
-      }
-
-      const delay = Math.min(300 * restartCountRef.current, 2000);
-      restartTimerRef.current = setTimeout(() => {
-        if (shouldRestartRef.current) {
-          try {
-            recognition.start();
-          } catch {
-            shouldRestartRef.current = false;
-            setIsListening(false);
-          }
-        }
-      }, delay);
-    };
-
-    recognitionRef.current = recognition;
-    shouldRestartRef.current = true;
-    restartCountRef.current = 0;
-    lastResultTimeRef.current = Date.now();
-
-    try {
-      recognition.start();
-    } catch {
-      shouldRestartRef.current = false;
-      setError("Failed to start microphone. Check permissions.");
-    }
-  }, []);
-
-  const stopGoogleListening = useCallback(() => {
-    shouldRestartRef.current = false;
-    if (restartTimerRef.current) {
-      clearTimeout(restartTimerRef.current);
-      restartTimerRef.current = null;
-    }
-    if (recognitionRef.current) {
-      const ref = recognitionRef.current;
-      recognitionRef.current = null;
-      try {
-        ref.stop();
-      } catch {}
-    }
-    setIsListening(false);
-    setInterimText("");
   }, []);
 
   // ─── Whisper Local (whisper.cpp via IPC) ────────────────────────────
@@ -389,21 +248,8 @@ export function VoiceTranscriptionPage() {
 
   // ─── Unified controls ──────────────────────────────────────────────
 
-  const startListening = useCallback(() => {
-    if (voiceMode === "whisper-local") {
-      startWhisperListening();
-    } else {
-      startGoogleListening();
-    }
-  }, [voiceMode, startWhisperListening, startGoogleListening]);
-
-  const stopListening = useCallback(() => {
-    if (voiceMode === "whisper-local") {
-      stopWhisperListening();
-    } else {
-      stopGoogleListening();
-    }
-  }, [voiceMode, stopWhisperListening, stopGoogleListening]);
+  const startListening = startWhisperListening;
+  const stopListening = stopWhisperListening;
 
   // ─── Auto-start on mount ───────────────────────────────────────────
   useEffect(() => {
@@ -412,36 +258,23 @@ export function VoiceTranscriptionPage() {
 
     if (!autoStart) return;
 
-    if (voiceMode === "google") {
-      const timer = setTimeout(() => startGoogleListening(), 100);
-      return () => clearTimeout(timer);
-    }
-
     if (voiceMode === "whisper-local" && modelDownloadStatus === "ready") {
       const timer = setTimeout(() => startWhisperListening(), 100);
       return () => clearTimeout(timer);
     }
-  }, [configLoaded, autoStart, voiceMode, modelDownloadStatus, startGoogleListening, startWhisperListening]);
+  }, [configLoaded, autoStart, voiceMode, modelDownloadStatus, startWhisperListening]);
 
   useEffect(() => {
     return () => {
-      stopGoogleListening();
       stopWhisperListening();
     };
-  }, [stopGoogleListening, stopWhisperListening]);
+  }, [stopWhisperListening]);
 
   useEffect(() => {
     textEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [fullText, interimText]);
 
   // ─── Configuration handlers ────────────────────────────────────────
-
-  const handleModeChange = (mode: string) => {
-    if (isListening) stopListening();
-    setVoiceMode(mode as VoiceMode);
-    setError("");
-    window.electron.settingsStore.set(VOICE_TRANSCRIPTION_MODE_KEY, mode);
-  };
 
   const handleModelChange = async (model: string) => {
     const wasListening = isListening;
@@ -487,14 +320,6 @@ export function VoiceTranscriptionPage() {
     window.electron.settingsStore.set(VOICE_AUTO_START_KEY, checked ? "true" : "false");
   };
 
-  const handleGoogleKeyChange = (value: string) => {
-    setGoogleApiKey(value);
-    if (googleKeyTimerRef.current) clearTimeout(googleKeyTimerRef.current);
-    googleKeyTimerRef.current = setTimeout(() => {
-      window.electron.settingsStore.set(VOICE_GOOGLE_API_KEY, value);
-    }, 600);
-  };
-
   const handleDownloadModel = async () => {
     setModelDownloadStatus("downloading");
     setModelDownloadProgress(0);
@@ -538,26 +363,7 @@ export function VoiceTranscriptionPage() {
 
   // ─── Render ────────────────────────────────────────────────────────
 
-  if (!isSupported && voiceMode === "google") {
-    return (
-      <ToolPageContainer>
-        <ToolPageHeader
-          title="Voice Transcription"
-          description="Real-time speech-to-text transcription"
-        />
-        <div className="flex flex-col items-center justify-center py-20">
-          <MicOff className="h-16 w-16 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium">Not Supported</p>
-          <p className="text-muted-foreground mt-2">
-            Speech recognition is not available in this browser environment.
-          </p>
-        </div>
-      </ToolPageContainer>
-    );
-  }
-
-  const modeLabel =
-    voiceMode === "whisper-local" ? "Whisper (Local)" : "Google Web Speech";
+  const modeLabel = "Whisper (Local)";
   const hasText = fullText.length > 0 || interimText.length > 0;
 
   return (
@@ -639,37 +445,18 @@ export function VoiceTranscriptionPage() {
 
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Engine</Label>
-                <Select value={voiceMode} onValueChange={handleModeChange}>
+                <Select value={voiceMode} disabled>
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="google">Google Web Speech</SelectItem>
+
                     <SelectItem value="whisper-local">
                       Whisper (Local)
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-              {voiceMode === "google" && (
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium">
-                    Google API Key
-                  </Label>
-                  <Input
-                    type="password"
-                    value={googleApiKey}
-                    onChange={(e) => handleGoogleKeyChange(e.target.value)}
-                    placeholder="AIza..."
-                    className="h-8 text-sm"
-                  />
-                  <p className="text-[11px] text-muted-foreground leading-tight">
-                    Optional. Without it, transcription may fail with a
-                    &ldquo;network&rdquo; error in Electron.
-                  </p>
-                </div>
-              )}
 
               {voiceMode === "whisper-local" && (
                 <>

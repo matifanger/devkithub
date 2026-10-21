@@ -15,7 +15,7 @@
  */
 
 import { javascript } from "@codemirror/lang-javascript";
-import sucrase from "sucrase";
+import { transform } from "sucrase";
 import React, { useCallback, useEffect, useState } from "react";
 import { AppCodeMirror } from "../components/app-code-mirror";
 import { Button } from "../components/ui/button";
@@ -42,7 +42,7 @@ export function TypescriptToJsPage() {
     }
 
     try {
-      const result = sucrase.transform(input, {
+      const result = transform(input, {
         transforms: ["typescript", "jsx"],
       });
       setOutput(result.code);

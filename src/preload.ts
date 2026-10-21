@@ -9,6 +9,30 @@ import type {
   DecipherGCM,
 } from "crypto";
 import { contextBridge, ipcRenderer, shell } from "electron";
+import './preload/capture';
+import type { RenamerAPI, RenamerSnapshot } from "./types/smart-file-renamer";
+
+const smartRenamer: RenamerAPI = {
+  snapshot: () => ipcRenderer.invoke("smart-renamer:snapshot"),
+  pick: (kind) => ipcRenderer.invoke("smart-renamer:pick", kind),
+  add: (paths) => ipcRenderer.invoke("smart-renamer:add", paths),
+  configure: (settings) => ipcRenderer.invoke("smart-renamer:configure", settings),
+  analyze: (ids) => ipcRenderer.invoke("smart-renamer:analyze", ids),
+  apply: (edits) => ipcRenderer.invoke("smart-renamer:apply", edits),
+  undo: (id) => ipcRenderer.invoke("smart-renamer:undo", id),
+  clear: () => ipcRenderer.invoke("smart-renamer:clear"),
+  cancel: () => ipcRenderer.invoke("smart-renamer:cancel"),
+  duplicates: () => ipcRenderer.invoke("smart-renamer:duplicates"),
+  watch: (action, value) => ipcRenderer.invoke("smart-renamer:watch", action, value),
+  reveal: (id) => ipcRenderer.invoke("smart-renamer:reveal", id),
+  models: () => ipcRenderer.invoke("smart-renamer:models"),
+  onChange: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, state: RenamerSnapshot) => callback(state);
+    ipcRenderer.on("smart-renamer:changed", listener);
+    return () => ipcRenderer.removeListener("smart-renamer:changed", listener);
+  },
+};
+contextBridge.exposeInMainWorld("smartRenamer", smartRenamer);
 import type {
   ClipboardHistoryRule,
   ClipboardHistorySettings,
@@ -350,6 +374,22 @@ contextBridge.exposeInMainWorld("cryptoAPI", {
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld("electron", {
+  maintenance: {
+    overview: () => ipcRenderer.invoke("maintenance:overview"),
+    analyzeDisk: () => ipcRenderer.invoke("maintenance:disk"),
+    scanCleanup: () => ipcRenderer.invoke("maintenance:scan-cleanup"),
+    clean: (scanId: string, groupIds: string[]) => ipcRenderer.invoke("maintenance:clean", scanId, groupIds),
+    cancel: () => ipcRenderer.invoke("maintenance:cancel"),
+    reveal: (path: string) => ipcRenderer.invoke("maintenance:reveal", path),
+    startupList: () => ipcRenderer.invoke("maintenance:startup-list"),
+    startupToggle: (id: string, enabled: boolean) => ipcRenderer.invoke("maintenance:startup-toggle", id, enabled),
+    openStartupSettings: () => ipcRenderer.invoke("maintenance:startup-settings"),
+    onProgress: (callback: (progress: import("./types/maintenance").MaintenanceProgress) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, progress: import("./types/maintenance").MaintenanceProgress) => callback(progress);
+      ipcRenderer.on("maintenance:progress", listener);
+      return () => ipcRenderer.removeListener("maintenance:progress", listener);
+    },
+  } satisfies import("./types/maintenance").MaintenanceApi,
   store: {
     get: (key: string) => ipcRenderer.invoke("get-secure-store", key),
     set: (key: string, value: string) =>

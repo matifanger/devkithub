@@ -17,6 +17,8 @@ const config: ForgeConfig = {
     asar: true,
     extraResource: [
       path.dirname(require.resolve('ffmpeg-static')),
+      path.join(__dirname, 'LICENSE'),
+      path.join(__dirname, 'THIRD_PARTY_NOTICES.md'),
     ],
   },
   rebuildConfig: {},
@@ -49,6 +51,8 @@ const config: ForgeConfig = {
   ],
   plugins: [
     new WebpackPlugin({
+      port: 4100,
+      loggerPort: 4101,
       mainConfig,
       renderer: {
         config: rendererConfig,

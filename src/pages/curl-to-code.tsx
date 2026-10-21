@@ -241,7 +241,7 @@ ${headerStr}
   };
 
   const handleSample = useCallback(() => {
-    const sample = `curl -X POST "https://api.example.com/v1/users" -H "Content-Type: application/json" -H "Authorization: Bearer token123" --data '{"name": "John Doe", "email": "john@example.com"}'`;
+    const sample = `curl -X POST "https://api.example.com/v1/users" -H "Content-Type: application/json" -H "Authorization: Bearer token123" --data '{"name": "John Doe", "email": "john@example.com"}'`; // gitleaks:allow -- public demonstration data, never used for authentication
     setInput(sample);
   }, []);
 

@@ -1,6 +1,6 @@
 import type { ModuleOptions } from 'webpack';
 
-export const rules: Required<ModuleOptions>['rules'] = [
+export const getRules = (module: 'commonjs' | 'esnext' = 'commonjs'): Required<ModuleOptions>['rules'] => [
   // Add support for native node modules
   {
     // We're specifying native_modules in the test because the asset relocator loader generates a
@@ -25,6 +25,8 @@ export const rules: Required<ModuleOptions>['rules'] = [
       loader: 'ts-loader',
       options: {
         transpileOnly: true,
+        // Preserve import() so Webpack can load tools on demand.
+        compilerOptions: { module },
       },
     },
   },
@@ -41,3 +43,5 @@ export const rules: Required<ModuleOptions>['rules'] = [
     type: 'asset/resource',
   },
 ];
+
+export const rules = getRules();
