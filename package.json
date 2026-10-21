@@ -1,7 +1,7 @@
 {
   "name": "devkithub",
   "productName": "DevKitHub",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Free, open-source desktop toolkit for developers. No account or API key required.",
   "main": ".webpack/main",
   "scripts": {

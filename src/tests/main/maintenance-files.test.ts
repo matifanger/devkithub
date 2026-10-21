@@ -17,15 +17,15 @@ let fixture: string;
 const progress = vi.fn();
 const signal = () => new AbortController().signal;
 beforeEach(async () => {
-  fixture = await fs.mkdtemp(
+  fixture = await fs.realpath(await fs.mkdtemp(
     path.join(os.tmpdir(), "devkithub-maintenance-test-"),
-  );
+  ));
   progress.mockClear();
 });
 afterEach(async () => {
   if (
     !path.basename(fixture).startsWith("devkithub-maintenance-test-") ||
-    path.dirname(fixture) !== path.resolve(os.tmpdir())
+    path.dirname(fixture) !== await fs.realpath(os.tmpdir())
   )
     throw new Error("Invalid test cleanup target");
   await fs.rm(fixture, { recursive: true, force: true });
