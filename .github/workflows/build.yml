@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     strategy:
@@ -40,8 +44,10 @@ jobs:
       - run: npm run test:run
       - run: npx tsc --noEmit
       - name: Package
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         run: npm run make -- --platform=${{ matrix.platform }} --arch=${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           name: devkithub-${{ matrix.platform }}-${{ matrix.arch }}
           path: out/make/**

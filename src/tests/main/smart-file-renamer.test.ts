@@ -17,7 +17,8 @@ let root: string;
 let service: RenamerService;
 let storage: string;
 beforeEach(async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), "devkithub-renamer-test-"));
+  // macOS exposes its temp directory through a symlink; the service stores real paths.
+  root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "devkithub-renamer-test-")));
   storage = path.join(root, "state", "renamer.json");
   service = new RenamerService(storage);
   await service.initialize(false);
